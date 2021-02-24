@@ -1,0 +1,9 @@
+# Project exclude paths
+/node_modules/
+/venv/
+/venv_portable/
+/db.sqlite3
+/log*
+/WapsClient/migrations/
+/build/
+/.idea/

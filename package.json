@@ -1,0 +1,62 @@
+{
+  "name": "follow-swaps",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.11.2",
+    "@material-ui/icons": "^4.11.2",
+    "axios": "^0.21.1",
+    "babel-preset-react-app": "^10.0.0",
+    "base64-arraybuffer": "^0.2.0",
+    "bootstrap": "^4.5.3",
+    "classnames": "^2.2.6",
+    "crypto-js": "^4.0.0",
+    "cryptr": "^6.0.2",
+    "lodash": "^4.17.20",
+    "md5": "^2.3.0",
+    "node-sass": "^4.13.1",
+    "particles.js": "^2.0.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.14.0",
+    "react-anchor-link-smooth-scroll": "^1.0.12",
+    "react-banner": "^1.0.3",
+    "react-bootstrap": "^1.4.3",
+    "react-copy-to-clipboard": "^5.0.2",
+    "react-dom": "^16.13.1",
+    "react-ga": "^2.7.0",
+    "react-particles-js": "^3.4.1",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "^3.4.1",
+    "react-stay-scrolled": "^7.1.0",
+    "react-vertical-timeline-component": "^3.3.1",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^2.0.1",
+    "server-helpers": "^0.1.6",
+    "socket.io": "^3.0.3",
+    "socket.io-client": "^3.0.3",
+    "use-socketio": "^2.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "postbuild": "cp build/index.html templates/index.html"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {}
+}
