@@ -81,7 +81,7 @@ class WalletSerializer(serializers.ModelSerializer):
         #todo проверка на создание или изменени
         tlg_check =telegram_bot_sendtext(f'wallet {data["addr"]}  was updated',int(data['telegram_channel_id']))
         if not tlg_check['ok']:
-            raise ValidationError('incorrect telegram channel id, or u have to add our bot @FollowSwapsBot to your channel as admin ',)
+            raise ValidationError('incorrect telegram channel id, or u have to add your bot to your channel as admin ',)
         return data
 
 

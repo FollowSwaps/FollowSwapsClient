@@ -7,6 +7,19 @@ from eth_account.messages import encode_defunct
 import json
 
 
+with open('settings.txt', 'r') as f:
+    lines = [i.replace('\n', '') for i in f.readlines()]
+    for line in lines:
+        if line.startswith('ADDR='):
+            addr = line[len('ADDR='):]
+        if line.startswith('KEY='):
+            key = line[len('KEY='):]
+        if line.startswith('INFURA_ID='):
+            infura_id = line[len('INFURA_ID='):]
+        if line.startswith('TELEGRAM_ID='):
+            telegram_id = line[len('TELEGRAM_ID='):]
+
+
 def sign_message(msg, key):
     message = encode_defunct(text=msg)
     signed = w3.eth.account.sign_message(message, private_key=key)
@@ -19,7 +32,7 @@ def get_signer(msg, signature):
 
 
 def telegram_bot_sendtext(bot_message, bot_chatID=-1001217489815):
-    bot_token = '1556903063:AAGZaP6aNP-zrq6NUeMCBLjxQNSjzA4Eoe8'
+    bot_token = telegram_id
     send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + str(
         int(bot_chatID)) + '&parse_mode=Markdown&text=' + bot_message
 
