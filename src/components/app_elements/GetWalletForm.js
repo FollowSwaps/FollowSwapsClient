@@ -680,7 +680,7 @@ class GetWallet extends React.Component {
                                 error={this.state.errs.telegram_channel_id}/>
                     <p style={{fontSize: '14px', marginBottom: '1px'}}>1. Create new private channel on telegram (
                         any
-                        name) 2. Add our bot @FollowSwapsBot as admin 3. Get your telegram id
+                        name) 2. Add your bot as admin 3. Get your telegram id
                     </p>
                     <p style={{fontSize: '14px'}}>4. Easiest way to get telegram ID is to forward a message to the
                         @userinfobot bot from your new channel
