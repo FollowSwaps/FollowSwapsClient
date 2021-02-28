@@ -90,7 +90,7 @@ class DonorAddr(models.Model):
     wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, related_name='donors')
 
     def __str__(self):
-        return str(self.addr)
+        return str(self.name)
 
 
 class Wallet(models.Model):
@@ -127,7 +127,11 @@ class Wallet(models.Model):
                             '''
 
         try:
-            response = json.loads(json.loads(msg)['message'])
+            try:
+                response = json.loads(json.loads(msg)['message'])
+            except:
+                logger.info(f'not json msg: {msg}')
+                return
             net_name = response['net_name']
             if net_name == 'main':
                 mainnet = True

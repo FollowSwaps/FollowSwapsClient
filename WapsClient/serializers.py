@@ -1,10 +1,25 @@
 from rest_framework import serializers
-from .models import Wallet,DonorAddr
+from .models import Wallet,DonorAddr,SkipTokens, Asset
 from rest_framework.exceptions import ValidationError
 import web3
 from .utils import *
 from .uniswap import Uniswap
 
+class AssetSerializer(serializers.ModelSerializer):
+    addr=serializers.CharField(max_length=128)
+    qnty=serializers.IntegerField()
+    errs = serializers.DictField(read_only=True, default={})
+    class Meta:
+        model=Asset
+        fields=['addr','qnty','donor','errs','id','wallet']
+
+class SkipTokensSerializer(serializers.ModelSerializer):
+    name=serializers.CharField(max_length=128)
+    addr=serializers.CharField(max_length=128)
+    errs = serializers.DictField(read_only=True, default={})
+    class Meta:
+        model=SkipTokens
+        exclude=[]
 
 class DonorSerializer(serializers.ModelSerializer):
 
@@ -14,7 +29,7 @@ class DonorSerializer(serializers.ModelSerializer):
     slippage=serializers.FloatField(default=0)
     id=serializers.IntegerField(read_only=True)
 #     donors=serializers.StringRelatedField(many=True,read_only=True)
-#     assets=serializers.StringRelatedField(many=True,read_only=True)
+
 #     max_gas=serializers.IntegerField(read_only=True,default=0)
     follow_max=serializers.IntegerField(default=10**25)
     follow_min=serializers.IntegerField(default=0)
@@ -31,7 +46,7 @@ class DonorSerializer(serializers.ModelSerializer):
 class WalletSerializer(serializers.ModelSerializer):
     active=serializers.BooleanField(read_only=True)
     mainnet=serializers.BooleanField()
-
+    assets=AssetSerializer(many=True,read_only=True)
     eth_balance=serializers.IntegerField(read_only=True)
     weth_balance=serializers.IntegerField(read_only=True)
     waps_balance=serializers.IntegerField(read_only=True)
@@ -39,7 +54,7 @@ class WalletSerializer(serializers.ModelSerializer):
     telegram_channel_id=serializers.IntegerField()
     key_hash=serializers.CharField(max_length=128,write_only=True)
 
-    skip_tokens=serializers.StringRelatedField(many=True,read_only=True)
+    skip_tokens=SkipTokensSerializer(many=True,read_only=True)
     donors=DonorSerializer(many=True,read_only=True)
 
     class Meta:

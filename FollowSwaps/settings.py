@@ -24,7 +24,8 @@ SECRET_KEY = '8@a&me3og==p=+&lbo-(19)v3=p8_vpo(vmko1ynf9eh+2&mc*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1',]
+ALLOWED_HOSTS = ['127.0.0.1','locahost','0.0.0.0']
+# ALLOWED_HOSTS = ['*']
 ALLOWED_IP=os.environ.get('ALLOWED_IP',['*'])
 
 # Application definition

@@ -13,7 +13,7 @@ import Modal from '../elements/Modal';
 
 var md5 = require('md5');
 const url = ''
-// const url = 'http://127.0.0.1:8000'
+// const url = 'http://31.132.126.208:8000'
 
 
 class Donors extends React.Component {
@@ -202,8 +202,122 @@ class Donors extends React.Component {
     }
 }
 
+class SkipTokens extends React.Component {
+
+
+    render() {
+        return (
+
+            <Segment inverted>
+                <Accordion fluid inverted>
+                    {
+                        this.props.tokens.map(token => (
+
+                            <div>
+                                <Accordion.Title
+                                    active={this.props.activeIndexAccordion === token.id}
+                                    index={token.id}
+                                    onClick={this.props.handleClick}
+                                >
+                                    <Icon name='dropdown'/>
+                                    {token.name}
+                                </Accordion.Title>
+                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
+                                    <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}
+                                          error={token.errs.non_field_errors}>
+                                        <Form.Group grouped>
+                                            <Form.Input
+                                                label={'token name'}
+                                                value={token.name} onChange={this.props.input_skip_token} name={'name'}
+                                                error={token.errs.name}
+                                            />
+                                            <Form.Input
+                                                label={'token address'}
+                                                value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
+                                                error={token.errs.addr}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group inline>
+                                            <Form.Button
+                                                onClick={() => this.props.updateSkip(token)}>Update</Form.Button>
+                                            <Form.Button
+                                                onClick={() => this.props.deleteSkip(token.addr)}>Delete</Form.Button>
+                                        </Form.Group>
+                                    </Form>
+                                </Accordion.Content>
+
+                            </div>
+                        ))}
+                </Accordion>
+            </Segment>
+        )
+    }
+}
+
+class Tokens extends React.Component {
+
+
+    render() {
+        return (
+
+            <Segment inverted>
+                <Accordion fluid inverted>
+                    {
+                        this.props.tokens.map(token => (
+
+                            <div>
+                                <Accordion.Title
+                                    active={this.props.activeIndexAccordion === token.id}
+                                    index={token.id}
+                                    onClick={this.props.handleClick}
+                                >
+                                    <Icon name='dropdown'/>
+                                    {token.addr} {this.props.donors.find(x=>x.id===token.donor)['name']}
+                                </Accordion.Title>
+                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
+                                    <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}
+                                          error={token.errs.non_field_errors}>
+                                        <Form.Group grouped>
+                                            <Form.Input
+                                                label={'token address'}
+                                                value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
+                                                error={token.errs.addr}
+                                            />
+                                            <Form.Input type={'number'}
+                                                label={'token quantity'}
+                                                value={token.qnty} onChange={this.props.input_skip_token} name={'qnty'}
+                                                error={token.errs.qnty}
+                                            />
+                                            <Form.Select
+            fluid
+            label='Donor'
+            options={this.props.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}
+            value={token.donor}
+            name={'donor'}
+            onChange={this.props.input_skip_token}
+          />
+
+                                        </Form.Group>
+                                        <Form.Group inline>
+                                            <Form.Button
+                                                onClick={() => this.props.updateAsset(token)}>Update</Form.Button>
+                                            <Form.Button
+                                                onClick={() => this.props.deleteAsset(token.id)}>Delete</Form.Button>
+                                        </Form.Group>
+                                    </Form>
+                                </Accordion.Content>
+
+                            </div>
+                        ))}
+                </Accordion>
+            </Segment>
+        )
+    }
+}
+
+
 const default_new_donor = {
-    addr: "0x...",
+    addr: "",
     fixed_trade: true,
     fixed_value_trade: 0.1,
     follow_max: 999,
@@ -215,6 +329,19 @@ const default_new_donor = {
     slippage: 5,
     donor_slippage: true,
     trade_on_confirmed: false,
+    errs: {}
+}
+const default_new_skip_token = {
+    addr: "",
+    id: -2,
+    name: "new skip token",
+    errs: {}
+}
+const default_new_token = {
+    addr: "0x",
+    id: -2,
+    donor: '',
+    qnty: 1,
     errs: {}
 }
 const initialState = {
@@ -232,6 +359,8 @@ const initialState = {
         loading: false,
         wallet_connected: false,
         new_donor: {...default_new_donor},
+        new_skip_token: {...default_new_skip_token},
+        new_token: {...default_new_token},
         errs: {},
         modal: true,
         activeItem: 'Wallet',
@@ -246,16 +375,22 @@ class GetWallet extends React.Component {
     constructor(props) {
         super(props);
         this.state = initialState;
-        this.state.addr = '';
+        this.state.addr = '0x';
         this.state.key = '';
         this.getWallet = this.getWallet.bind(this)
         this.deleteDonor = this.deleteDonor.bind(this)
+        this.deleteSkip = this.deleteSkip.bind(this)
+        this.deleteToken = this.deleteToken.bind(this)
         this.activateWallet = this.activateWallet.bind(this)
         this.handleChange = this.handleChange.bind(this)
         this.getCookie = this.getCookie.bind(this)
         this.input_change = this.input_change.bind(this)
         this.handleClick = this.handleClick.bind(this)
         this.updateDonor = this.updateDonor.bind(this)
+        this.updateToken = this.updateToken.bind(this)
+        this.updateSkip = this.updateSkip.bind(this)
+        this.input_skip_token = this.input_skip_token.bind(this)
+        this.input_token = this.input_token.bind(this)
 
         this.handleInputChange = this.handleInputChange.bind(this);
     }
@@ -269,6 +404,59 @@ class GetWallet extends React.Component {
         this.setState({activeIndexAccordion: newIndex})
     }
 
+    input_skip_token(event) {
+        const target = event.target;
+
+        var value = null
+        var name = null;
+
+
+        value = target.value
+        name = target.name
+
+        if (this.state.activeIndexAccordion !== -2) {
+            let skip_tokens = this.state.skip_tokens
+            skip_tokens.find(x => x.id === this.state.activeIndexAccordion)[name] = value
+            this.setState({skip_tokens: skip_tokens})
+        } else {
+            let new_skip_token = this.state.new_skip_token
+            new_skip_token[name] = value
+            this.setState({new_skip_token: new_skip_token})
+        }
+    }
+    input_token(event) {
+        const target = event.target;
+
+        var value = null
+        var name = null;
+
+
+        value = target.value
+        name = target.name
+        if (value===undefined && name===undefined) {
+
+         if (this.state.activeIndexAccordion !== -2) {
+            let skip_tokens = this.state.assets
+            skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['donor'] = this.state.donors.find(x=>x.name===target.textContent).id
+            this.setState({assets: skip_tokens})
+        } else {
+            let new_skip_token = this.state.new_token
+            new_skip_token['donor'] =  this.state.donors.find(x=>x.name===target.textContent).id
+            this.setState({new_token: new_skip_token})
+        }
+
+        }
+        else
+        if (this.state.activeIndexAccordion !== -2) {
+            let skip_tokens = this.state.assets
+            skip_tokens.find(x => x.id === this.state.activeIndexAccordion)[name] = value
+            this.setState({assets: skip_tokens})
+        } else {
+            let new_skip_token = this.state.new_token
+            new_skip_token[name] = value
+            this.setState({new_token: new_skip_token})
+        }
+    }
 
     input_change(event) {
         const target = event.target;
@@ -332,24 +520,17 @@ class GetWallet extends React.Component {
             .then(res => {
                 res.data.loading = false
                 res.data.errs = {}
-                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
-                    if(new_donor.follow_max>=10**18)
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
-
-                    if (new_donor.follow_min>=10**18)
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
-                    if (new_donor.fixed_value_trade>=10**18)
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18).toFixed()
-                    else
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
                     new_donor.percent_value_trade *= 100
                     new_donor.slippage *= 100
                 });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
                 res.data.wallet_connected = true
 
                 this.setState(res.data)
@@ -358,6 +539,85 @@ class GetWallet extends React.Component {
                 let new_donors = this.state.donors
                 new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
                 this.setState({donors: new_donors, loading: false})
+            })
+    }
+
+    deleteSkip(addr) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        axios.post(url + `/delete_skip`, {
+            'token_addr': addr,
+            'addr': this.state.addr,
+            'key_hash': md5(this.state.key)
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                res.data.loading = false
+                res.data.errs = {}
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
+                res.data.wallet_connected = true
+
+                this.setState(res.data)
+            })
+            .catch(err => {
+                let new_donors = this.state.skip_tokens
+                new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                this.setState({donors: new_donors, loading: false})
+            })
+    }
+    deleteToken(id) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        axios.post(url + `/delete_asset`, {
+            'token_id': id,
+            'addr': this.state.addr,
+            'key_hash': md5(this.state.key)
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                res.data.loading = false
+                res.data.errs = {}
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
+                res.data.wallet_connected = true
+
+                this.setState(res.data)
+            })
+            .catch(err => {
+                let new_donors = this.state.assets
+                new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                this.setState({assets: new_donors, loading: false})
             })
     }
 
@@ -427,24 +687,17 @@ class GetWallet extends React.Component {
             .then(res => {
                 res.data.loading = false
                 res.data.errs = {}
-                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
-                    if(new_donor.follow_max>=10**18)
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
-
-                    if (new_donor.follow_min>=10**18)
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
-                    if (new_donor.fixed_value_trade>=10**18)
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18).toFixed()
-                    else
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
                     new_donor.percent_value_trade *= 100
                     new_donor.slippage *= 100
                 });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
                 res.data.wallet_connected = true
 
                 this.setState(res.data)
@@ -515,47 +768,30 @@ class GetWallet extends React.Component {
             'key_hash': key_hash,
         }, {headers: {'X-CSRFToken': csrftoken}})
             .then(res => {
-                if (donor.id===-2)
-                    res.data.activeIndexAccordion=-1
+                if (donor.id === -2)
+                    res.data.activeIndexAccordion = -1
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
                 res.data.donors.forEach(function (new_donor) {
-                    if(new_donor.follow_max>=10**18)
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
-
-                    if (new_donor.follow_min>=10**18)
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18).toFixed()
-                    else
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
-                    if (new_donor.fixed_value_trade>=10**18)
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18).toFixed()
-                    else
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
                     new_donor.percent_value_trade *= 100
                     new_donor.slippage *= 100
 
                 });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
 
-
-                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 this.setState(res.data)
             })
             .catch(err => {
-                if(donor.follow_max>=10**18)
-                        donor.follow_max = (+donor.follow_max / 10 ** 18).toFixed()
-                    else
-                        donor.follow_max = (+donor.follow_max / 10 ** 18)
 
-                    if (donor.follow_min>=10**18)
-                        donor.follow_min = (+donor.follow_min / 10 ** 18).toFixed()
-                    else
-                        donor.follow_min = (+donor.follow_min / 10 ** 18)
-                    if (donor.fixed_value_trade>=10**18)
-                        donor.fixed_value_trade = (+donor.fixed_value_trade / 10 ** 18).toFixed()
-                    else
-                        donor.fixed_value_trade = (+donor.fixed_value_trade / 10 ** 18)
+                donor.follow_max = (+donor.follow_max / 10 ** 18)
+                donor.follow_min = (+donor.follow_min / 10 ** 18)
+                donor.fixed_value_trade = (+donor.fixed_value_trade / 10 ** 18)
                 donor.percent_value_trade *= 100
                 donor.slippage *= 100
                 if (donor.id !== -2) {
@@ -568,6 +804,114 @@ class GetWallet extends React.Component {
                     this.setState({new_donor: new_donors, loading: false})
                 }
 
+
+                // res.data.loading=false
+                // this.setState(err.data)
+            })
+        // this.setState(self.res)
+    }
+
+    updateSkip(token) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/update_skip`, {
+            'token': token,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                if (token.id === -2)
+                    res.data.activeIndexAccordion = -1
+                res.data.loading = false
+                res.data.new_donor = {...default_new_donor}
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
+
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
+                this.setState(res.data)
+            })
+            .catch(err => {
+
+                if (token.id !== -2) {
+                    let skip_tokens = this.state.skip_tokens
+                    skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                    this.setState({skip_tokens: skip_tokens, loading: false})
+                } else {
+                    let new_skip_token = this.state.new_skip_token
+                    new_skip_token['errs'] = err.response.data
+                    this.setState({new_skip_token: new_skip_token, loading: false})
+                }
+
+
+                // res.data.loading=false
+                // this.setState(err.data)
+            })
+        // this.setState(self.res)
+    }
+
+ updateToken(token) {
+        this.setState({loading: true})
+     token.qnty = (token.qnty * 10 ** 18).toFixed()
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/update_asset`, {
+            'token': token,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                if (token.id === -2)
+                    res.data.activeIndexAccordion = -1
+                res.data.loading = false
+                res.data.new_donor = {...default_new_donor}
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.qnty = (+asset.qnty / 10 ** 18)
+                })
+
+                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                this.setState(res.data)
+            })
+            .catch(err => {
+    token.qnty = (+token.qnty / 10 ** 18)
+                if (token.id !== -2) {
+                    let skip_tokens = this.state.assets
+                    skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                    this.setState({assets: skip_tokens, loading: false})
+                } else {
+                    let new_skip_token = this.state.new_token
+                    new_skip_token['errs'] = err.response.data
+                    this.setState({new_token: new_skip_token, loading: false})
+                }
 
 
                 // res.data.loading=false
@@ -599,24 +943,17 @@ class GetWallet extends React.Component {
 
                     res.data.loading = false
                     res.data.errs = {}
-                    res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                    res.data.max_gas = (res.data.max_gas / 10 ** 9)
                     res.data.donors.forEach(function (new_donor) {
-                        if(new_donor.follow_max>=10**18)
-                        new_donor.follow_max = (+new_donor.follow_max / 10 ** 18).toFixed()
-                    else
                         new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
-
-                    if (new_donor.follow_min>=10**18)
-                        new_donor.follow_min = (+new_donor.follow_min / 10 ** 18).toFixed()
-                    else
                         new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
-                    if (new_donor.fixed_value_trade>=10**18)
-                        new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18).toFixed()
-                    else
                         new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
                         new_donor.percent_value_trade *= 100
                         new_donor.slippage *= 100
                     });
+                    res.data.assets.forEach(function (asset){
+                    asset.qnty=(+asset.qnty / 10 ** 18)
+                })
                     res.data.wallet_connected = true
                     this.setState(res.data)
 
@@ -643,10 +980,10 @@ class GetWallet extends React.Component {
                     header='Validation error'
                     content={this.state.errs.non_field_errors}
                 /><Message
-                    warning
-                    header='First set up'
-                    content={'This is your first bot set up, please update main fields in wallet tab, make sure telegram id is filled'}
-                />
+                warning
+                header='First set up'
+                content={'This is your first bot set up, please update main fields in wallet tab, make sure telegram id is filled'}
+            />
                 <Form.Group grouped>
                     <Form.Input fluid label='Wallet' name={'addr'} placeholder='Your wallet address'
                                 value={this.state.addr} onChange={this.handleInputChange}
@@ -663,7 +1000,7 @@ class GetWallet extends React.Component {
                                  style={{
                                      backgroundColor: 'rgb(153,89,51)',
                                  }} disabled={!this.state.wallet_connected}>Update wallet</Form.Button>
-                    <Form.Button disabled={!this.state.wallet_connected || this.state.initial_state===true}
+                    <Form.Button disabled={!this.state.wallet_connected || this.state.initial_state === true}
                                  onClick={this.activateWallet}>{this.state.active ? 'Stop bot' : 'Run bot'}</Form.Button>
                     <Form.Button onClick={this.getWallet}
                                  disabled={this.state.wallet_connected}>{this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}</Form.Button>
@@ -738,180 +1075,326 @@ class GetWallet extends React.Component {
                         updateDonor={this.updateDonor} deleteDonor={this.deleteDonor} loading={this.state.loading}/>
 
                 {
-                    this.state.donors.length<3?
+                    this.state.donors.length < 3 ?
+                        <Segment inverted>
+                            <Accordion fluid inverted>
+
+
+                                <div>
+                                    <Accordion.Title
+                                        active={this.state.activeIndexAccordion === -2}
+                                        index={-2}
+                                        onClick={this.handleClick}
+                                    >
+                                        <Icon name='plus circle'/>
+                                        {this.state.new_donor.name}
+                                    </Accordion.Title>
+                                    <Accordion.Content active={this.state.activeIndexAccordion === -2}>
+                                        <Form inverted style={{marginBottom: '30px'}} loading={this.state.loading}
+                                              error={this.state.new_donor.errs.non_field_errors}>
+                                            <Form.Group grouped>
+                                                <Message
+                                                    error
+                                                    header='Validation error'
+                                                    content={this.state.new_donor.errs.non_field_errors}
+                                                />
+                                                <Form.Input
+                                                    value={this.state.new_donor.name} onChange={this.input_change}
+                                                    name={'name'}
+                                                />
+                                                <Form.Input
+                                                    value={this.state.new_donor.addr} onChange={this.input_change}
+                                                    name={'addr'}
+                                                    error={this.state.new_donor.errs.addr}
+                                                />
+
+
+                                                <Form.Group grouped>
+
+                                                    <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
+
+                                                                   checked={this.state.new_donor.fixed_trade}
+                                                                   onChange={this.input_change}
+                                                                   error={this.state.new_donor.errs.fixed_trade}
+
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>If checked bot will trade on fixed
+                                                        value</p>
+
+                                                    <Form.Input fluid type={'number'} label='Fixed trade value (weth)'
+                                                                name={'fixed_value_trade'}
+                                                                placeholder='Fixed trade value (WETH)'
+                                                                value={this.state.new_donor.fixed_value_trade}
+                                                                onChange={this.input_change}
+                                                                error={this.state.new_donor.errs.fixed_value_trade}
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>Fixed trade value (WETH) how much you
+                                                        willing
+                                                        to
+                                                        risk
+                                                        for
+                                                        every
+                                                        donors
+                                                        trade</p>
+
+                                                    <Form.Input fluid type={'number'} label='Percent trade value (%)'
+                                                                name={'percent_value_trade'}
+                                                                placeholder=''
+                                                                value={this.state.new_donor.percent_value_trade}
+                                                                onChange={this.input_change}
+                                                                error={this.state.new_donor.errs.percent_value_trade}
+
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>Percent trade value (%) how much you
+                                                        willing
+                                                        to
+                                                        risk
+                                                        for
+                                                        every
+                                                        donors
+                                                        trade in %</p>
+                                                    <Form.Checkbox label='Trade on confirmed tx'
+                                                                   name={'trade_on_confirmed'}
+
+                                                                   checked={this.state.new_donor.trade_on_confirmed}
+                                                                   onChange={this.input_change}
+                                                                   error={this.state.new_donor.errs.trade_on_confirmed}
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>Trade on confirmed TX. This is normal
+                                                        following
+                                                        and
+                                                        you
+                                                        should
+                                                        tick,
+                                                        unless you need <span style={{
+                                                            color: 'rgb(153,89,51)',
+                                                        }}><b>front run</b></span> option</p>
+                                                    <Form.Checkbox label='Use donor slippage' name={'donor_slippage'}
+
+                                                                   checked={this.state.new_donor.donor_slippage}
+                                                                   onChange={this.input_change}
+                                                                   error={this.state.new_donor.errs.donor_slippage}
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>donor slippage <span style={{
+                                                        color: 'rgb(153,89,51)',
+                                                    }}><b>front run</b></span> option</p>
+                                                    <Form.Input fluid type={'number'} label='Slippage tolerance (%)'
+                                                                name={'slippage'}
+                                                                placeholder='0'
+                                                                value={this.state.new_donor.slippage}
+                                                                onChange={this.input_change}
+                                                                disabled={this.state.new_donor.donor_slippage}
+                                                                error={this.state.new_donor.errs.slippage}
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>Slippage tolerance (%) Your
+                                                        transaction will
+                                                        revert if
+                                                        the
+                                                        price
+                                                        changes unfavourably by more then this percentage</p>
+                                                    <Form.Input fluid type={'number'} label='Gas multiplier'
+                                                                name={'gas_multiplier'}
+
+                                                                value={this.state.new_donor.gas_multiplier}
+                                                                onChange={this.input_change}
+                                                                error={this.state.new_donor.errs.gas_multiplier}
+                                                    />
+                                                    <p style={{fontSize: '14px'}}>Gas multiplier: put 1.1 for 10% higher
+                                                        then
+                                                        donors gas 1.2 for 20%
+                                                        higher
+                                                        etc</p>
+                                                </Form.Group>
+                                                <div style={{
+                                                    borderTop: 'solid 2px',
+                                                    marginTop: '40px',
+                                                    borderBottom: 'solid 2px',
+                                                    borderColor: 'rgb(153,89,51)'
+                                                }}>
+                                                    <h3 style={{marginTop: '20px'}}>Filters</h3>
+                                                    <Form.Group unstackable widths={'2'}>
+                                                        <Form.Input fluid label='Minimum value to follow (eth)'
+                                                                    name={'follow_min'}
+                                                                    value={this.state.new_donor.follow_min}
+                                                                    onChange={this.input_change}
+                                                                    error={this.state.new_donor.errs.follow_min}
+
+                                                        />
+                                                        <Form.Input fluid type={'number'}
+                                                                    label='Maximum value to follow (eth)'
+                                                                    name={'follow_max'}
+
+                                                                    value={this.state.new_donor.follow_max}
+                                                                    onChange={this.input_change}
+                                                                    error={this.state.new_donor.errs.follow_max}
+
+                                                        />
+                                                    </Form.Group>
+                                                    <p style={{fontSize: '14px', marginBottom: '30px'}}>Donor
+                                                        transaction
+                                                        Minimum -
+                                                        Maximum
+                                                        value.
+                                                        If its not in range we
+                                                        are
+                                                        not
+                                                        following</p>
+
+                                                </div>
+
+
+                                                <Form.Button
+                                                    onClick={() => this.updateDonor(this.state.new_donor)}>Create
+                                                    donor</Form.Button>
+
+                                            </Form.Group>
+                                        </Form>
+                                    </Accordion.Content>
+                                </div>
+
+
+                            </Accordion></Segment>
+                        : null}
+
+            </div>
+        else if (this.state.activeItem === 'Blacklist')
+            return <div>
+                <h5>
+                    Blacklist - token you don't want to trade, for example all USD tokens or any other tokens
+                </h5>
+                    <ul>
+                        <li>You can  make your own non trade list, add and remove any token</li>
+                        <li>No need to stop or update wallet to add to blacklist</li>
+
+
+                    </ul>
+
+
+
+                <SkipTokens tokens={this.state.skip_tokens} key={this.state.key}
+                                    activeIndexAccordion={this.state.activeIndexAccordion}
+                                    addr={this.state.addr} input_skip_token={this.input_skip_token}
+                                    handleClick={this.handleClick}
+                                    updateSkip={this.updateSkip} deleteSkip={this.deleteSkip}
+                                    loading={this.state.loading}/>
                 <Segment inverted>
                     <Accordion fluid inverted>
 
 
                         <div>
                             <Accordion.Title
-                                active={this.state.activeIndexAccordion === -2}
-                                index={-2}
+                                active={this.activeIndexAccordion === this.state.new_skip_token.id}
+                                index={this.state.new_skip_token.id}
                                 onClick={this.handleClick}
                             >
-                                <Icon name='plus circle'/>
-                                {this.state.new_donor.name}
+                                <Icon name='dropdown'/>
+                                {this.state.new_skip_token.name}
                             </Accordion.Title>
-                            <Accordion.Content active={this.state.activeIndexAccordion === -2}>
+                            <Accordion.Content
+                                active={this.state.activeIndexAccordion === this.state.new_skip_token.id}>
                                 <Form inverted style={{marginBottom: '30px'}} loading={this.state.loading}
-                                      error={this.state.new_donor.errs.non_field_errors}>
+                                      error={this.state.new_skip_token.errs.non_field_errors}>
                                     <Form.Group grouped>
-                                        <Message
-                                            error
-                                            header='Validation error'
-                                            content={this.state.new_donor.errs.non_field_errors}
+                                        <Form.Input
+                                            label={'token name'}
+                                            value={this.state.new_skip_token.name} onChange={this.input_skip_token}
+                                            name={'name'}
+                                            error={this.state.new_skip_token.errs.name}
                                         />
                                         <Form.Input
-                                            value={this.state.new_donor.name} onChange={this.input_change} name={'name'}
+                                            label={'token address'}
+                                            value={this.state.new_skip_token.addr} onChange={this.input_skip_token}
+                                            name={'addr'}
+                                            error={this.state.new_skip_token.errs.addr}
                                         />
-                                        <Form.Input
-                                            value={this.state.new_donor.addr} onChange={this.input_change} name={'addr'}
-                                            error={this.state.new_donor.errs.addr}
-                                        />
-
-
-                                        <Form.Group grouped>
-
-                                            <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
-
-                                                           checked={this.state.new_donor.fixed_trade}
-                                                           onChange={this.input_change}
-                                                           error={this.state.new_donor.errs.fixed_trade}
-
-                                            />
-                                            <p style={{fontSize: '14px'}}>If checked bot will trade on fixed value</p>
-
-                                            <Form.Input fluid type={'number'} label='Fixed trade value (weth)'
-                                                        name={'fixed_value_trade'}
-                                                        placeholder='Fixed trade value (WETH)'
-                                                        value={this.state.new_donor.fixed_value_trade}
-                                                        onChange={this.input_change}
-                                                        error={this.state.new_donor.errs.fixed_value_trade}
-                                            />
-                                            <p style={{fontSize: '14px'}}>Fixed trade value (WETH) how much you willing
-                                                to
-                                                risk
-                                                for
-                                                every
-                                                donors
-                                                trade</p>
-
-                                            <Form.Input fluid type={'number'} label='Percent trade value (%)'
-                                                        name={'percent_value_trade'}
-                                                        placeholder=''
-                                                        value={this.state.new_donor.percent_value_trade}
-                                                        onChange={this.input_change}
-                                                        error={this.state.new_donor.errs.percent_value_trade}
-
-                                            />
-                                            <p style={{fontSize: '14px'}}>Percent trade value (%) how much you willing
-                                                to
-                                                risk
-                                                for
-                                                every
-                                                donors
-                                                trade in %</p>
-                                            <Form.Checkbox label='Trade on confirmed tx' name={'trade_on_confirmed'}
-
-                                                           checked={this.state.new_donor.trade_on_confirmed}
-                                                           onChange={this.input_change}
-                                                           error={this.state.new_donor.errs.trade_on_confirmed}
-                                            />
-                                            <p style={{fontSize: '14px'}}>Trade on confirmed TX. This is normal
-                                                following
-                                                and
-                                                you
-                                                should
-                                                tick,
-                                                unless you need <span style={{
-                                                    color: 'rgb(153,89,51)',
-                                                }}><b>front run</b></span> option</p>
-                                            <Form.Checkbox label='Use donor slippage' name={'donor_slippage'}
-
-                                                           checked={this.state.new_donor.donor_slippage}
-                                                           onChange={this.input_change}
-                                                           error={this.state.new_donor.errs.donor_slippage}
-                                            />
-                                            <p style={{fontSize: '14px'}}>donor slippage <span style={{
-                                                color: 'rgb(153,89,51)',
-                                            }}><b>front run</b></span> option</p>
-                                            <Form.Input fluid type={'number'} label='Slippage tolerance (%)'
-                                                        name={'slippage'}
-                                                        placeholder='0'
-                                                        value={this.state.new_donor.slippage}
-                                                        onChange={this.input_change}
-                                                        disabled={this.state.new_donor.donor_slippage}
-                                                        error={this.state.new_donor.errs.slippage}
-                                            />
-                                            <p style={{fontSize: '14px'}}>Slippage tolerance (%) Your transaction will
-                                                revert if
-                                                the
-                                                price
-                                                changes unfavourably by more then this percentage</p>
-                                            <Form.Input fluid type={'number'} label='Gas multiplier'
-                                                        name={'gas_multiplier'}
-
-                                                        value={this.state.new_donor.gas_multiplier}
-                                                        onChange={this.input_change}
-                                                        error={this.state.new_donor.errs.gas_multiplier}
-                                            />
-                                            <p style={{fontSize: '14px'}}>Gas multiplier: put 1.1 for 10% higher then
-                                                donors gas 1.2 for 20%
-                                                higher
-                                                etc</p>
-                                        </Form.Group>
-                                        <div style={{
-                                            borderTop: 'solid 2px',
-                                            marginTop: '40px',
-                                            borderBottom: 'solid 2px',
-                                            borderColor: 'rgb(153,89,51)'
-                                        }}>
-                                            <h3 style={{marginTop: '20px'}}>Filters</h3>
-                                            <Form.Group unstackable widths={'2'}>
-                                                <Form.Input fluid type={'number'} label='Minimum value to follow (eth)'
-                                                            name={'follow_min'}
-                                                            value={this.state.new_donor.follow_min}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.follow_min}
-
-                                                />
-                                                <Form.Input fluid type={'number'} label='Maximum value to follow (eth)'
-                                                            name={'follow_max'}
-
-                                                            value={this.state.new_donor.follow_max}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.follow_max}
-
-                                                />
-                                            </Form.Group>
-                                            <p style={{fontSize: '14px', marginBottom: '30px'}}>Donor transaction
-                                                Minimum -
-                                                Maximum
-                                                value.
-                                                If its not in range we
-                                                are
-                                                not
-                                                following</p>
-
-                                        </div>
-
-
+                                    </Form.Group>
+                                    <Form.Group inline>
                                         <Form.Button
-                                            onClick={() => this.updateDonor(this.state.new_donor)}>Create
-                                            donor</Form.Button>
+                                            onClick={() => this.updateSkip(this.state.new_skip_token)}>Create skip
+                                            token</Form.Button>
 
                                     </Form.Group>
                                 </Form>
                             </Accordion.Content>
+
                         </div>
 
-
-                    </Accordion></Segment>
-                    : null}
+                    </Accordion>
+                </Segment>
 
             </div>
-        else if (this.state.activeItem === 'Tokens')
-            return 'Tokens/limit orders coming soon'
+        else if (this.state.activeItem === 'BotMemory')
+            return <div>
+                   <h5>
+                    Use this Form to remove a token from bot`s  memory if you :
+                </h5>
+                    <ul>
+                        <li>Don't  want to follow donor sell ( want to keep it and sell manually)</li>
+                        <li>Sold a token before donor</li>
+                        <li>You can also add token to bots memory and change a donor</li>
+
+
+                    </ul>
+
+                <Tokens tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
+                                activeIndexAccordion={this.state.activeIndexAccordion}
+                                addr={this.state.addr} input_skip_token={this.input_token}
+                                handleClick={this.handleClick}
+                                updateAsset={this.updateToken} deleteAsset={this.deleteToken} loading={this.state.loading}/>
+                <Segment inverted>
+                    <Accordion fluid inverted>
+
+
+                        <div>
+                            <Accordion.Title
+                                active={this.activeIndexAccordion === this.state.new_token.id}
+                                index={this.state.new_token.id}
+                                onClick={this.handleClick}
+                            >
+                                <Icon name='dropdown'/>
+                                {this.state.new_token.addr}
+                            </Accordion.Title>
+                            <Accordion.Content active={this.state.activeIndexAccordion === this.state.new_token.id}>
+                                <Form inverted style={{marginBottom: '30px'}} loading={this.state.loading}
+                                      error={this.state.new_token.errs.non_field_errors}>
+                                    <Form.Group grouped>
+                                        <Form.Input
+                                            label={'token address'}
+                                            value={this.state.new_token.addr} onChange={this.input_token}
+                                            name={'addr'}
+                                            error={this.state.new_token.errs.addr}
+                                        />
+                                        <Form.Input
+                                            label={'token quantity'}
+                                            type={'number'}
+                                            value={this.state.new_token.qnty} onChange={this.input_token}
+                                            name={'qnty'}
+                                            error={this.state.new_token.errs.qnty}
+                                        />
+                                          <Form.Select
+            fluid
+            label='Donor'
+            options={this.state.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}
+            value={this.state.new_token.donor}
+            name={'donor'}
+            onChange={this.input_token}
+          />
+                                    </Form.Group>
+                                    <Form.Group inline>
+                                        <Form.Button
+                                            onClick={() => this.updateToken(this.state.new_token)}>Add
+                                            token</Form.Button>
+
+                                    </Form.Group>
+                                </Form>
+                            </Accordion.Content>
+
+                        </div>
+
+                    </Accordion>
+                </Segment>
+
+            </div>
     }
 
     render() {
@@ -948,16 +1431,21 @@ class GetWallet extends React.Component {
                             disabled={this.state.initial_state}
                         />
                         <Menu.Item
-                            name='Tokens'
-                            active={this.state.activeItem === 'Tokens'}
+                            name='Blacklist'
+                            active={this.state.activeItem === 'Blacklist'}
                             onClick={this.handleItemClick}
                             disabled={this.state.initial_state}
                         /><Menu.Item
-                            name='Limit orders'
-                            active={this.state.activeItem === 'LimitOrders'}
-                            onClick={this.handleItemClick}
-                            disabled={this.state.initial_state}
-                        />
+                        name='BotMemory'
+                        active={this.state.activeItem === 'BotMemory'}
+                        onClick={this.handleItemClick}
+                        disabled={this.state.initial_state}
+                    /><Menu.Item
+                        name='Limit orders'
+                        active={this.state.activeItem === 'LimitOrders'}
+                        onClick={this.handleItemClick}
+                        disabled={this.state.initial_state}
+                    />
                     </Menu>
                 </Segment>
                 {this.renderForm()}

@@ -9,5 +9,9 @@ urlpatterns = [
     path('update_wallet', views.update_wallet, name='update_wallet'),
     path('update_donor', views.update_donor, name='update_donor'),
     path('delete_donor', views.delete_donor, name='delete_donor'),
+    path('update_skip', views.update_skip, name='update_skip'),
+    path('update_asset', views.update_asset, name='update_asset'),
+    path('delete_skip', views.delete_skip, name='delete_skip'),
+    path('delete_asset', views.delete_asset, name='delete_asset'),
     path('activate', views.start_stop, name='activate'),
 ]
