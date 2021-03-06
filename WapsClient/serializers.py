@@ -1,17 +1,18 @@
 from rest_framework import serializers
-from .models import Wallet,DonorAddr,SkipTokens, Asset
+from .models import Wallet,DonorAddr,SkipTokens, Asset,DonorAsset
 from rest_framework.exceptions import ValidationError
 import web3
 from .utils import *
 from .uniswap import Uniswap
 
-class AssetSerializer(serializers.ModelSerializer):
-    addr=serializers.CharField(max_length=128)
+class DonorAssetSerializer(serializers.ModelSerializer):
+    addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
+
     qnty=serializers.IntegerField()
     errs = serializers.DictField(read_only=True, default={})
     class Meta:
-        model=Asset
-        fields=['addr','qnty','donor','errs','id','wallet']
+        model=DonorAsset
+        fields=['qnty','donor','errs','id','asset','addr']
 
 class SkipTokensSerializer(serializers.ModelSerializer):
     name=serializers.CharField(max_length=128)
@@ -43,10 +44,18 @@ class DonorSerializer(serializers.ModelSerializer):
         model = DonorAddr
         exclude=[]
 
+class tempSer(serializers.ModelSerializer):
+    donor_assets=DonorAssetSerializer(many=True,read_only=True)
+    name=serializers.CharField(max_length=128)
+    errs=serializers.DictField(read_only=True,default={})
+    class Meta:
+        model = Asset
+        exclude=[]
+
 class WalletSerializer(serializers.ModelSerializer):
     active=serializers.BooleanField(read_only=True)
     mainnet=serializers.BooleanField()
-    assets=AssetSerializer(many=True,read_only=True)
+    assets=tempSer(many=True,read_only=True,)
     eth_balance=serializers.IntegerField(read_only=True)
     weth_balance=serializers.IntegerField(read_only=True)
     waps_balance=serializers.IntegerField(read_only=True)

@@ -6,14 +6,16 @@ import {
     Button,
     Form,
     Menu, Segment, Accordion, Icon,
-    Message,
+    Message, Table
 } from 'semantic-ui-react'
 import axios from "axios";
 import Modal from '../elements/Modal';
 
 var md5 = require('md5');
-const url = ''
-// const url = 'http://31.132.126.208:8000'
+var BigInt = require("big-integer");
+const { ethers } = require("ethers");
+// const url = ''
+const url = 'http://127.0.0.1:8000'
 
 
 class Donors extends React.Component {
@@ -257,6 +259,7 @@ class SkipTokens extends React.Component {
 class Tokens extends React.Component {
 
 
+
     render() {
         return (
 
@@ -271,40 +274,109 @@ class Tokens extends React.Component {
                                     index={token.id}
                                     onClick={this.props.handleClick}
                                 >
+
                                     <Icon name='dropdown'/>
-                                    {token.addr} {this.props.donors.find(x=>x.id===token.donor)['name']}
+                                    {token.addr} | {token.name}
+
+
+                                    {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}
-                                          error={token.errs.non_field_errors}>
-                                        <Form.Group grouped>
-                                            <Form.Input
-                                                label={'token address'}
-                                                value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
-                                                error={token.errs.addr}
-                                            />
-                                            <Form.Input type={'number'}
-                                                label={'token quantity'}
-                                                value={token.qnty} onChange={this.props.input_skip_token} name={'qnty'}
-                                                error={token.errs.qnty}
-                                            />
-                                            <Form.Select
-            fluid
-            label='Donor'
-            options={this.props.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}
-            value={token.donor}
-            name={'donor'}
-            onChange={this.props.input_skip_token}
-          />
+<Form inverted>
+    <Form.Group inline>
+                                    <Form.Input
+size={"mini"}
+                                                                    value={token.name}
+                                                                    onChange={this.props.token_name_change}
+                                                                    name={'name'}
+label={'token name'}
+                                                                    error={token.errs.name}
+                                                        /> <Form.Button onClick={()=>this.props.update(token)}>Save name</Form.Button>
+   </Form.Group> </Form>
+                                    <Table celled inverted selectable>
+                                        <Table.Header>
+                                            <Table.Row>
+                                                <Table.HeaderCell>Donor</Table.HeaderCell>
+                                                <Table.HeaderCell>Quantity</Table.HeaderCell>
+                                                <Table.HeaderCell>Action</Table.HeaderCell>
+                                            </Table.Row>
+                                        </Table.Header>
 
-                                        </Form.Group>
-                                        <Form.Group inline>
-                                            <Form.Button
-                                                onClick={() => this.props.updateAsset(token)}>Update</Form.Button>
-                                            <Form.Button
-                                                onClick={() => this.props.deleteAsset(token.id)}>Delete</Form.Button>
-                                        </Form.Group>
-                                    </Form>
+                                        <Table.Body>
+                                            {token.donor_assets.map(donor_token => (
+                                                <Table.Row>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Select
+                                                            fluid
+                                                            id={donor_token.id}
+                                                            options={this.props.donors.map(x => ({
+                                                                "key": x.id,
+                                                                "text": x.name,
+                                                                'value': x.id
+                                                            }),)}
+                                                            value={donor_token.donor}
+                                                            name={'donor'}
+                                                            onChange={this.props.input_skip_token}
+                                                        />
+                                                    </Table.Cell>
+                                                    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={donor_token.id}
+                                                                    value={donor_token.qnty}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'qnty'}
+                                                                    error={donor_token.errs.qnty}
+                                                        />
+                                                    </Table.Cell>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Group inline>
+                                                            <Form.Button
+                                                                onClick={() => this.props.updateAsset(donor_token)}>Update</Form.Button>
+                                                            <Form.Button
+                                                                onClick={() => this.props.deleteAsset(donor_token.id)}>Delete</Form.Button>
+                                                        </Form.Group>
+                                                    </Table.Cell>
+
+                                                </Table.Row>
+                                            ))}
+
+
+                                        </Table.Body>
+                                    </Table>
+                                    {/*                          <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}*/}
+                                    {/*                                error={token.errs.non_field_errors}>*/}
+                                    {/*                              <Form.Group grouped>*/}
+                                    {/*                                  <Form.Input*/}
+                                    {/*                                      label={'token address'}*/}
+                                    {/*                                      value={token.addr} onChange={this.props.input_skip_token} name={'addr'}*/}
+                                    {/*                                      error={token.errs.addr}*/}
+                                    {/*                                  />*/}
+                                    {/*                                  <Form.Input type={'number'}*/}
+                                    {/*                                      label={'token quantity'}*/}
+                                    {/*                                      value={token.qnty} onChange={this.props.input_skip_token} name={'qnty'}*/}
+                                    {/*                                      error={token.errs.qnty}*/}
+                                    {/*                                  />*/}
+                                    {/*                                  <Form.Select*/}
+                                    {/*  fluid*/}
+                                    {/*  label='Donor'*/}
+                                    {/*  options={this.props.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}*/}
+                                    {/*  value={token.donor}*/}
+                                    {/*  name={'donor'}*/}
+                                    {/*  onChange={this.props.input_skip_token}*/}
+                                    {/*/>*/}
+
+                                    {/*                              </Form.Group>*/}
+                                    {/*                              <Form.Group inline>*/}
+                                    {/*                                  <Form.Button*/}
+                                    {/*                                      onClick={() => this.props.updateAsset(token)}>Update</Form.Button>*/}
+                                    {/*                                  <Form.Button*/}
+                                    {/*                                      onClick={() => this.props.deleteAsset(token.id)}>Delete</Form.Button>*/}
+                                    {/*                              </Form.Group>*/}
+                                    {/*                          </Form>*/}
                                 </Accordion.Content>
 
                             </div>
@@ -375,9 +447,10 @@ class GetWallet extends React.Component {
     constructor(props) {
         super(props);
         this.state = initialState;
-        this.state.addr = '0x';
-        this.state.key = '';
+        this.state.addr = '0x9bF0aefa4BA011B3987c7c6554CFB0D94DB5332f';
+        this.state.key = 'ee6f3ed4cd2f158ec61cba7a9457f9dce8b212a0cb00630633cc119a03a49c93';
         this.getWallet = this.getWallet.bind(this)
+        this.updateWallet = this.updateWallet.bind(this)
         this.deleteDonor = this.deleteDonor.bind(this)
         this.deleteSkip = this.deleteSkip.bind(this)
         this.deleteToken = this.deleteToken.bind(this)
@@ -391,8 +464,26 @@ class GetWallet extends React.Component {
         this.updateSkip = this.updateSkip.bind(this)
         this.input_skip_token = this.input_skip_token.bind(this)
         this.input_token = this.input_token.bind(this)
-
+this.token_name_change = this.token_name_change.bind(this);
+this.update_asset_name = this.update_asset_name.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
+    }
+
+
+    token_name_change(event) {
+        const target = event.target;
+
+        var value = null
+        var name = null;
+
+
+
+            value = target.value
+
+            name = target.name
+
+       this.state.assets.find(x=>x.id===this.state.activeIndexAccordion)['name']=value
+        this.setState({assets:this.state.assets})
     }
 
     handleClick(e, titleProps) {
@@ -424,7 +515,9 @@ class GetWallet extends React.Component {
             this.setState({new_skip_token: new_skip_token})
         }
     }
+
     input_token(event) {
+
         const target = event.target;
 
         var value = null
@@ -433,23 +526,27 @@ class GetWallet extends React.Component {
 
         value = target.value
         name = target.name
-        if (value===undefined && name===undefined) {
 
-         if (this.state.activeIndexAccordion !== -2) {
-            let skip_tokens = this.state.assets
-            skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['donor'] = this.state.donors.find(x=>x.name===target.textContent).id
-            this.setState({assets: skip_tokens})
-        } else {
-            let new_skip_token = this.state.new_token
-            new_skip_token['donor'] =  this.state.donors.find(x=>x.name===target.textContent).id
-            this.setState({new_token: new_skip_token})
-        }
+        if (value === undefined && name === undefined) {
 
-        }
-        else
-        if (this.state.activeIndexAccordion !== -2) {
+            if (this.state.activeIndexAccordion !== -2) {
+                let skip_tokens = this.state.assets
+                let token=skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
+                token.find(x => x.id === target.id)['donor'] = this.state.donors.find(x => x.name === target.textContent).id
+                this.setState({assets: skip_tokens})
+            } else {
+                let new_skip_token = this.state.new_token
+                new_skip_token['donor'] = this.state.donors.find(x => x.name === target.textContent).id
+                this.setState({new_token: new_skip_token})
+            }
+
+        } else if (this.state.activeIndexAccordion !== -2) {
             let skip_tokens = this.state.assets
-            skip_tokens.find(x => x.id === this.state.activeIndexAccordion)[name] = value
+            let token=skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
+            console.log(target.id)
+            console.log(token)
+
+            token.find(x => x.id === +target.id)[name] = value
             this.setState({assets: skip_tokens})
         } else {
             let new_skip_token = this.state.new_token
@@ -498,8 +595,8 @@ class GetWallet extends React.Component {
                 }
             }
         }
-        // return 'cookieValue';
-        return cookieValue;
+        return 'cookieValue';
+        // return cookieValue;
     }
 
     deleteDonor(addr) {
@@ -529,7 +626,10 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
+
                 })
                 res.data.wallet_connected = true
 
@@ -569,7 +669,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
                 res.data.wallet_connected = true
 
@@ -581,6 +683,7 @@ class GetWallet extends React.Component {
                 this.setState({donors: new_donors, loading: false})
             })
     }
+
     deleteToken(id) {
         this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
@@ -608,7 +711,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
                 res.data.wallet_connected = true
 
@@ -696,7 +801,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
                 res.data.wallet_connected = true
 
@@ -781,7 +888,9 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
 
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
@@ -840,7 +949,9 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
 
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
@@ -864,10 +975,39 @@ class GetWallet extends React.Component {
             })
         // this.setState(self.res)
     }
+    update_asset_name(token) {
+        // this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
 
- updateToken(token) {
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/update_asset_name`, {
+            'token': token,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+
+
+            })
+            .catch(err => {
+
+
+
+
+                // res.data.loading=false
+                // this.setState(err.data)
+            })
+        // this.setState(self.res)
+    }
+
+    updateToken(token) {
         this.setState({loading: true})
-     token.qnty = (token.qnty * 10 ** 18).toFixed()
+        token.qnty = BigInt(token.qnty * 10 ** 18).toString()
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
             this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
@@ -882,8 +1022,10 @@ class GetWallet extends React.Component {
             'key_hash': key_hash,
         }, {headers: {'X-CSRFToken': csrftoken}})
             .then(res => {
-                if (token.id === -2)
+                if (token.id === -2) {
                     res.data.activeIndexAccordion = -1
+res.data.new_token=default_new_token
+                }
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
                 res.data.donors.forEach(function (new_donor) {
@@ -895,14 +1037,18 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
-                    asset.qnty = (+asset.qnty / 10 ** 18)
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
 
                 res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+
+                console.log(res.data.new_token)
                 this.setState(res.data)
             })
             .catch(err => {
-    token.qnty = (+token.qnty / 10 ** 18)
+                token.qnty = (+token.qnty / 10 ** 18)
                 if (token.id !== -2) {
                     let skip_tokens = this.state.assets
                     skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
@@ -951,8 +1097,11 @@ class GetWallet extends React.Component {
                         new_donor.percent_value_trade *= 100
                         new_donor.slippage *= 100
                     });
-                    res.data.assets.forEach(function (asset){
-                    asset.qnty=(+asset.qnty / 10 ** 18)
+
+                    res.data.assets.forEach(function (asset) {
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
                 })
                     res.data.wallet_connected = true
                     this.setState(res.data)
@@ -996,7 +1145,7 @@ class GetWallet extends React.Component {
 
                 </Form.Group>
                 <Form.Group inline>
-                    <Form.Button type='submit' onClick={() => this.updateWallet()} variant="contained"
+                    <Form.Button type='submit' onClick={this.updateWallet} variant="contained"
                                  style={{
                                      backgroundColor: 'rgb(153,89,51)',
                                  }} disabled={!this.state.wallet_connected}>Update wallet</Form.Button>
@@ -1262,21 +1411,20 @@ class GetWallet extends React.Component {
                 <h5>
                     Blacklist - token you don't want to trade, for example all USD tokens or any other tokens
                 </h5>
-                    <ul>
-                        <li>You can  make your own non trade list, add and remove any token</li>
-                        <li>No need to stop or update wallet to add to blacklist</li>
+                <ul>
+                    <li>You can make your own non trade list, add and remove any token</li>
+                    <li>No need to stop or update wallet to add to blacklist</li>
 
 
-                    </ul>
-
+                </ul>
 
 
                 <SkipTokens tokens={this.state.skip_tokens} key={this.state.key}
-                                    activeIndexAccordion={this.state.activeIndexAccordion}
-                                    addr={this.state.addr} input_skip_token={this.input_skip_token}
-                                    handleClick={this.handleClick}
-                                    updateSkip={this.updateSkip} deleteSkip={this.deleteSkip}
-                                    loading={this.state.loading}/>
+                            activeIndexAccordion={this.state.activeIndexAccordion}
+                            addr={this.state.addr} input_skip_token={this.input_skip_token}
+                            handleClick={this.handleClick}
+                            updateSkip={this.updateSkip} deleteSkip={this.deleteSkip}
+                            loading={this.state.loading}/>
                 <Segment inverted>
                     <Accordion fluid inverted>
 
@@ -1325,22 +1473,22 @@ class GetWallet extends React.Component {
             </div>
         else if (this.state.activeItem === 'BotMemory')
             return <div>
-                   <h5>
-                    Use this Form to remove a token from bot`s  memory if you :
+                <h5>
+                    Use this Form to remove a token from bot`s memory if you :
                 </h5>
-                    <ul>
-                        <li>Don't  want to follow donor sell ( want to keep it and sell manually)</li>
-                        <li>Sold a token before donor</li>
-                        <li>You can also add token to bots memory and change a donor</li>
+                <ul>
+                    <li>Don't want to follow donor sell ( want to keep it and sell manually)</li>
+                    <li>Sold a token before donor</li>
+                    <li>You can also add token to bots memory and change a donor</li>
 
 
-                    </ul>
+                </ul>
 
                 <Tokens tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
-                                activeIndexAccordion={this.state.activeIndexAccordion}
-                                addr={this.state.addr} input_skip_token={this.input_token}
-                                handleClick={this.handleClick}
-                                updateAsset={this.updateToken} deleteAsset={this.deleteToken} loading={this.state.loading}/>
+                        activeIndexAccordion={this.state.activeIndexAccordion}
+                        addr={this.state.addr} input_skip_token={this.input_token}
+                        handleClick={this.handleClick} token_name_change={this.token_name_change} update={this.update_asset_name}
+                        updateAsset={this.updateToken} deleteAsset={this.deleteToken} loading={this.state.loading}/>
                 <Segment inverted>
                     <Accordion fluid inverted>
 
@@ -1371,14 +1519,20 @@ class GetWallet extends React.Component {
                                             name={'qnty'}
                                             error={this.state.new_token.errs.qnty}
                                         />
-                                          <Form.Select
-            fluid
-            label='Donor'
-            options={this.state.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}
-            value={this.state.new_token.donor}
-            name={'donor'}
-            onChange={this.input_token}
-          />
+                                        <Form.Select
+                                            fluid
+                                            label='Donor'
+                                            options={this.state.donors.map(x => ({
+                                                "key": x.id,
+                                                "text": x.name,
+                                                'value': x.id
+                                            }),)}
+                                            value={this.state.new_token.donor}
+                                            name={'donor'}
+                                            onChange={this.input_token}
+                                            required={true}
+                                            error={this.state.new_token.errs.donor}
+                                        />
                                     </Form.Group>
                                     <Form.Group inline>
                                         <Form.Button

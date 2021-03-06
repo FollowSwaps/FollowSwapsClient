@@ -10,9 +10,9 @@ from django.shortcuts import render, HttpResponse
 from websocket import create_connection
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
-from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens
+from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset
 from rest_framework.decorators import api_view
-from .serializers import DonorSerializer, WalletSerializer, AssetSerializer, SkipTokensSerializer
+from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer
 from .utils import sign_message, logger
 import multiprocessing
 from rest_framework.parsers import JSONParser
@@ -184,7 +184,35 @@ def update_skip(request):
         serializer = WalletSerializer(instance=wallet)
         return JsonResponse(serializer.data, status=200)
 
+@api_view(['POST'])
+def update_asset_name(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
 
+    key_hash = data['key_hash']
+
+    try:
+        token_addr = web3.main.to_checksum_address(data['token']['addr'])
+    except:
+        return JsonResponse({'addr': ['invalid address']}, status=400)
+    data['token']['addr'] = token_addr
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    else:
+        wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
+    if data['token']['name']!='':
+        for asset in Asset.objects.filter(addr=token_addr):
+            asset.name=data['token']['name']
+            asset.save()
+        serializer = WalletSerializer(instance=wallet)
+        return JsonResponse(serializer.data, status=200)
+    else:
+        return JsonResponse({'name': ['required field']}, status=400)
 @api_view(['POST'])
 def update_asset(request):
     data = JSONParser().parse(request)
@@ -208,20 +236,28 @@ def update_asset(request):
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
 
         if data['token']['id'] != -2:
-            skip_token = Asset.objects.get(pk=data['token']['id'])
-            skip_ser = AssetSerializer(data=data['token'], instance=skip_token)
+            skip_token = DonorAsset.objects.get(pk=data['token']['id'])
+            skip_ser = DonorAssetSerializer(data=data['token'], instance=skip_token)
             if skip_ser.is_valid():
                 skip_ser.save()
             else:
                 return JsonResponse(skip_ser.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
+            if data['token']['donor']=='':
+                return JsonResponse({'donor': ['required field']}, status=400)
+            if DonorAddr.objects.filter(id=data['token']['donor']).exists()==False:
+                return JsonResponse({'addr': ['Token already exists for thid donor']}, status=400)
             data['token']['wallet'] = wallet.id
-            new_skip_token = AssetSerializer(data=data['token'])
+            asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,addr=data['token']['addr'])
+            data['token']['asset'] = asset.id
+            if DonorAsset.objects.filter(asset_id=asset.id, asset__wallet_id=wallet.id, donor_id=data['token']['donor']).exists()==True:
+                return JsonResponse({'addr': ['Token already exists for thid donor']}, status=400)
+            new_skip_token = DonorAssetSerializer(data=data['token'])
 
             if new_skip_token.is_valid():
                 new_skip_token.save()
-            wallet.assets.add(new_skip_token.instance)
-            wallet.save()
+            # wallet.assets.add(new_skip_token.instance)
+            # wallet.save()
         serializer = WalletSerializer(instance=wallet)
         return JsonResponse(serializer.data, status=200)
 
@@ -348,8 +384,8 @@ def delete_asset(request):
         return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
     else:
 
-        if Asset.objects.filter(id=data['token_id']).exists():
-            Asset.objects.get(id=data['token_id']).delete()
+        if DonorAsset.objects.filter(id=data['token_id']).exists():
+            DonorAsset.objects.get(id=data['token_id']).delete()
         else:
             return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
 
