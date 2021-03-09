@@ -11,6 +11,7 @@ urlpatterns = [
     path('delete_donor', views.delete_donor, name='delete_donor'),
     path('update_skip', views.update_skip, name='update_skip'),
     path('update_asset', views.update_asset, name='update_asset'),
+    path('update_limit', views.update_limit, name='update_limit'),
     path('update_asset_name', views.update_asset_name, name='update_asset_name'),
     path('delete_skip', views.delete_skip, name='delete_skip'),
     path('delete_asset', views.delete_asset, name='delete_asset'),

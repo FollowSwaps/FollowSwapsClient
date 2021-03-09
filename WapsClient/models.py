@@ -707,10 +707,12 @@ class Asset(models.Model):
 class LimitAsset(models.Model):
     asset=models.ForeignKey(Asset,on_delete=models.CASCADE,related_name='limit_assets')
     price=models.CharField(max_length=128,null=False )
+    qnty=models.CharField(max_length=128,null=False )
     active=models.BooleanField(default=False)
+
     tx_hash=models.CharField(max_length=128,null=True )
-    type=models.CharField(choices=[('b','buy'),('s','sell'),('sl','stop loss'),('tp','take profit')],max_length=128)
-    status=models.CharField(choices=[('r','running'),('s','stopped'),('f','failed'),('p','pending'),('e','executed')],max_length=128)
+    type=models.CharField(choices=[('buy','buy'),('sell','sell'),('stop loss','stop loss'),('take profit','take profit')],max_length=128)
+    status=models.CharField(choices=[('running','running'),('stopped','stopped'),('failed','failed'),('pending','pending'),('executed','executed')],max_length=128)
 
 
 class DonorAsset(models.Model):

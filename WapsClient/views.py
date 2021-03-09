@@ -10,9 +10,9 @@ from django.shortcuts import render, HttpResponse
 from websocket import create_connection
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
-from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset
+from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset,LimitAsset
 from rest_framework.decorators import api_view
-from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer
+from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer,LimitAssetSerializer
 from .utils import sign_message, logger
 import multiprocessing
 from rest_framework.parsers import JSONParser
@@ -213,6 +213,8 @@ def update_asset_name(request):
         return JsonResponse(serializer.data, status=200)
     else:
         return JsonResponse({'name': ['required field']}, status=400)
+
+
 @api_view(['POST'])
 def update_asset(request):
     data = JSONParser().parse(request)
@@ -256,6 +258,49 @@ def update_asset(request):
 
             if new_skip_token.is_valid():
                 new_skip_token.save()
+            # wallet.assets.add(new_skip_token.instance)
+            # wallet.save()
+        serializer = WalletSerializer(instance=wallet)
+        return JsonResponse(serializer.data, status=200)
+
+
+@api_view(['POST'])
+def update_limit(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+
+    key_hash = data['key_hash']
+
+
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    else:
+        wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
+
+        if data['token']['id'] != -2:
+            skip_token =LimitAsset.objects.get(pk=data['token']['id'])
+            skip_ser = LimitAssetSerializer(data=data['token'], instance=skip_token)
+            if skip_ser.is_valid():
+                skip_ser.save()
+            else:
+                return JsonResponse(skip_ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+
+            data['token']['wallet'] = wallet.id
+            asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
+            data['token']['asset'] = asset.id
+
+            new_skip_token = LimitAssetSerializer(data=data['token'])
+
+            if new_skip_token.is_valid(raise_exception=True):
+                new_skip_token.save()
+            else:
+                return JsonResponse(new_skip_token.errors, status=status.HTTP_400_BAD_REQUEST)
             # wallet.assets.add(new_skip_token.instance)
             # wallet.save()
         serializer = WalletSerializer(instance=wallet)

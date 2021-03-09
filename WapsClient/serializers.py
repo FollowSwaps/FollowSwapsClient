@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Wallet,DonorAddr,SkipTokens, Asset,DonorAsset
+from .models import Wallet,DonorAddr,SkipTokens, Asset,DonorAsset, LimitAsset
 from rest_framework.exceptions import ValidationError
 import web3
 from .utils import *
@@ -13,6 +13,18 @@ class DonorAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model=DonorAsset
         fields=['qnty','donor','errs','id','asset','addr']
+
+class LimitAssetSerializer(serializers.ModelSerializer):
+    qnty = serializers.IntegerField()
+    price = serializers.FloatField()
+
+    addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
+
+
+    errs = serializers.DictField(read_only=True, default={})
+    class Meta:
+        model=LimitAsset
+        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status']
 
 class SkipTokensSerializer(serializers.ModelSerializer):
     name=serializers.CharField(max_length=128)
@@ -46,6 +58,7 @@ class DonorSerializer(serializers.ModelSerializer):
 
 class tempSer(serializers.ModelSerializer):
     donor_assets=DonorAssetSerializer(many=True,read_only=True)
+    limit_assets=LimitAssetSerializer(many=True,read_only=True)
     name=serializers.CharField(max_length=128)
     errs=serializers.DictField(read_only=True,default={})
     class Meta:

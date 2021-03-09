@@ -6,14 +6,15 @@ import {
     Button,
     Form,
     Menu, Segment, Accordion, Icon,
-    Message, Table
+    Message, Table,Select
 } from 'semantic-ui-react'
 import axios from "axios";
 import Modal from '../elements/Modal';
+import Checkbox from '@material-ui/core/Checkbox';
 
 var md5 = require('md5');
 var BigInt = require("big-integer");
-const { ethers } = require("ethers");
+const {ethers} = require("ethers");
 // const url = ''
 const url = 'http://127.0.0.1:8000'
 
@@ -259,7 +260,6 @@ class SkipTokens extends React.Component {
 class Tokens extends React.Component {
 
 
-
     render() {
         return (
 
@@ -282,17 +282,18 @@ class Tokens extends React.Component {
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-<Form inverted>
-    <Form.Group inline>
-                                    <Form.Input
-size={"mini"}
-                                                                    value={token.name}
-                                                                    onChange={this.props.token_name_change}
-                                                                    name={'name'}
-label={'token name'}
-                                                                    error={token.errs.name}
-                                                        /> <Form.Button onClick={()=>this.props.update(token)}>Save name</Form.Button>
-   </Form.Group> </Form>
+                                    <Form inverted>
+                                        <Form.Group inline>
+                                            <Form.Input
+                                                size={"mini"}
+                                                value={token.name}
+                                                onChange={this.props.token_name_change}
+                                                name={'name'}
+                                                label={'token name'}
+                                                error={token.errs.name}
+                                            /> <Form.Button onClick={() => this.props.update(token)}>Save
+                                            name</Form.Button>
+                                        </Form.Group> </Form>
                                     <Table celled inverted selectable>
                                         <Table.Header>
                                             <Table.Row>
@@ -333,18 +334,277 @@ label={'token name'}
 
 
                                                     <Table.Cell>
+                                                        <Form inverted>
                                                         <Form.Group inline>
                                                             <Form.Button
                                                                 onClick={() => this.props.updateAsset(donor_token)}>Update</Form.Button>
                                                             <Form.Button
                                                                 onClick={() => this.props.deleteAsset(donor_token.id)}>Delete</Form.Button>
                                                         </Form.Group>
+                                                            </Form>
                                                     </Table.Cell>
 
                                                 </Table.Row>
                                             ))}
 
 
+                                        </Table.Body>
+                                    </Table>
+                                    {/*                          <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}*/}
+                                    {/*                                error={token.errs.non_field_errors}>*/}
+                                    {/*                              <Form.Group grouped>*/}
+                                    {/*                                  <Form.Input*/}
+                                    {/*                                      label={'token address'}*/}
+                                    {/*                                      value={token.addr} onChange={this.props.input_skip_token} name={'addr'}*/}
+                                    {/*                                      error={token.errs.addr}*/}
+                                    {/*                                  />*/}
+                                    {/*                                  <Form.Input type={'number'}*/}
+                                    {/*                                      label={'token quantity'}*/}
+                                    {/*                                      value={token.qnty} onChange={this.props.input_skip_token} name={'qnty'}*/}
+                                    {/*                                      error={token.errs.qnty}*/}
+                                    {/*                                  />*/}
+                                    {/*                                  <Form.Select*/}
+                                    {/*  fluid*/}
+                                    {/*  label='Donor'*/}
+                                    {/*  options={this.props.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}*/}
+                                    {/*  value={token.donor}*/}
+                                    {/*  name={'donor'}*/}
+                                    {/*  onChange={this.props.input_skip_token}*/}
+                                    {/*/>*/}
+
+                                    {/*                              </Form.Group>*/}
+                                    {/*                              <Form.Group inline>*/}
+                                    {/*                                  <Form.Button*/}
+                                    {/*                                      onClick={() => this.props.updateAsset(token)}>Update</Form.Button>*/}
+                                    {/*                                  <Form.Button*/}
+                                    {/*                                      onClick={() => this.props.deleteAsset(token.id)}>Delete</Form.Button>*/}
+                                    {/*                              </Form.Group>*/}
+                                    {/*                          </Form>*/}
+                                </Accordion.Content>
+
+                            </div>
+                        ))}
+                </Accordion>
+            </Segment>
+        )
+    }
+}
+
+
+class Limits extends React.Component {
+
+
+    render() {
+        return (
+
+            <Segment inverted>
+                <Accordion fluid inverted>
+                    {
+                        this.props.tokens.map(token => (
+
+                            <div>
+                                <Accordion.Title
+                                    active={this.props.activeIndexAccordion === token.id}
+                                    index={token.id}
+                                    onClick={this.props.handleClick}
+                                >
+
+                                    <Icon name='dropdown'/>
+                                    {token.addr} | {token.name}
+
+
+                                    {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
+                                </Accordion.Title>
+                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
+                                    <Form inverted>
+                                        <Form.Group inline>
+                                            <Form.Input
+                                                size={"mini"}
+                                                value={token.name}
+                                                onChange={this.props.token_name_change}
+                                                name={'name'}
+                                                label={'token name'}
+                                                error={token.errs.name}
+                                            /> <Form.Button onClick={() => this.props.update(token)}>Save
+                                            name</Form.Button>
+                                        </Form.Group> </Form>
+                                    <Table celled inverted selectable>
+                                        <Table.Header>
+                                            <Table.Row>
+                                                <Table.HeaderCell>Type</Table.HeaderCell>
+                                                <Table.HeaderCell>Price</Table.HeaderCell>
+                                                <Table.HeaderCell>Quantity</Table.HeaderCell>
+                                                <Table.HeaderCell>Status</Table.HeaderCell>
+                                                <Table.HeaderCell>Active</Table.HeaderCell>
+                                                <Table.HeaderCell>Save</Table.HeaderCell>
+                                            </Table.Row>
+                                        </Table.Header>
+
+                                        <Table.Body>
+                                            {token.limit_assets.map(limit_token => (
+                                                <Table.Row>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Select
+                                                            fluid
+                                                            id={limit_token.id}
+                                                            options={[{key: 'buy', text: 'buy', value: 'buy'},
+                                                                {key: 'sell', text: 'sell', value: 'sell'},
+                                                                {
+                                                                    key: 'take profit',
+                                                                    text: 'take profit',
+                                                                    value: 'take profit'
+                                                                },
+                                                                {
+                                                                    key: 'stop loss',
+                                                                    text: 'stop loss',
+                                                                    value: 'stop loss'
+                                                                }]}
+                                                            value={limit_token.type}
+                                                            name={'type'}
+                                                            onChange={this.props.input_skip_token}
+                                                        />
+                                                    </Table.Cell>
+                                                    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={limit_token.id}
+                                                                    value={limit_token.price}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'price'}
+                                                                    error={limit_token.errs.price}
+                                                        />
+                                                    </Table.Cell>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={limit_token.id}
+                                                                    value={limit_token.qnty}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'qnty'}
+                                                                    error={limit_token.errs.qnty}
+                                                        />
+                                                    </Table.Cell>
+
+                                                    <Table.Cell>
+                                                        <Form.Select
+                                                            fluid
+                                                            disabled={true}
+                                                            id={limit_token.id}
+                                                            options={[{
+                                                                key: 'running',
+                                                                text: 'running',
+                                                                value: 'running'
+                                                            },
+                                                                {key: 'stopped', text: 'stopped', value: 'stopped'},
+                                                                {key: 'failed', text: 'failed', value: 'failed'},
+                                                                {key: 'executed', text: 'executed', value: 'executed'},
+                                                                {key: 'pending', text: 'pending', value: 'pending'}]}
+                                                            value={limit_token.status}
+                                                            name={'status'}
+                                                            onChange={this.props.input_skip_token}
+                                                        /> </Table.Cell>
+
+                                                    <Table.Cell>
+                                                        <Checkbox name={'active'}
+                                                                       slider
+                                                                       id={limit_token.id}
+                                                                       checked={limit_token.active}
+                                                                       onChange={this.props.input_skip_token}
+
+                                                        />
+                                                    </Table.Cell>
+<Table.Cell>
+                                                      <Form.Button
+                                                                onClick={() => this.props.updateAsset(limit_token)}>Update</Form.Button>
+
+
+                                                    </Table.Cell>
+                                                </Table.Row>
+                                            ))}
+
+<Table.Row>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Select
+                                                            fluid
+                                                            id={this.props.new_limit.id}
+                                                            options={[{key: 'buy', text: 'buy', value: 'buy'},
+                                                                {key: 'sell', text: 'sell', value: 'sell'},
+                                                                {
+                                                                    key: 'take profit',
+                                                                    text: 'take profit',
+                                                                    value: 'take profit'
+                                                                },
+                                                                {
+                                                                    key: 'stop loss',
+                                                                    text: 'stop loss',
+                                                                    value: 'stop loss'
+                                                                }]}
+                                                            value={this.props.new_limit.type}
+                                                            name={'type'}
+                                                            onChange={this.props.input_skip_token}
+                                                            control={Select}
+                                                        />
+                                                    </Table.Cell>
+                                                    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={this.props.new_limit.id}
+                                                                    value={this.props.new_limit.price}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'price'}
+                                                                    error={this.props.new_limit.errs.price}
+                                                        />
+                                                    </Table.Cell>
+
+
+                                                    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={this.props.new_limit.id}
+                                                                    value={this.props.new_limit.qnty}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'qnty'}
+                                                                    error={this.props.new_limit.errs.qnty}
+                                                        />
+                                                    </Table.Cell>
+
+                                                    <Table.Cell>
+                                                        <Form.Select
+                                                            fluid
+                                                            disabled={true}
+                                                            id={this.props.new_limit.id}
+                                                            options={[{
+                                                                key: 'running',
+                                                                text: 'running',
+                                                                value: 'running'
+                                                            },
+                                                                {key: 'stopped', text: 'stopped', value: 'stopped'},
+                                                                {key: 'failed', text: 'failed', value: 'failed'},
+                                                                {key: 'executed', text: 'executed', value: 'executed'},
+                                                                {key: 'pending', text: 'pending', value: 'pending'}]}
+                                                            value={this.props.new_limit.status}
+                                                            name={'status'}
+                                                            onChange={this.props.input_skip_token}
+                                                        /> </Table.Cell>
+
+                                                    <Table.Cell>
+                                                        <Checkbox name={'active'}
+                                                                       slider
+                                                                       id={this.props.new_limit.id}
+                                                                       checked={this.props.new_limit.active}
+                                                                       onChange={this.props.input_skip_token}
+
+                                                        />
+                                                    </Table.Cell>
+<Table.Cell>
+                                                      <Form.Button
+                                                                onClick={() => this.props.updateAsset(this.props.new_limit)}>Update</Form.Button>
+
+
+                                                    </Table.Cell>
+                                                </Table.Row>
                                         </Table.Body>
                                     </Table>
                                     {/*                          <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}*/}
@@ -416,6 +676,16 @@ const default_new_token = {
     qnty: 1,
     errs: {}
 }
+const default_new_limit = {
+
+    id: -2,
+    type: '',
+    qnty: 1,
+    price: 1,
+    status:'stopped',
+    active:false,
+    errs:{}
+}
 const initialState = {
         active: false,
 
@@ -433,6 +703,7 @@ const initialState = {
         new_donor: {...default_new_donor},
         new_skip_token: {...default_new_skip_token},
         new_token: {...default_new_token},
+        new_limit: {...default_new_limit},
         errs: {},
         modal: true,
         activeItem: 'Wallet',
@@ -461,11 +732,13 @@ class GetWallet extends React.Component {
         this.handleClick = this.handleClick.bind(this)
         this.updateDonor = this.updateDonor.bind(this)
         this.updateToken = this.updateToken.bind(this)
+        this.updateLimit = this.updateLimit.bind(this)
         this.updateSkip = this.updateSkip.bind(this)
         this.input_skip_token = this.input_skip_token.bind(this)
         this.input_token = this.input_token.bind(this)
-this.token_name_change = this.token_name_change.bind(this);
-this.update_asset_name = this.update_asset_name.bind(this);
+        this.token_name_change = this.token_name_change.bind(this);
+        this.update_asset_name = this.update_asset_name.bind(this);
+        this.input_change_limit = this.input_change_limit.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
     }
 
@@ -477,13 +750,12 @@ this.update_asset_name = this.update_asset_name.bind(this);
         var name = null;
 
 
+        value = target.value
 
-            value = target.value
+        name = target.name
 
-            name = target.name
-
-       this.state.assets.find(x=>x.id===this.state.activeIndexAccordion)['name']=value
-        this.setState({assets:this.state.assets})
+        this.state.assets.find(x => x.id === this.state.activeIndexAccordion)['name'] = value
+        this.setState({assets: this.state.assets})
     }
 
     handleClick(e, titleProps) {
@@ -528,11 +800,18 @@ this.update_asset_name = this.update_asset_name.bind(this);
         name = target.name
 
         if (value === undefined && name === undefined) {
-
+            let id=target.id
+            if (target.parentNode.parentNode.getAttribute("name")==='donor') {
+                id = +target.parentNode.parentNode.id
+                console.log(target.parentNode.parentNode.name)
+            }
+            else
+                id = +target.parentNode.parentNode.parentNode.id
             if (this.state.activeIndexAccordion !== -2) {
+                console.log(target)
                 let skip_tokens = this.state.assets
-                let token=skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
-                token.find(x => x.id === target.id)['donor'] = this.state.donors.find(x => x.name === target.textContent).id
+                let token = skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
+                token.find(x => x.id === id)['donor'] = this.state.donors.find(x => x.name === target.textContent).id
                 this.setState({assets: skip_tokens})
             } else {
                 let new_skip_token = this.state.new_token
@@ -542,7 +821,7 @@ this.update_asset_name = this.update_asset_name.bind(this);
 
         } else if (this.state.activeIndexAccordion !== -2) {
             let skip_tokens = this.state.assets
-            let token=skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
+            let token = skip_tokens.find(x => x.id === this.state.activeIndexAccordion).donor_assets
             console.log(target.id)
             console.log(token)
 
@@ -581,6 +860,65 @@ this.update_asset_name = this.update_asset_name.bind(this);
         }
 
     }
+
+    input_change_limit(event) {
+        const target = event.target;
+        var value = null
+        var name = null;
+        var id = +target.id
+
+        console.log(target)
+
+
+            value = target.value
+            name = target.name
+
+        if (name==='active'){
+            value = target.checked
+        }
+
+
+        console.log(target.parentNode.parentNode)
+        console.log(id)
+        console.log(target.parentNode.parentNode.getAttribute("name"))
+        if (value === undefined && name === undefined) {
+            value = target.textContent.toLowerCase()
+            if (target.parentNode.parentNode.getAttribute("name")==='type') {
+                id = +target.parentNode.parentNode.id
+                console.log(target.parentNode.parentNode.name)
+            }
+            else
+                id = +target.parentNode.parentNode.parentNode.id
+            console.log(target.parentNode.parentNode.parentNode)
+            console.log(id)
+            if (id !== -2) {
+                let skip_tokens = this.state.assets
+                let tokens = skip_tokens.find(x => x.id === this.state.activeIndexAccordion).limit_assets
+                tokens.find(x => x.id === id)['type'] = value
+                this.setState({assets: skip_tokens})
+            } else {
+                console.log(value)
+                let new_skip_token = this.state.new_limit
+                new_skip_token['type'] = value
+                this.setState({new_limit: new_skip_token})
+            }
+        }
+        if (id !== -2) {
+            let skip_tokens = this.state.assets
+            let tokens = skip_tokens.find(x => x.id === this.state.activeIndexAccordion).limit_assets
+            console.log(tokens)
+            console.log(value)
+
+            tokens.find(x => x.id === id)[name] = value
+            this.setState({assets: skip_tokens})
+        } else {
+            let new_donor = this.state.new_limit
+            new_donor[name] = value
+            this.setState({new_limit: new_donor})
+        }
+
+    }
+
 
     getCookie(name) {
         let cookieValue = null;
@@ -629,6 +967,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
                     })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
 
                 })
                 res.data.wallet_connected = true
@@ -672,6 +1013,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
                     })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
                 })
                 res.data.wallet_connected = true
 
@@ -713,6 +1057,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
                     })
                 })
                 res.data.wallet_connected = true
@@ -804,6 +1151,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
                     })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
                 })
                 res.data.wallet_connected = true
 
@@ -891,6 +1241,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
                     })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
                 })
 
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
@@ -952,6 +1305,9 @@ this.update_asset_name = this.update_asset_name.bind(this);
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
                     })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
                 })
 
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
@@ -975,6 +1331,7 @@ this.update_asset_name = this.update_asset_name.bind(this);
             })
         // this.setState(self.res)
     }
+
     update_asset_name(token) {
         // this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
@@ -995,8 +1352,6 @@ this.update_asset_name = this.update_asset_name.bind(this);
 
             })
             .catch(err => {
-
-
 
 
                 // res.data.loading=false
@@ -1024,7 +1379,7 @@ this.update_asset_name = this.update_asset_name.bind(this);
             .then(res => {
                 if (token.id === -2) {
                     res.data.activeIndexAccordion = -1
-res.data.new_token=default_new_token
+                    res.data.new_token = default_new_token
                 }
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
@@ -1039,6 +1394,73 @@ res.data.new_token=default_new_token
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                    })
+                })
+
+                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+
+                console.log(res.data.new_token)
+                this.setState(res.data)
+            })
+            .catch(err => {
+                token.qnty = (+token.qnty / 10 ** 18)
+                if (token.id !== -2) {
+                    let skip_tokens = this.state.assets
+                    skip_tokens.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                    this.setState({assets: skip_tokens, loading: false})
+                } else {
+                    let new_skip_token = this.state.new_token
+                    new_skip_token['errs'] = err.response.data
+                    this.setState({new_token: new_skip_token, loading: false})
+                }
+
+
+                // res.data.loading=false
+                // this.setState(err.data)
+            })
+        // this.setState(self.res)
+    }
+    updateLimit(token) {
+        this.setState({loading: true})
+        token.qnty = BigInt(token.qnty * 10 ** 18).toString()
+        token.asset_id = this.state.assets.find(x=>x.id===this.state.activeIndexAccordion).id
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/update_limit`, {
+            'token': token,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                if (token.id === -2) {
+
+                    res.data.new_limit = default_new_limit
+                }
+                res.data.loading = false
+                res.data.new_donor = {...default_new_donor}
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                    })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
                     })
                 })
 
@@ -1099,10 +1521,13 @@ res.data.new_token=default_new_token
                     });
 
                     res.data.assets.forEach(function (asset) {
-                    asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        asset.donor_assets.forEach(function (donor_asset) {
+                            donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        })
+                        asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
                     })
-                })
+                    })
                     res.data.wallet_connected = true
                     this.setState(res.data)
 
@@ -1487,7 +1912,8 @@ res.data.new_token=default_new_token
                 <Tokens tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
                         activeIndexAccordion={this.state.activeIndexAccordion}
                         addr={this.state.addr} input_skip_token={this.input_token}
-                        handleClick={this.handleClick} token_name_change={this.token_name_change} update={this.update_asset_name}
+                        handleClick={this.handleClick} token_name_change={this.token_name_change}
+                        update={this.update_asset_name}
                         updateAsset={this.updateToken} deleteAsset={this.deleteToken} loading={this.state.loading}/>
                 <Segment inverted>
                     <Accordion fluid inverted>
@@ -1548,6 +1974,16 @@ res.data.new_token=default_new_token
                     </Accordion>
                 </Segment>
 
+            </div>
+        else if (this.state.activeItem === 'Limit orders')
+            return <div>
+
+                <Limits tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
+                        activeIndexAccordion={this.state.activeIndexAccordion}
+                        addr={this.state.addr} input_skip_token={this.input_change_limit}
+                        handleClick={this.handleClick} token_name_change={this.token_name_change}
+                        update={this.update_asset_name}
+                        updateAsset={this.updateLimit} deleteAsset={this.deleteToken} loading={this.state.loading} new_limit={this.state.new_limit}/>
             </div>
     }
 
