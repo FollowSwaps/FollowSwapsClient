@@ -14,6 +14,7 @@
     "babel-preset-react-app": "^10.0.0",
     "base64-arraybuffer": "^0.2.0",
     "big-integer": "^1.6.48",
+    "bignumber.js": "^9.0.1",
     "bootstrap": "^4.5.3",
     "classnames": "^2.2.6",
     "crypto-js": "^4.0.0",

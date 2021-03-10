@@ -16,7 +16,7 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = ''
-const url = 'http://127.0.0.1:8000'
+const url = 'http://31.132.126.208:8000'
 
 
 class Donors extends React.Component {
@@ -428,12 +428,15 @@ class Limits extends React.Component {
                                             /> <Form.Button onClick={() => this.props.update(token)}>Save
                                             name</Form.Button>
                                         </Form.Group> </Form>
-                                    <Table celled inverted selectable>
+                                    <div style={{overflowX: 'scroll'}}>
+                                    <Table  inverted selectable >
                                         <Table.Header>
                                             <Table.Row>
                                                 <Table.HeaderCell>Type</Table.HeaderCell>
                                                 <Table.HeaderCell>Price</Table.HeaderCell>
+                                                <Table.HeaderCell>Current price</Table.HeaderCell>
                                                 <Table.HeaderCell>Quantity</Table.HeaderCell>
+                                                <Table.HeaderCell>Fast gas + gwei</Table.HeaderCell>
                                                 <Table.HeaderCell>Status</Table.HeaderCell>
                                                 <Table.HeaderCell>Active</Table.HeaderCell>
                                                 <Table.HeaderCell>Save</Table.HeaderCell>
@@ -474,6 +477,15 @@ class Limits extends React.Component {
                                                                     name={'price'}
                                                                     error={limit_token.errs.price}
                                                         />
+                                                    </Table.Cell><Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    disabled={true}
+                                                                    id={limit_token.id}
+                                                                    value={limit_token.curr_price}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'curr_price'}
+                                                                    error={limit_token.errs.curr_price}
+                                                        />
                                                     </Table.Cell>
 
 
@@ -484,6 +496,14 @@ class Limits extends React.Component {
                                                                     onChange={this.props.input_skip_token}
                                                                     name={'qnty'}
                                                                     error={limit_token.errs.qnty}
+                                                        />
+                                                    </Table.Cell> <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={limit_token.id}
+                                                                    value={limit_token.gas_plus}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'gas_plus'}
+                                                                    error={limit_token.errs.gas_plus}
                                                         />
                                                     </Table.Cell>
 
@@ -516,10 +536,13 @@ class Limits extends React.Component {
                                                         />
                                                     </Table.Cell>
 <Table.Cell>
+    <Form.Group inline>
                                                       <Form.Button
                                                                 onClick={() => this.props.updateAsset(limit_token)}>Update</Form.Button>
+  <Form.Button
+                                                                onClick={() => this.props.deleteAsset(limit_token.id)}>Delete</Form.Button>
 
-
+</Form.Group>
                                                     </Table.Cell>
                                                 </Table.Row>
                                             ))}
@@ -557,6 +580,15 @@ class Limits extends React.Component {
                                                                     name={'price'}
                                                                     error={this.props.new_limit.errs.price}
                                                         />
+                                                    </Table.Cell><Table.Cell>
+                                                        <Form.Input type={'curr_price'}
+                                                                    id={this.props.new_limit.id}
+                                                                    disabled={true}
+                                                                    value={this.props.new_limit.curr_price}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'curr_price'}
+                                                                    error={this.props.new_limit.errs.price}
+                                                        />
                                                     </Table.Cell>
 
 
@@ -567,6 +599,15 @@ class Limits extends React.Component {
                                                                     onChange={this.props.input_skip_token}
                                                                     name={'qnty'}
                                                                     error={this.props.new_limit.errs.qnty}
+                                                        />
+                                                    </Table.Cell>
+    <Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={this.props.new_limit.id}
+                                                                    value={this.props.new_limit.gas_plus}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'gas_plus'}
+                                                                    error={this.props.new_limit.errs.gas_plus}
                                                         />
                                                     </Table.Cell>
 
@@ -600,13 +641,14 @@ class Limits extends React.Component {
                                                     </Table.Cell>
 <Table.Cell>
                                                       <Form.Button
-                                                                onClick={() => this.props.updateAsset(this.props.new_limit)}>Update</Form.Button>
+                                                                onClick={() => this.props.updateAsset(this.props.new_limit)}>Create</Form.Button>
 
 
                                                     </Table.Cell>
                                                 </Table.Row>
                                         </Table.Body>
                                     </Table>
+                                        </div>
                                     {/*                          <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}*/}
                                     {/*                                error={token.errs.non_field_errors}>*/}
                                     {/*                              <Form.Group grouped>*/}
@@ -684,7 +726,8 @@ const default_new_limit = {
     price: 1,
     status:'stopped',
     active:false,
-    errs:{}
+    errs:{},
+    gas_plus:3
 }
 const initialState = {
         active: false,
@@ -725,6 +768,7 @@ class GetWallet extends React.Component {
         this.deleteDonor = this.deleteDonor.bind(this)
         this.deleteSkip = this.deleteSkip.bind(this)
         this.deleteToken = this.deleteToken.bind(this)
+        this.deleteLimit = this.deleteLimit.bind(this)
         this.activateWallet = this.activateWallet.bind(this)
         this.handleChange = this.handleChange.bind(this)
         this.getCookie = this.getCookie.bind(this)
@@ -965,10 +1009,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
 
                 })
@@ -1011,10 +1055,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1025,6 +1069,51 @@ class GetWallet extends React.Component {
                 let new_donors = this.state.skip_tokens
                 new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
                 this.setState({donors: new_donors, loading: false})
+            })
+    }
+
+    deleteLimit(id) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        axios.post(url + `/delete_limit`, {
+            'id': id,
+            'addr': this.state.addr,
+            'key_hash': md5(this.state.key)
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                res.data.loading = false
+                res.data.errs = {}
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
+                res.data.donors.forEach(function (new_donor) {
+                    new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
+                    new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
+                    new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
+                    new_donor.percent_value_trade *= 100
+                    new_donor.slippage *= 100
+                });
+                res.data.assets.forEach(function (asset) {
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
+                    })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                    })
+                })
+                res.data.wallet_connected = true
+
+                this.setState(res.data)
+            })
+            .catch(err => {
+                let new_donors = this.state.assets
+                new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
+                this.setState({assets: new_donors, loading: false})
             })
     }
 
@@ -1056,10 +1145,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1149,10 +1238,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1239,10 +1328,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1303,10 +1392,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1393,10 +1482,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1457,10 +1546,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
-                        donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1522,10 +1611,10 @@ class GetWallet extends React.Component {
 
                     res.data.assets.forEach(function (asset) {
                         asset.donor_assets.forEach(function (donor_asset) {
-                            donor_asset.qnty = (+donor_asset.qnty / 10 ** 18)
+                            donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                         })
                         asset.limit_assets.forEach(function (limit_asset) {
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                     })
                     res.data.wallet_connected = true
@@ -1983,7 +2072,7 @@ class GetWallet extends React.Component {
                         addr={this.state.addr} input_skip_token={this.input_change_limit}
                         handleClick={this.handleClick} token_name_change={this.token_name_change}
                         update={this.update_asset_name}
-                        updateAsset={this.updateLimit} deleteAsset={this.deleteToken} loading={this.state.loading} new_limit={this.state.new_limit}/>
+                        updateAsset={this.updateLimit} deleteAsset={this.deleteLimit} loading={this.state.loading} new_limit={this.state.new_limit}/>
             </div>
     }
 

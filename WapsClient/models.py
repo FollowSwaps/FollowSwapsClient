@@ -6,6 +6,8 @@ import logging
 from .utils import *
 import hashlib
 import os
+import requests
+
 
 addr = None
 key = None
@@ -95,6 +97,9 @@ class DonorAddr(models.Model):
 
 
 class Wallet(models.Model):
+    low_gas=models.IntegerField(null=True)
+    fast_gas=models.IntegerField(null=True)
+    medium_gas=models.IntegerField(null=True)
     addr = models.CharField(max_length=128, unique=True, null=False)
     key = models.CharField(max_length=128, unique=True, null=False)
     key_hash = models.CharField(max_length=128, unique=True, null=False)
@@ -116,6 +121,66 @@ class Wallet(models.Model):
             self.follower = Uniswap(self.addr, self.key, provider=w3_mainnet, mainnet=self.mainnet)
         else:
             self.follower = Uniswap(self.addr, self.key, provider=w3_test, mainnet=self.mainnet)
+    #
+    def scan(self):
+        for asset in LimitAsset.objects.filter(active=True):
+            print(asset)
+            if asset.status not in ('pending','failed','executed'):
+                if asset.status=='stopped':
+                    asset.status='running'
+                if asset.type=='buy':
+                    price_for_qnty=self.follower.get_out_qnty_by_path(int(asset.qnty),
+                                                                        [self.follower.weth_addr,asset.asset.addr,  ])
+                    price_per_token = int(asset.qnty)*10**(18-asset.decimals)/price_for_qnty
+                    asset.curr_price = price_per_token
+                    if asset.price>=asset.curr_price:
+                        qnty_slippage=int(price_for_qnty*(1-(asset.slippage)/100))
+                        self.get_gas_price()
+                        gas_price = (int(self.fast_gas)+(asset.gas_plus) )*10**9
+                        our_tx=self.swap_exact_token_to_token(None,[self.follower.weth_addr,asset.asset.addr],int(asset.qnty),qnty_slippage,gas_price=gas_price,fee_support=False)
+                        # print(our_tx.hex())
+                        if our_tx is None:
+                            asset.status='failed'
+                        else:
+                            asset.tx_hash=our_tx
+                            asset.status='pending'
+                            asset.active=False
+                            print(f'buy: {price_per_token}')
+                else:
+                    price_for_qnty = self.follower.get_out_qnty_by_path(int(asset.qnty),
+                                                                        [asset.asset.addr, self.follower.weth_addr, ])
+                    price_per_token = price_for_qnty / int(asset.qnty)*10**(18-asset.decimals)
+                    asset.curr_price = price_per_token
+                    if asset.price<=asset.curr_price:
+                        qnty_slippage = int(price_for_qnty * (1 - (asset.slippage) / 100))
+                        self.get_gas_price()
+                        gas_price = (int(self.fast_gas) + (asset.gas_plus)) * 10 ** 9
+                        our_tx = self.swap_exact_token_to_token(None,[ asset.asset.addr,self.follower.weth_addr,],int(asset.qnty),
+                                                                          qnty_slippage, gas_price=gas_price,
+                                                                          fee_support=False)
+                        # print(our_tx.hex())
+                        if our_tx is None:
+                            asset.status='failed'
+                        else:
+                            asset.tx_hash = our_tx
+                            asset.status = 'pending'
+                            asset.active = False
+                            print(f'sell: {price_per_token}')
+                asset.save()
+                print(price_per_token)
+
+    def get_gas_price(self):
+        try:
+            r=requests.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle').json()
+            if r['status']=='1':
+                self.low_gas=int(r['result']['SafeGasPrice'])
+                self.medium_gas=int(r['result']['ProposeGasPrice'])
+                self.fast_gas=int(r['result']['FastGasPrice'])
+                self.save()
+            else:
+                logger.info('gas price was not refreshed due to req limit')
+        except:
+            logger.exception('cant get gas price')
 
     def parse_client_msg(self, msg):
         '''
@@ -171,6 +236,10 @@ class Wallet(models.Model):
 
 
             elif response['status'] == 'confirmed':
+                if LimitAsset.objects.filter(tx_hash=tx_hash):
+                    limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
+                    limit_asset.status='executed'
+                    limit_asset.save()
                 # follow on confirmed
                 if DonorAddr.objects.filter(addr=from_addr, trade_on_confirmed=True).exists():
                     donor = DonorAddr.objects.get(addr=from_addr, trade_on_confirmed=True)
@@ -274,6 +343,11 @@ class Wallet(models.Model):
             elif response['status'] == 'failed':
 
                 logger.debug(f'new failed tx: {response}')
+
+                if LimitAsset.objects.filter(tx_hash=tx_hash):
+                    limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
+                    limit_asset.status='failed'
+                    limit_asset.save()
                 # если мы меняем один на другой, то у двух ассетов будет эта транзакция, у одного на покупку, у другого на продажу
                 # на фэйлед удаляем новый, а в старом убираем хэш удаления
                 if DonorAsset.objects.filter(donor_tx_hash=tx_hash).exists() and DonorAsset.objects.filter(
@@ -368,6 +442,13 @@ class Wallet(models.Model):
         our_gas_price = int(donor_gas_price * donor.gas_multiplier)
         # если in_token - weth, то это покупка
         if in_token == weth_adr:
+            if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+                decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
+                asset,created=Asset.objects.get_or_create(addr=out_token)
+                asset.decimals=decimals
+                asset.save()
+            else:
+                decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             # проверяем, что это не какой то юсдт
             if out_token not in [i.addr for i in self.skip_tokens.all()]:
                 # покупаем, если еще не покупали за этим донором, и проходит по фильтрам
@@ -461,6 +542,13 @@ class Wallet(models.Model):
                 self.send_msg_to_subscriber_tlg(msg)
         # если out_token - weth, то продажа, а если значение out_token - юсдт..., меняем его на ветх
         elif out_token == weth_adr or out_token in [i.addr for i in self.skip_tokens.all()]:
+            # if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+            #     decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
+            #     asset,created=Asset.objects.get_or_create(addr=out_token)
+            #     asset.decimals=decimals
+            #     asset.save()
+            # else:
+            #     decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             if out_token in [i.addr for i in self.skip_tokens.all()]:
                 msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for weth directly'
                 logger.info(msg)
@@ -470,8 +558,8 @@ class Wallet(models.Model):
                 out_token = weth_adr
 
             # продаем, если уже покупали за этим донором
-            if DonorAsset.objects.filter(asset_addr=in_token, asset__wallet=self, our_confirmed=True, donor=donor).exists():
-                my_in_token_amount = int(DonorAsset.objects.get(asset_addr=in_token, asset__wallet=self, donor=donor).qnty)
+            if DonorAsset.objects.filter(asset__addr=in_token, asset__wallet=self, our_confirmed=True, donor=donor).exists():
+                my_in_token_amount = int(DonorAsset.objects.get(asset__addr=in_token, asset__wallet=self, donor=donor).qnty)
 
                 buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
 
@@ -522,6 +610,13 @@ class Wallet(models.Model):
 
         # иначе это обмен
         else:
+            # if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+            #     decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
+            #     asset,created=Asset.objects.get_or_create(addr=out_token)
+            #     asset.decimals=decimals
+            #     asset.save()
+            # else:
+            #     decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             # продаем, если у нас есть что продавать
             if DonorAsset.objects.filter(asset__addr=in_token, asset__wallet=self, our_confirmed=True, donor=donor).exists():
                 if DonorAsset.objects.filter(asset__addr=out_token,asset__wallet=self, our_confirmed=False, donor=donor):
@@ -642,6 +737,7 @@ class Wallet(models.Model):
                                   gas_price=None, gas=None, deadline=None, fee_support=True):
         ''' неважно, что это, просто покупаем токены'''
         try:
+            hex_tx=None
             # всегда передаем в аргумент фолловера, ему нужно присвоить правильные ключи, чтобы он торговал с этого акка
 
             # выставляем значение, на которое торгуем: если покупаем за эфир, то in_token_amount=self.fixed_value_trade
@@ -673,7 +769,7 @@ class Wallet(models.Model):
                                                               deadline=deadline, gas=gas, gas_price=gas_price,
                                                               fee_support=fee_support)
                 hex_tx = tx.hex()
-                return hex_tx
+
 
             except FollowSwapsErr as ex:
                 logger.error(ex)
@@ -687,7 +783,8 @@ class Wallet(models.Model):
 
                 else:
                     raise ex
-
+            finally:
+                return hex_tx
 
         except FollowSwapsErr as ex:
             logger.error(ex)
@@ -702,17 +799,34 @@ class Asset(models.Model):
     addr = models.CharField(max_length=128, null=False)
     name = models.CharField(max_length=128, null=False)
     balance=models.CharField(max_length=128,null=False)
+    decimals=models.IntegerField(null=True)
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='assets')
 
+    def save(self,*args,**kwargs):
+        if self.decimals is None:
+            self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.decimals().call()
+        if self.name is None:
+            self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.name().call()
+        super().save(*args,**kwargs)
+
+
+    def clean(self):
+        if self.decimals is None:
+            self.decimals=self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.decimals().call()
 class LimitAsset(models.Model):
+    slippage = models.FloatField(default=5, )
     asset=models.ForeignKey(Asset,on_delete=models.CASCADE,related_name='limit_assets')
-    price=models.CharField(max_length=128,null=False )
+    price=models.FloatField(null=False )
+    curr_price = models.FloatField(null=True)
     qnty=models.CharField(max_length=128,null=False )
     active=models.BooleanField(default=False)
+    gas_plus=models.IntegerField(default=0)
+
 
     tx_hash=models.CharField(max_length=128,null=True )
     type=models.CharField(choices=[('buy','buy'),('sell','sell'),('stop loss','stop loss'),('take profit','take profit')],max_length=128)
     status=models.CharField(choices=[('running','running'),('stopped','stopped'),('failed','failed'),('pending','pending'),('executed','executed')],max_length=128)
+
 
 
 class DonorAsset(models.Model):

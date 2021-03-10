@@ -17,14 +17,14 @@ class DonorAssetSerializer(serializers.ModelSerializer):
 class LimitAssetSerializer(serializers.ModelSerializer):
     qnty = serializers.IntegerField()
     price = serializers.FloatField()
-
+    # decimals=serializers.IntegerField(source='asset.decimals')
     addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
 
 
     errs = serializers.DictField(read_only=True, default={})
     class Meta:
         model=LimitAsset
-        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status']
+        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status','gas_plus','curr_price']
 
 class SkipTokensSerializer(serializers.ModelSerializer):
     name=serializers.CharField(max_length=128)

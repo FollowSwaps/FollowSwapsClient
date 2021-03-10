@@ -2,7 +2,6 @@ import json
 import web3
 import datetime
 
-
 class Uniswap():
 
     @staticmethod
@@ -28,9 +27,10 @@ class Uniswap():
             except:
                 err=0
         for i in tx_rec['logs']:
-            if i['address']==token_addr:
+            if i['address']==token_addr and any([j.hex().endswith(tx_rec['from'].lower()[2:]) for j in i['topics'] ]):
                 amount=int(i['data'],0)
                 return int(amount)
+        return None
 
     def get_erc_contract_by_addr(self,addr):
         if addr==self.waps_addr:
@@ -88,10 +88,12 @@ class Uniswap():
         ''' количество токенов path[-1], которое мы получим, отдав amount количества токенов path[0]
         типа сколько мы получим токенов, если обменяем какое то количество по пути
         SwapExactTokensForTokens'''
-
-        return self.uni_contract.functions.getAmountsOut(amount,
+        try:
+            return self.uni_contract.functions.getAmountsOut(amount,
                                                          path).call()[-1]
-
+        except Exception as ex:
+            print(ex)
+            return None
     def get_in_qnty_by_path(self, amount, path):
         '''количество токенов path[0], которое нам нужно, чтобы получить amount токенов path[-1]
         типа сколько нам нужно токенов а, чтобы получить конкретное количество токенов б по пути path
@@ -139,21 +141,23 @@ class Uniswap():
                                    gas_price=None,fee_support=True):
         ''' отправить транзакцию на обмен конкретного количества эфиров на токен'''
         # устанавливаем дедлайн
-        if deadline is None:
-            deadline = self.get_default_deadline()
+        try:
+            if deadline is None:
+                deadline = self.get_default_deadline()
 
-        # создаем транзакцию
-        tx = self._create_exact_token_for_token_tx(in_token_amount, min_out_token_amount, path,
-                                                   deadline=deadline,fee_support=fee_support )
+            # создаем транзакцию
+            tx = self._create_exact_token_for_token_tx(in_token_amount, min_out_token_amount, path,
+                                                       deadline=deadline,fee_support=fee_support )
 
-        # добавляем всякую хуйню типа нонсе,газ и проч
-        b_tx = self.build_tx(tx, gas=gas, gas_price=gas_price)
+            # добавляем всякую хуйню типа нонсе,газ и проч
+            b_tx = self.build_tx(tx, gas=gas, gas_price=gas_price)
 
-        # подписали транзакцию ключом
-        signed_tx = self.sign_row_tx(b_tx)
-
-        # исполнили
-        return self.send_signed_raw_tx(signed_tx)
+            # подписали транзакцию ключом
+            signed_tx = self.sign_row_tx(b_tx)
+            # исполнили
+            return self.send_signed_raw_tx(signed_tx)
+        except Exception as ex:
+            return None
 
 
     def swap_token_for_exact_token(self, out_token_amount, path, max_in_token_amount=None,

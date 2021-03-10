@@ -21,63 +21,81 @@ import hashlib
 import time
 import web3
 from django.views.decorators.csrf import ensure_csrf_cookie
-
+import websockets
+import asyncio
+from asgiref.sync import sync_to_async
 
 def socket():
-    server_ws_url = f"wss://followswaps.com/ws/{addr}/"
-    ws = create_connection(server_ws_url, )
-    msg = {"action": "logon", 'subscriber': addr,
-           'donors': [i.addr for i in Wallet.objects.get(addr=addr).donors.all()]}
-    _, signed_msg = sign_message(str(msg), key)
-    ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
-    err = False
-    global new_process
-    while 1:
-        if ws.connected:
-            if err == True:
-                Wallet.objects.get(addr=addr, key=key).send_msg_to_subscriber_tlg(' socket was reconnected')
-                err = False
-            try:
-                msg = ws.recv()
-                logger.info(msg)
+    donors=[i.addr for i in Wallet.objects.get(addr=addr).donors.all()]
+    w = Wallet.objects.get(addr=addr, key=key)
+    async def limits():
+        while 1:
+            print('start limit')
+            await sync_to_async(w.scan)()
+            await asyncio.sleep(1)
 
-                w = Wallet.objects.get(addr=addr, key=key)
-                if msg == 'Low balance':
-                    w.active = False
-                    w.send_msg_to_subscriber_tlg(' stopped, low balance')
-                    w.refresh_balances()
-                    w.save()
-                    return
-                if msg.startswith('Failed'):
-                    w.active = False
-                    w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
-                    w.save()
-                    return
-                if msg == 'success':
-                    pass
-                else:
+
+    async def hello():
+        uri = f"wss://followswaps.com/ws/{addr}/"
+        msg = {"action": "logon", 'subscriber': addr,
+               'donors': donors}
+        async with websockets.connect(uri) as ws:
+
+            _, signed_msg = sign_message(str(msg), key)
+            await ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
+            err = False
+            while 1:
+                if ws.closed==False:
+                    if err == True:
+                        Wallet.objects.get(addr=addr, key=key).send_msg_to_subscriber_tlg(' socket was reconnected')
+                        err = False
                     try:
-                        w.parse_client_msg(msg)
-                    except:
-                        logger.exception(f'wrong message: {msg}')
+                        msg = await ws.recv()
+                        logger.info(msg)
 
-            except Exception as ex:
-                logger.exception(ex, exc_info=True)
-                if err == False:
-                    Wallet.objects.get(addr=addr, key=key).send_msg_to_subscriber_tlg(
-                        'error with socket connection, we are trying to reconnect')
-                    err = True
-        else:
-            logger.info('trying to reconnect to socket')
-            try:
-                ws = create_connection(server_ws_url, )
-                msg = {"action": "logon", 'subscriber': addr,
-                       'donors': [i.addr for i in Wallet.objects.get(addr=addr).donors.all()]}
-                _, signed_msg = sign_message(str(msg), key)
-                ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
-            except:
-                pass
-            time.sleep(15)
+
+                        if msg == 'Low balance':
+                            w.active = False
+                            w.send_msg_to_subscriber_tlg(' stopped, low balance')
+                            w.refresh_balances()
+                            w.save()
+                            return
+                        if msg.startswith('Failed'):
+                            w.active = False
+                            w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
+                            w.save()
+                            return
+                        if msg == 'success':
+                            pass
+                            asyncio.ensure_future(limits())
+                        else:
+                            try:
+                                await sync_to_async(w.parse_client_msg)(msg)
+                            except:
+                                logger.exception(f'wrong message: {msg}')
+
+                    except Exception as ex:
+                        logger.exception(ex, exc_info=True)
+                        if err == False:
+                            w.send_msg_to_subscriber_tlg(
+                                'error with socket connection, we are trying to reconnect')
+                            err = True
+    loop=asyncio.new_event_loop()
+    loop.run_until_complete(hello())
+                # else:
+                #     logger.info('trying to reconnect to socket')
+                #     try:
+                #         ws = create_connection(server_ws_url, )
+                #         msg = {"action": "logon", 'subscriber': addr,
+                #                'donors': [i.addr for i in Wallet.objects.get(addr=addr).donors.all()]}
+                #         _, signed_msg = sign_message(str(msg), key)
+                #         ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
+                #     except:
+                #         pass
+                #     time.sleep(15)
+
+
+    global new_process
 
 
 # if Wallet.objects.get(addr=addr,key=key).active==False:
@@ -405,6 +423,30 @@ def delete_skip(request):
             [i.delete() for i in SkipTokens.objects.filter(addr=token_addr)]
         else:
             return JsonResponse({'non_field_errors': ['skip token does not exists']}, status=400)
+
+        wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        return JsonResponse(wallet_ser.data, status=200)
+
+@api_view(['POST'])
+def delete_limit(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    else:
+
+        if LimitAsset.objects.filter(pk=data['id']).exists():
+            [i.delete() for i in LimitAsset.objects.filter(pk=data['id'])]
+        else:
+            return JsonResponse({'non_field_errors': ['limit order does not exists']}, status=400)
 
         wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
         return JsonResponse(wallet_ser.data, status=200)
