@@ -28,8 +28,8 @@ class Uniswap():
             except:
                 err=0
         for i in tx_rec['logs']:
-            if i['address']==token_addr:
-                amount=int(i['data'],0)
+            if i['address'] == token_addr and any([j.hex().endswith(tx_rec['from'].lower()[2:]) for j in i['topics']]):
+                amount = int(i['data'], 0)
                 return int(amount)
 
     def get_erc_contract_by_addr(self,addr):
