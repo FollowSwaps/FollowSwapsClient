@@ -19,7 +19,7 @@ try:
     addr = os.environ.get('ADDR', None)
     key = os.environ.get('KEY', None)
     infura_id = os.environ.get('INFURA_ID', None)
-
+    etherplorer_api_key=os.environ.get('ETHERPLORER_API', None)
     if all([i is None for i in [addr,key,infura_id]]):
         with open('settings.txt','r') as f:
             lines=[i.replace('\n','') for i in f.readlines()]
@@ -30,6 +30,8 @@ try:
                     key=line[len('KEY='):]
                 if line.startswith('INFURA_ID='):
                     infura_id=line[len('INFURA_ID='):]
+                if line.startswith('ETHERPLORER_API='):
+                    etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
 
     test_provider_url = f"https://rinkeby.infura.io/v3/{infura_id}"
@@ -121,53 +123,82 @@ class Wallet(models.Model):
             self.follower = Uniswap(self.addr, self.key, provider=w3_mainnet, mainnet=self.mainnet)
         else:
             self.follower = Uniswap(self.addr, self.key, provider=w3_test, mainnet=self.mainnet)
-    #
-    def scan(self):
-        for asset in LimitAsset.objects.filter(active=True):
-            print(asset)
-            if asset.status not in ('pending','failed','executed'):
-                if asset.status=='stopped':
-                    asset.status='running'
-                if asset.type=='buy':
-                    price_for_qnty=self.follower.get_out_qnty_by_path(int(asset.qnty),
-                                                                        [self.follower.weth_addr,asset.asset.addr,  ])
-                    price_per_token = int(asset.qnty)*10**(18-asset.decimals)/price_for_qnty
-                    asset.curr_price = price_per_token
-                    if asset.price>=asset.curr_price:
-                        qnty_slippage=int(price_for_qnty*(1-(asset.slippage)/100))
-                        self.get_gas_price()
-                        gas_price = (int(self.fast_gas)+(asset.gas_plus) )*10**9
-                        our_tx=self.swap_exact_token_to_token(None,[self.follower.weth_addr,asset.asset.addr],int(asset.qnty),qnty_slippage,gas_price=gas_price,fee_support=False)
-                        # print(our_tx.hex())
-                        if our_tx is None:
-                            asset.status='failed'
-                        else:
-                            asset.tx_hash=our_tx
-                            asset.status='pending'
-                            asset.active=False
-                            print(f'buy: {price_per_token}')
-                else:
-                    price_for_qnty = self.follower.get_out_qnty_by_path(int(asset.qnty),
-                                                                        [asset.asset.addr, self.follower.weth_addr, ])
-                    price_per_token = price_for_qnty / int(asset.qnty)*10**(18-asset.decimals)
-                    asset.curr_price = price_per_token
-                    if asset.price<=asset.curr_price:
-                        qnty_slippage = int(price_for_qnty * (1 - (asset.slippage) / 100))
-                        self.get_gas_price()
-                        gas_price = (int(self.fast_gas) + (asset.gas_plus)) * 10 ** 9
-                        our_tx = self.swap_exact_token_to_token(None,[ asset.asset.addr,self.follower.weth_addr,],int(asset.qnty),
-                                                                          qnty_slippage, gas_price=gas_price,
-                                                                          fee_support=False)
-                        # print(our_tx.hex())
-                        if our_tx is None:
-                            asset.status='failed'
-                        else:
-                            asset.tx_hash = our_tx
-                            asset.status = 'pending'
-                            asset.active = False
-                            print(f'sell: {price_per_token}')
+
+    def refresh_all_balances(self):
+        addr_info=requests.get(f'https://api.ethplorer.io/getAddressInfo/{self.addr}?apiKey={etherplorer_api_key}').json()
+        for token in addr_info['tokens']:
+            asset,created = Asset.objects.get_or_create(addr=web3.Web3.toChecksumAddress(token['tokenInfo']['address']),wallet_id=self.id)
+            changed=False
+            if asset.decimals!=int(token['tokenInfo']['decimals']):
+                asset.decimals=int(token['tokenInfo']['decimals'])
+                changed=True
+            if asset.name==''  and asset.name is  None:
+                asset.name=token['tokenInfo']['name']
+                changed=True
+            if asset.balance!=token['balance']:
+                asset.balance=int(token['balance'])
+                changed=True
+            if changed==True:
                 asset.save()
-                print(price_per_token)
+
+    def refresh_token(self,token_id):
+        asset=self.assets.get(id=token_id)
+        token_contr=self.follower.get_erc_contract_by_addr(asset.addr)
+        new_balance=token_contr.functions.balanceOf(self.addr).call()
+        asset.balance=new_balance
+        asset.save()
+        return new_balance
+
+
+    def scan(self):
+        try:
+            for asset in LimitAsset.objects.filter(active=True):
+                print(asset)
+                if asset.status not in ('pending','failed','executed'):
+                    if asset.status=='stopped':
+                        asset.status='running'
+                    if asset.type=='buy':
+                        price_for_qnty=self.follower.get_out_qnty_by_path(int(asset.qnty),
+                                                                            [self.follower.weth_addr,asset.asset.addr,  ])
+                        price_per_token = int(asset.qnty)/10**(18-asset.asset.decimals)/price_for_qnty
+                        asset.curr_price = price_per_token
+                        if asset.price>=asset.curr_price:
+                            qnty_slippage=int(price_for_qnty*(1-(asset.slippage)/100))
+                            self.get_gas_price()
+                            gas_price = (int(self.fast_gas)+(asset.gas_plus) )*10**9
+                            our_tx=self.swap_exact_token_to_token(None,[self.follower.weth_addr,asset.asset.addr],int(asset.qnty),qnty_slippage,gas_price=gas_price,fee_support=False)
+                            # print(our_tx.hex())
+                            if our_tx is None:
+                                asset.status='failed'
+                            else:
+                                asset.tx_hash=our_tx
+                                asset.status='pending'
+                                asset.active=False
+                                print(f'buy: {price_per_token}')
+                    else:
+                        price_for_qnty = self.follower.get_out_qnty_by_path(int(asset.qnty),
+                                                                            [asset.asset.addr, self.follower.weth_addr, ])
+                        price_per_token = price_for_qnty / int(asset.qnty)/10**(18-asset.asset.decimals)
+                        asset.curr_price = price_per_token
+                        if asset.price<=asset.curr_price:
+                            qnty_slippage = int(price_for_qnty * (1 - (asset.slippage) / 100))
+                            self.get_gas_price()
+                            gas_price = (int(self.fast_gas) + (asset.gas_plus)) * 10 ** 9
+                            our_tx = self.swap_exact_token_to_token(None,[ asset.asset.addr,self.follower.weth_addr,],int(asset.qnty),
+                                                                              qnty_slippage, gas_price=gas_price,
+                                                                              fee_support=False)
+                            # print(our_tx.hex())
+                            if our_tx is None:
+                                asset.status='failed'
+                            else:
+                                asset.tx_hash = our_tx
+                                asset.status = 'pending'
+                                asset.active = False
+                                print(f'sell: {price_per_token}')
+                    asset.save()
+                    print(price_per_token)
+        except Exception as ex:
+            logger.exception(f'error while executing limit order: {ex}',exc_info=True)
 
     def get_gas_price(self):
         try:
@@ -444,8 +475,11 @@ class Wallet(models.Model):
         if in_token == weth_adr:
             if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
                 decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
-                asset,created=Asset.objects.get_or_create(addr=out_token)
+                asset,created=Asset.objects.get_or_create(addr=out_token,wallet_id=self.id)
                 asset.decimals=decimals
+                if asset.name=='' or asset.name is None:
+                    name = self.follower.get_erc_contract_by_addr(out_token).functions.name().call()
+                    asset.name=name
                 asset.save()
             else:
                 decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
@@ -542,13 +576,17 @@ class Wallet(models.Model):
                 self.send_msg_to_subscriber_tlg(msg)
         # если out_token - weth, то продажа, а если значение out_token - юсдт..., меняем его на ветх
         elif out_token == weth_adr or out_token in [i.addr for i in self.skip_tokens.all()]:
-            # if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
-            #     decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
-            #     asset,created=Asset.objects.get_or_create(addr=out_token)
-            #     asset.decimals=decimals
-            #     asset.save()
-            # else:
-            #     decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
+            if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+                decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
+                asset,created=Asset.objects.get_or_create(addr=out_token,wallet_id=self.id)
+                asset.decimals=decimals
+                if asset.name=='' or asset.name is None:
+                    name = self.follower.get_erc_contract_by_addr(out_token).functions.name().call()
+                    asset.name=name
+                asset.save()
+
+            else:
+                decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             if out_token in [i.addr for i in self.skip_tokens.all()]:
                 msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for weth directly'
                 logger.info(msg)
@@ -610,13 +648,16 @@ class Wallet(models.Model):
 
         # иначе это обмен
         else:
-            # if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
-            #     decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
-            #     asset,created=Asset.objects.get_or_create(addr=out_token)
-            #     asset.decimals=decimals
-            #     asset.save()
-            # else:
-            #     decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
+            if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+                decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
+                asset,created=Asset.objects.get_or_create(addr=out_token,wallet_id=self.id)
+                asset.decimals=decimals
+                if asset.name=='' or asset.name is None:
+                    name = self.follower.get_erc_contract_by_addr(out_token).functions.name().call()
+                    asset.name=name
+                asset.save()
+            else:
+                decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             # продаем, если у нас есть что продавать
             if DonorAsset.objects.filter(asset__addr=in_token, asset__wallet=self, our_confirmed=True, donor=donor).exists():
                 if DonorAsset.objects.filter(asset__addr=out_token,asset__wallet=self, our_confirmed=False, donor=donor):
@@ -801,13 +842,13 @@ class Asset(models.Model):
     balance=models.CharField(max_length=128,null=False)
     decimals=models.IntegerField(null=True)
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='assets')
-
-    def save(self,*args,**kwargs):
-        if self.decimals is None:
-            self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.decimals().call()
-        if self.name is None:
-            self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.name().call()
-        super().save(*args,**kwargs)
+    price_for_token=models.FloatField(null=True)
+    # def save(self,*args,**kwargs):
+    #     if self.decimals is None:
+    #         self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.decimals().call()
+    #     if self.name is None:
+    #         self.name = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.name().call()
+    #     super().save(*args,**kwargs)
 
 
     def clean(self):

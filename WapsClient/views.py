@@ -28,6 +28,8 @@ from asgiref.sync import sync_to_async
 def socket():
     donors=[i.addr for i in Wallet.objects.get(addr=addr).donors.all()]
     w = Wallet.objects.get(addr=addr, key=key)
+    for asset in Asset.objects.filter(decimals__isnull=True):
+        asset.save()
     async def limits():
         while 1:
             print('start limit')
@@ -136,6 +138,26 @@ def get_wallet(request):
         serializer = WalletSerializer(instance=wallet)
         return JsonResponse(serializer.data, status=200)
 
+@api_view(['POST'])
+def refresh_balances(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'addr': ['invalid address']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'key': ['invalid key for address']}, status=400)
+    else:
+        wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
+        wallet.refresh_all_balances()
+        serializer = WalletSerializer(instance=wallet)
+        return JsonResponse(serializer.data, status=200)
+
 
 @api_view(['POST'])
 def update_wallet(request):
@@ -185,6 +207,8 @@ def update_skip(request):
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
 
         if data['token']['id'] != -2:
+            if data['token']['name'] is None:
+                data['token']['name'] = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.name().call()
             skip_token = SkipTokens.objects.get(pk=data['token']['id'])
             skip_ser = SkipTokensSerializer(data=data['token'], instance=skip_token)
             if skip_ser.is_valid():
@@ -257,21 +281,43 @@ def update_asset(request):
 
         if data['token']['id'] != -2:
             skip_token = DonorAsset.objects.get(pk=data['token']['id'])
+            changed=False
+            try:
+                if skip_token.asset.decimals is None:
+                    skip_token.asset.decimals = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.decimals().call()
+                    changed=True
+                if skip_token.asset.name is None or skip_token.asset.name =='':
+                    skip_token.asset.name = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.name().call()
+                    changed = True
+                if changed:
+                    skip_token.asset.save()
+            except:
+                return JsonResponse({'addr': ['invalid address or wrong token']}, status=400)
             skip_ser = DonorAssetSerializer(data=data['token'], instance=skip_token)
             if skip_ser.is_valid():
                 skip_ser.save()
             else:
                 return JsonResponse(skip_ser.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            if data['token']['donor']=='':
-                return JsonResponse({'donor': ['required field']}, status=400)
-            if DonorAddr.objects.filter(id=data['token']['donor']).exists()==False:
-                return JsonResponse({'addr': ['Token already exists for thid donor']}, status=400)
+
             data['token']['wallet'] = wallet.id
             asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,addr=data['token']['addr'])
+            try:
+
+                changed=False
+                if asset.decimals is None:
+                    asset.decimals = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.decimals().call()
+                    changed=True
+                if asset.name is None or asset.name =='':
+                    asset.name = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.name().call()
+                    changed = True
+                if changed:
+                    asset.save()
+                asset.price_for_token = wallet.follower.get_out_qnty_by_path(10 ** asset.decimals,
+                                                                             [asset.addr,wallet.follower.weth_addr, ])
+            except:
+                return JsonResponse({'addr': ['invalid address or wrong token']}, status=400)
             data['token']['asset'] = asset.id
-            if DonorAsset.objects.filter(asset_id=asset.id, asset__wallet_id=wallet.id, donor_id=data['token']['donor']).exists()==True:
-                return JsonResponse({'addr': ['Token already exists for thid donor']}, status=400)
             new_skip_token = DonorAssetSerializer(data=data['token'])
 
             if new_skip_token.is_valid():
@@ -298,6 +344,8 @@ def update_limit(request):
     if Wallet.objects.filter(key_hash=key_hash).exists() == False:
         return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
     else:
+        if data['token']['active']==True:
+            data['token']['status']='running'
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
 
         if data['token']['id'] != -2:
@@ -318,6 +366,54 @@ def update_limit(request):
             if new_skip_token.is_valid(raise_exception=True):
                 new_skip_token.save()
             else:
+                return JsonResponse(new_skip_token.errors, status=status.HTTP_400_BAD_REQUEST)
+            # wallet.assets.add(new_skip_token.instance)
+            # wallet.save()
+        serializer = WalletSerializer(instance=wallet)
+        return JsonResponse(serializer.data, status=200)
+
+
+@api_view(['POST'])
+def update_donor_token(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+
+    key_hash = data['key_hash']
+
+
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    else:
+        wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
+
+
+        if DonorAsset.objects.filter(asset__id=data['token']['asset_id'], donor_id=data['token']['donor']).exists():
+            return JsonResponse({'donor': ['donor must be unique for each token']}, status=400)
+        if data['token']['id'] != -2:
+            skip_token =DonorAsset.objects.get(pk=data['token']['id'])
+            skip_ser = DonorAssetSerializer(data=data['token'], instance=skip_token)
+            if skip_ser.is_valid():
+                skip_ser.save()
+            else:
+                return JsonResponse(skip_ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+
+            data['token']['wallet'] = wallet.id
+            asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
+            data['token']['asset'] = asset.id
+
+            new_skip_token = DonorAssetSerializer(data=data['token'])
+
+            if new_skip_token.is_valid(raise_exception=True):
+                new_skip_token.save()
+            else:
+                if created:
+                    asset.delete()
                 return JsonResponse(new_skip_token.errors, status=status.HTTP_400_BAD_REQUEST)
             # wallet.assets.add(new_skip_token.instance)
             # wallet.save()
@@ -453,7 +549,7 @@ def delete_limit(request):
 
 
 @api_view(['POST'])
-def delete_asset(request):
+def delete_donor_asset(request):
     data = JSONParser().parse(request)
     try:
         addr = web3.main.to_checksum_address(data['addr'])
@@ -473,6 +569,33 @@ def delete_asset(request):
 
         if DonorAsset.objects.filter(id=data['token_id']).exists():
             DonorAsset.objects.get(id=data['token_id']).delete()
+        else:
+            return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
+
+        wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        return JsonResponse(wallet_ser.data, status=200)
+
+@api_view(['POST'])
+def delete_asset(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    # try:
+    #     token_addr = web3.main.to_checksum_address(data['token_addr'])
+    # except:
+    #     return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    else:
+
+        if Asset.objects.filter(id=data['token_id']).exists():
+            Asset.objects.get(id=data['token_id']).delete()
         else:
             return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
 

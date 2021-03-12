@@ -16,8 +16,8 @@ with open('settings.txt', 'r') as f:
             key = line[len('KEY='):]
         if line.startswith('INFURA_ID='):
             infura_id = line[len('INFURA_ID='):]
-        if line.startswith('TELEGRAM_ID='):
-            telegram_id = line[len('TELEGRAM_ID='):]
+        if line.startswith('TELEGRAM_TOKEN_HTTP_API='):
+            telegram_id = line[len('TELEGRAM_TOKEN_HTTP_API='):]
 
 
 def sign_message(msg, key):

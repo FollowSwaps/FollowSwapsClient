@@ -10,21 +10,27 @@ class DonorAssetSerializer(serializers.ModelSerializer):
 
     qnty=serializers.IntegerField()
     errs = serializers.DictField(read_only=True, default={})
+    name=serializers.CharField(source='asset.name',read_only=True)
+    decimals=serializers.IntegerField(source='asset.decimals',read_only=True)
     class Meta:
         model=DonorAsset
-        fields=['qnty','donor','errs','id','asset','addr']
+        fields=['qnty','donor','errs','id','asset','addr','decimals','name']
 
 class LimitAssetSerializer(serializers.ModelSerializer):
     qnty = serializers.IntegerField()
     price = serializers.FloatField()
-    # decimals=serializers.IntegerField(source='asset.decimals')
+    decimals=serializers.IntegerField(source='asset.decimals',read_only=True)
     addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
-
-
+    name = serializers.CharField(source='asset.name',read_only=True)
+    slippage=serializers.FloatField()
     errs = serializers.DictField(read_only=True, default={})
     class Meta:
         model=LimitAsset
-        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status','gas_plus','curr_price']
+        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status','gas_plus','curr_price','decimals','name','slippage']
+
+    def validate(self, attrs):
+        if attrs['qnty'] in (None,'',0):
+            raise ValidationError({'qnty':'required field'})
 
 class SkipTokensSerializer(serializers.ModelSerializer):
     name=serializers.CharField(max_length=128)
