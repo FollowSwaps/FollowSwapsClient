@@ -12,7 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset,LimitAsset
 from rest_framework.decorators import api_view
-from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer,LimitAssetSerializer
+from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer,LimitAssetSerializer, tempSer
 from .utils import sign_message, logger
 import multiprocessing
 from rest_framework.parsers import JSONParser
@@ -32,9 +32,9 @@ def socket():
         asset.save()
     async def limits():
         while 1:
-            print('start limit')
+            # print('start limit')
             await sync_to_async(w.scan)()
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
 
 
     async def hello():
@@ -311,10 +311,12 @@ def update_asset(request):
                 if asset.name is None or asset.name =='':
                     asset.name = wallet.follower.get_erc_contract_by_addr(data['token']['addr']).functions.name().call()
                     changed = True
+                asset.price_for_token = wallet.follower.get_out_qnty_by_path(10 ** asset.decimals,
+                                                                             [asset.addr, wallet.follower.weth_addr, ])
+
                 if changed:
                     asset.save()
-                asset.price_for_token = wallet.follower.get_out_qnty_by_path(10 ** asset.decimals,
-                                                                             [asset.addr,wallet.follower.weth_addr, ])
+                wallet.refresh_token_balance(asset.id)
             except:
                 return JsonResponse({'addr': ['invalid address or wrong token']}, status=400)
             data['token']['asset'] = asset.id
@@ -351,6 +353,8 @@ def update_limit(request):
         if data['token']['id'] != -2:
             skip_token =LimitAsset.objects.get(pk=data['token']['id'])
             skip_ser = LimitAssetSerializer(data=data['token'], instance=skip_token)
+            if data['token']['qnty']>skip_token.asset.balance:
+                data['token']['qnty'] = skip_token.asset.balance
             if skip_ser.is_valid():
                 skip_ser.save()
             else:
@@ -360,6 +364,8 @@ def update_limit(request):
             data['token']['wallet'] = wallet.id
             asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
             data['token']['asset'] = asset.id
+            if data['token']['qnty']>asset.balance:
+                data['token']['qnty'] = asset.balance
 
             new_skip_token = LimitAssetSerializer(data=data['token'])
 
@@ -396,6 +402,10 @@ def update_donor_token(request):
             return JsonResponse({'donor': ['donor must be unique for each token']}, status=400)
         if data['token']['id'] != -2:
             skip_token =DonorAsset.objects.get(pk=data['token']['id'])
+            if data['token']['qnty'] > skip_token.asset.balance:
+                data['token']['qnty'] = skip_token.asset.balance
+            skip_token.our_confirmed=True
+            skip_token.save()
             skip_ser = DonorAssetSerializer(data=data['token'], instance=skip_token)
             if skip_ser.is_valid():
                 skip_ser.save()
@@ -406,7 +416,9 @@ def update_donor_token(request):
             data['token']['wallet'] = wallet.id
             asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
             data['token']['asset'] = asset.id
-
+            data['token']['our_confirmed'] = True
+            if data['token']['qnty'] > asset.balance:
+                data['token']['qnty'] = asset.balance
             new_skip_token = DonorAssetSerializer(data=data['token'])
 
             if new_skip_token.is_valid(raise_exception=True):
@@ -601,6 +613,126 @@ def delete_asset(request):
 
         wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
         return JsonResponse(wallet_ser.data, status=200)
+
+@api_view(['POST'])
+def refresh_token_balance(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    # try:
+    #     token_addr = web3.main.to_checksum_address(data['token_addr'])
+    # except:
+    #     return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+
+    else:
+        wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
+        if Asset.objects.filter(id=data['token_id']).exists():
+            new_balance=wallet.refresh_token(data['token_id'])
+            return JsonResponse({'balance': new_balance}, status=200)
+        else:
+            return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
+
+        # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        # return JsonResponse(wallet_ser.data, status=200)
+
+
+@api_view(['POST'])
+def approve_token(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    # try:
+    #     token_addr = web3.main.to_checksum_address(data['token_addr'])
+    # except:
+    #     return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+
+    else:
+        wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
+        if Asset.objects.filter(id=data['token_id']).exists():
+            approve_tx=wallet.approve_if_not(Asset.objects.filter(id=data['token_id']))
+            if approve_tx is not None:
+                return JsonResponse({'approve': approve_tx}, status=200)
+            else:
+                return JsonResponse({'approve': 'already approved'}, status=400)
+        else:
+            return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
+
+        # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        # return JsonResponse(wallet_ser.data, status=200)
+
+
+
+@api_view(['POST'])
+def refresh_token_price(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    # try:
+    #     token_addr = web3.main.to_checksum_address(data['token_addr'])
+    # except:
+    #     return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+
+    else:
+        wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
+        if Asset.objects.filter(id=data['token_id']).exists():
+            new_price=wallet.refresh_token_balance(data['token_id'])
+            return JsonResponse({'price_for_token': new_price}, status=200)
+        else:
+            return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
+
+        # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        # return JsonResponse(wallet_ser.data, status=200)
+
+
+@api_view(['POST'])
+def refresh_tokens(request):
+    data = JSONParser().parse(request)
+    try:
+        addr = web3.main.to_checksum_address(data['addr'])
+    except:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    # try:
+    #     token_addr = web3.main.to_checksum_address(data['token_addr'])
+    # except:
+    #     return JsonResponse({'addr': ['invalid address']}, status=400)
+
+    key_hash = data['key_hash']
+    if Wallet.objects.filter(addr=addr).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
+    if Wallet.objects.filter(key_hash=key_hash).exists() == False:
+        return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+
+    else:
+        assets = Asset.objects.all()
+        ser=tempSer(assets,)
+        return JsonResponse({'assets': assets}, status=200)
+
+        # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
+        # return JsonResponse(wallet_ser.data, status=200)
 
 
 @api_view(['POST'])

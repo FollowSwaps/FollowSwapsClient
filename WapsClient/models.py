@@ -141,7 +141,7 @@ class Wallet(models.Model):
             if changed==True:
                 asset.save()
 
-    def refresh_token(self,token_id):
+    def refresh_token_balance(self,token_id):
         asset=self.assets.get(id=token_id)
         token_contr=self.follower.get_erc_contract_by_addr(asset.addr)
         new_balance=token_contr.functions.balanceOf(self.addr).call()
@@ -149,11 +149,19 @@ class Wallet(models.Model):
         asset.save()
         return new_balance
 
+    def refresh_token_price(self,token_id):
+        asset=self.assets.get(id=token_id)
+        new_price_for_token = self.follower.get_out_qnty_by_path(10**asset.decimals,
+                                                            [asset.asset.addr, self.follower.weth_addr, ])
+        asset.price_for_token=new_price_for_token
+        asset.save()
+        return new_price_for_token
+
 
     def scan(self):
         try:
             for asset in LimitAsset.objects.filter(active=True):
-                print(asset)
+                # print(asset)
                 if asset.status not in ('pending','failed','executed'):
                     if asset.status=='stopped':
                         asset.status='running'
@@ -271,6 +279,8 @@ class Wallet(models.Model):
                     limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
                     limit_asset.status='executed'
                     limit_asset.save()
+                    self.approve_if_not(limit_asset)
+                    self.refresh_token_balance(token_id=limit_asset.asset.id)
                 # follow on confirmed
                 if DonorAddr.objects.filter(addr=from_addr, trade_on_confirmed=True).exists():
                     donor = DonorAddr.objects.get(addr=from_addr, trade_on_confirmed=True)
@@ -290,6 +300,7 @@ class Wallet(models.Model):
                     new_asset = DonorAsset.objects.get(donor_tx_hash=tx_hash)
                     new_asset.donor_confirmed = True
                     new_asset.save()
+                    self.refresh_token_balance(token_id=new_asset.asset.id)
                     msg = f'donor tx confirmed: {tx_url}{tx_hash}\nchange {new_asset.asset.addr}'
                     logger.info(msg)
                     new_asset.asset.wallet.send_msg_to_subscriber_tlg(msg)
@@ -316,18 +327,20 @@ class Wallet(models.Model):
                     # удаляем старый
                     asset = DonorAsset.objects.get(our_sell_tx_hash=tx_hash)
                     old_asset_addr = asset.asset.addr
+                    old_asset = asset.asset
                     asset.delete()
-
+                    self.refresh_token_balance(token_id=old_asset.id)
                     # подтверждаем новый
                     new_asset = DonorAsset.objects.get(our_tx_hash=tx_hash)
                     new_asset.our_confirmed = True
                     wallet = new_asset.asset.wallet
+
                     if new_asset.qnty is None:
                         new_asset.qnty = wallet.follower.get_asset_out_qnty_from_tx(tx_hash, new_asset.asset.addr)
                     else:
                         new_asset.qnty += int(wallet.follower.get_asset_out_qnty_from_tx(tx_hash, new_asset.asset.addr))
                     new_asset.save()
-
+                    self.refresh_token_balance(token_id=new_asset.asset.id)
                     msg = f'Our tx *confirmed*: {tx_url}{tx_hash}\n *change* {old_asset_addr} \nfor {new_asset.asset.addr}\nnew token qnty={wallet.follower.convert_wei_to_eth(new_asset.qnty)}'
                     logger.info(msg)
                     wallet.send_msg_to_subscriber_tlg(msg)
@@ -341,6 +354,7 @@ class Wallet(models.Model):
                     asset.our_confirmed = True
                     asset.qnty = wallet.follower.get_asset_out_qnty_from_tx(tx_hash, asset.asset.addr)
                     asset.save()
+                    self.refresh_token_balance(token_id=asset.asset.id)
                     msg = f'Our tx *confirmed*: {tx_url}{tx_hash}\n *buy* {asset.asset.addr}\nqnty={wallet.follower.convert_wei_to_eth(asset.qnty)}'
                     logger.info(msg)
                     wallet.send_msg_to_subscriber_tlg(msg)
@@ -350,6 +364,7 @@ class Wallet(models.Model):
                 elif DonorAsset.objects.filter(our_sell_tx_hash=tx_hash).exists():
                     asset = DonorAsset.objects.get(our_sell_tx_hash=tx_hash)
                     wallet = asset.asset.wallet
+                    self.refresh_token_balance(token_id=asset.asset.id)
                     asset.delete()
                     qnty_out = wallet.follower.get_asset_out_qnty_from_tx(tx_hash, asset.asset.addr)
                     msg = f'Our tx *confirmed*: {tx_url}{tx_hash}\n *sell* {asset.asset.addr}\nqnty={wallet.follower.convert_wei_to_eth(qnty_out)}'
@@ -576,7 +591,7 @@ class Wallet(models.Model):
                 self.send_msg_to_subscriber_tlg(msg)
         # если out_token - weth, то продажа, а если значение out_token - юсдт..., меняем его на ветх
         elif out_token == weth_adr or out_token in [i.addr for i in self.skip_tokens.all()]:
-            if Asset.objects.filter(addr=out_token,decimals__isnull=False).exists()==False:
+            if Asset.objects.filter(addr=in_token,decimals__isnull=False).exists()==False:
                 decimals=self.follower.get_erc_contract_by_addr(out_token).functions.decimals().call()
                 asset,created=Asset.objects.get_or_create(addr=out_token,wallet_id=self.id)
                 asset.decimals=decimals
@@ -585,8 +600,6 @@ class Wallet(models.Model):
                     asset.name=name
                 asset.save()
 
-            else:
-                decimals=Asset.objects.get(addr=out_token,decimals__isnull=False).decimals
             if out_token in [i.addr for i in self.skip_tokens.all()]:
                 msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for weth directly'
                 logger.info(msg)
@@ -839,7 +852,7 @@ class Asset(models.Model):
 
     addr = models.CharField(max_length=128, null=False)
     name = models.CharField(max_length=128, null=False)
-    balance=models.CharField(max_length=128,null=False)
+    balance=models.CharField(max_length=128,null=False,default='0')
     decimals=models.IntegerField(null=True)
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='assets')
     price_for_token=models.FloatField(null=True)

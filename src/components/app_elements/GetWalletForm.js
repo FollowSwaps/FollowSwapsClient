@@ -15,7 +15,7 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = ''
-const url = 'http://127.0.0.1:8000'
+const url = 'http://31.132.113.62:8000'
 
 const darkTheme = createMuiTheme({
     palette: {
@@ -479,7 +479,9 @@ class Tokens extends React.Component {
                                 >
 
                                     <Icon name='dropdown'/>
-                                    {token.addr} | {token.name}
+                                    {token.addr} | {token.name} | {token.balance}
+
+
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
@@ -517,6 +519,15 @@ class Tokens extends React.Component {
                                                 Delete token
                                             </Button>
                                         </div>
+                                        <Form.Input
+                                            disabled={true}
+                                            size={"mini"}
+                                            value={token.price_for_token}
+                                            onChange={this.props.token_name_change}
+                                            name={'price_for_token'}
+                                            label={'eth per 1 token price'}
+                                            error={token.errs.price_for_token}
+                                        />
 
                                     </Form.Group>
                                     {/*</Form>*/}
@@ -607,7 +618,6 @@ class Tokens extends React.Component {
                                                     </TableCell>
 
                                                 </TableRow>
-
 
                                             ))}
                                             <TableRow>
@@ -737,7 +747,7 @@ class Limits extends React.Component {
                                 >
 
                                     <Icon name='dropdown'/>
-                                    {token.addr} | {token.name}
+                                    {token.addr} | {token.name} | {token.balance}
 
 
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
@@ -766,6 +776,15 @@ class Limits extends React.Component {
                                                 variant="contained">
                                             Delete token
                                         </Button>
+                                        <Form.Input
+                                            disabled={true}
+                                            size={"mini"}
+                                            value={token.price_for_token}
+                                            onChange={this.props.token_name_change}
+                                            name={'price_for_token'}
+                                            label={'eth per 1 token price'}
+                                            error={token.errs.price_for_token}
+                                        />
                                     </div>
 
                                     <Table style={{backgroundColor: "transparent"}} size="small">
@@ -1825,6 +1844,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -1874,6 +1896,8 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -1915,6 +1939,7 @@ class GetWallet extends React.Component {
                 res.data.errs = {}
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -1922,6 +1947,8 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -1970,6 +1997,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2018,6 +2048,10 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2114,6 +2148,9 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2156,6 +2193,8 @@ class GetWallet extends React.Component {
                 res.data.errs = {}
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
+
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -2164,6 +2203,10 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
@@ -2248,6 +2291,8 @@ class GetWallet extends React.Component {
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
                 res.data.donors.forEach(function (new_donor) {
+
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -2256,6 +2301,10 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2323,6 +2372,9 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2417,6 +2469,10 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2488,6 +2544,9 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
@@ -2560,6 +2619,9 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
@@ -2628,6 +2690,9 @@ class GetWallet extends React.Component {
                     });
 
                     res.data.assets.forEach(function (asset) {
+
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                         asset.donor_assets.forEach(function (donor_asset) {
                             donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                         })
