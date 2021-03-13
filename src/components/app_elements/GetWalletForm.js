@@ -6,7 +6,17 @@ import {Accordion, Form, Grid, Icon, Menu, Message, Segment} from 'semantic-ui-r
 import axios from "axios";
 import Modal from '../elements/Modal';
 import Checkbox from '@material-ui/core/Checkbox';
-import {createMuiTheme, MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField} from "@material-ui/core";
+import {
+    createMuiTheme,
+    MenuItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TextField,
+    Tooltip
+} from "@material-ui/core";
 import {ThemeProvider} from '@material-ui/core/styles';
 import Button from "@material-ui/core/Button";
 import Select from '@material-ui/core/Select';
@@ -456,7 +466,8 @@ class SkipTokens extends React.Component {
                                                     variant="contained">
                                                 Update
                                             </Button>
-                                            <Button style={{marginLeft: 20}} size="small" onClick={() => this.props.deleteSkip(token.addr)}
+                                            <Button style={{marginLeft: 20}} size="small"
+                                                    onClick={() => this.props.deleteSkip(token.addr)}
                                                     variant="contained">
                                                 Delete
                                             </Button>
@@ -2792,7 +2803,8 @@ class GetWallet extends React.Component {
                                         fullWidth
                                         style={{marginBottom: 10}}
                                     />
-                                    <Button style={{width: 200}} size="small" onClick={() => this.updateSkip(this.state.new_skip_token)}
+                                    <Button style={{width: 200}} size="small"
+                                            onClick={() => this.updateSkip(this.state.new_skip_token)}
                                             variant="contained">
                                         Create skip token
                                     </Button>
@@ -2955,113 +2967,94 @@ class GetWallet extends React.Component {
                         header='First set up'
                         content={'This is your first bot set up, please update main fields in wallet tab, make sure telegram id is filled'}/> : null}
 
-                    {/*<Form.Input fluid label='Wallet' name={'addr'} placeholder='Your wallet address'*/}
-                    {/*            value={this.state.addr} onChange={this.handleInputChange}*/}
-                    {/*            error={this.state.errs.addr}/>*/}
-                    <TextField
-                        size="small"
-                        label="Wallet"
-                        name={'addr'}
-                        fullWidth
-                        color="default"
-                        placeholder="Your wallet address"
-                        value={this.state.addr} onChange={this.handleInputChange}
-                        error={this.state.errs.addr}
-                        variant="outlined"
-                        disabled={true}
-                        style={{marginBottom: 20}}
-                    />
+                    <div style={{display: "flex", width: "100%"}}>
+                        <div style={{display: "flex", width: "50%"}}>
+                            <TextField
+                                size="small"
+                                label="Wallet"
+                                name={'addr'}
+                                color="default"
+                                placeholder="Your wallet address"
+                                value={this.state.addr} onChange={this.handleInputChange}
+                                error={this.state.errs.addr}
+                                variant="outlined"
+                                disabled={true}
+                                inputProps={{style:{fontSize: 17}}}
+                                style={{width: "100%"}}
+                            />
 
-                    <TextField
-                        size="small"
-                        label="Key"
-                        name={'key'}
-                        fullWidth
-                        color="default"
-                        placeholder="Wallet Key. Only bot has access to it"
-                        value={this.state.key} onChange={this.handleInputChange}
-                        error={this.state.errs.key}
-                        variant="outlined"
-                        type="password"
-                        disabled={true}
-                        style={{marginBottom: 20}}
-                    />
+                            <TextField
+                                size="small"
+                                label="Key"
+                                name={'key'}
+                                color="default"
+                                placeholder="Wallet Key. Only bot has access to it"
+                                value={this.state.key} onChange={this.handleInputChange}
+                                error={this.state.errs.key}
+                                variant="outlined"
+                                type="password"
+                                disabled={true}
+                                inputProps={{style:{fontSize: 17}}}
+                                style={{marginLeft: 10, width: "100%"}}
+                            />
+                        </div>
 
-                    {/*<Form.Input fluid type={'password'} label='Key' name={'key'}*/}
-                    {/*            placeholder='Wallet Key. Only bot has access to it'*/}
-                    {/*            value={this.state.key} onChange={this.handleInputChange}*/}
-                    {/*            error={this.state.errs.key}/>*/}
+                        <div style={{width: "50%", display: "flex", marginLeft: "auto", justifyContent: "flex-end"}}>
+                            <Button style={{marginLeft: 10, marginRight: 10}} size="small" type='submit'
+                                    onClick={() => this.updateWallet()}
+                                    variant="contained"
+                                    disabled={!this.state.wallet_connected}>Update wallet
+                            </Button>
+                            <Button style={{marginRight: 10}} size="small" onClick={() => this.activateWallet()}
+                                    variant="contained"
+                                    disabled={!this.state.wallet_connected || this.state.initial_state === true}>
+                                {this.state.active ? 'Stop bot' : 'Run bot'}
+                            </Button>
+                            <Button style={{marginRight: 10}} size="small" onClick={() => this.getWallet()}
+                                    variant="contained"
+                                    disabled={this.state.wallet_connected}>
+                                {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
+                            </Button>
+                            <Button style={{marginRight: 10}} size="small" onClick={() => this.refreshBalances()}
+                                    variant="contained"
+                                    disabled={!this.state.wallet_connected || !this.state.mainnet}>
+                                Refresh balances
+                            </Button>
+                        </div>
 
-
-                    <div style={{display: "flex"}}>
-                        <Button style={{marginRight: 10}} size="small" type='submit' onClick={() => this.updateWallet()}
-                                variant="contained"
-                                disabled={!this.state.wallet_connected}>Update wallet
-                        </Button>
-                        {/*<Form.Button type='submit' size="mini" onClick={this.updateWallet} variant="contained"*/}
-                        {/*             style={{*/}
-                        {/*                 backgroundColor: 'rgb(153,89,51)',*/}
-                        {/*             }} disabled={!this.state.wallet_connected}>Update wallet</Form.Button>*/}
-                        <Button style={{marginRight: 10}} size="small" onClick={() => this.activateWallet()}
-                                variant="contained"
-                                disabled={!this.state.wallet_connected || this.state.initial_state === true}>
-                            {this.state.active ? 'Stop bot' : 'Run bot'}
-                        </Button>
-                        {/*<Form.Button size="mini" disabled={!this.state.wallet_connected || this.state.initial_state === true}*/}
-                        {/*             onClick={this.activateWallet}>{this.state.active ? 'Stop bot' : 'Run bot'}</Form.Button>*/}
-
-                        <Button style={{marginRight: 10}} size="small" onClick={() => this.getWallet()}
-                                variant="contained"
-                                disabled={this.state.wallet_connected}>
-                            {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
-                        </Button>
-
-                        {/*<Form.Button size="mini" onClick={this.getWallet}*/}
-                        {/*             disabled={this.state.wallet_connected}>{this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}</Form.Button>*/}
-
-                        <Button style={{marginRight: 10}} size="small" onClick={() => this.refreshBalances()}
-                                variant="contained"
-                                disabled={!this.state.wallet_connected || !this.state.mainnet}>
-                            Refresh balances
-                        </Button>
-
-                        {/*<Form.Button size="mini" onClick={this.refreshBalances}*/}
-                        {/*             disabled={!this.state.wallet_connected || !this.state.mainnet}> Refresh*/}
-                        {/*    balances</Form.Button>*/}
+                    </div>
+                    <div style={{display: "flex", alignItems: "center"}}>
+                        <TextField
+                            size="small"
+                            label="Telegram"
+                            name={'telegram_channel_id'}
+                            color="default"
+                            placeholder="Your telegram channel id for notifications, must be negative 13 digit number"
+                            value={this.state.telegram_channel_id} onChange={this.handleInputChange}
+                            error={this.state.errs.telegram_channel_id}
+                            variant="outlined"
+                            type="number"
+                            InputLabelProps={{shrink: true}}
+                            inputProps={{style:{fontSize: 17}}}
+                            style={{marginBottom: 10, marginTop: 10, width: "50%"}}
+                        />
+                        <Tooltip title={<>
+                            1. Create new private channel on telegram (any name) <br/>
+                            2. Add your bot as admin <br/>
+                            3. Get your telegram id <br/>
+                            4. Easiest way to get telegram ID is to forward a message to the @userinfobot bot from your
+                            new
+                            channel
+                        </>
+                        }
+                                 placement="top">
+                            <p style={{fontSize: '14px', marginLeft: '15px'}}>
+                                What is it?
+                            </p>
+                        </Tooltip>
                     </div>
 
-
-                    {/*<Form.Group grouped>*/}
-
-                    <TextField
-                        size="small"
-                        label="Telegram"
-                        name={'telegram_channel_id'}
-                        fullWidth
-                        color="default"
-                        placeholder="Your telegram channel id for notifications, must be negative 13 digit number"
-                        value={this.state.telegram_channel_id} onChange={this.handleInputChange}
-                        error={this.state.errs.telegram_channel_id}
-                        variant="outlined"
-                        type="number"
-                        InputLabelProps={{shrink: true}}
-                        style={{marginBottom: 20, marginTop: 20}}
-                    />
-
-                    {/*<Form.Input fluid type={'number'} label='Telegram' name={'telegram_channel_id'}*/}
-                    {/*            placeholder='Your telegram channel id for notifications, must be negative 13 digit number'*/}
-                    {/*            value={this.state.telegram_channel_id} onChange={this.handleInputChange}*/}
-                    {/*            error={this.state.errs.telegram_channel_id}/>*/}
-                    <p style={{fontSize: '14px', marginBottom: '1px'}}>
-                        1. Create new private channel on telegram (any name) <br/>
-                        2. Add your bot as admin <br/>
-                        3. Get your telegram id <br/>
-                        4. Easiest way to get telegram ID is to forward a message to the @userinfobot bot from your new
-                        channel
-                    </p>
-
-
-                    <Form size="mini" inverted style={{marginBottom: '15px', marginTop: '15px'}}>
+                    <Form size="mini" inverted style={{marginBottom: '15px'}}>
                         <Form.Group inline>
                             <Form.Radio
                                 size="mini"
@@ -3086,64 +3079,26 @@ class GetWallet extends React.Component {
                         size="small"
                         label="Max gas (gwei)"
                         name={'max_gas'}
-                        fullWidth
                         color="default"
                         placeholder=""
                         value={this.state.max_gas} onChange={this.handleInputChange}
                         error={this.state.errs.max_gas}
                         variant="outlined"
                         type="number"
+                        helperText={"Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher"}
                         InputLabelProps={{shrink: true}}
-                        style={{marginBottom: 20}}
+                        style={{marginBottom: 20, width: "100%"}}
                     />
 
-                    {/*<Form.Input fluid label='Max gas (gwei)' name={'max_gas'} type={'number'}*/}
-                    {/*            placeholder=''*/}
-                    {/*            value={this.state.max_gas} onChange={this.handleInputChange}*/}
-                    {/*            error={this.state.errs.max_gas}/>*/}
-                    <p style={{fontSize: '14px'}}>Put your Max gas (GWEI) ,bot will not follow if gas is higher.
-                        you
-                        can always adjust higher</p>
-                    {/*</Form.Group>*/}
-
                     <div style={{width: '100%', marginBottom: 30}}>
-                        <TextField
-                            size="small"
-                            type={'number'}
-                            label='Waps balance' name={'waps_balance'}
-                            color="default"
-                            placeholder="Your wallet address"
-                            value={this.state.waps_balance / 10 ** 18} onChange={this.handleInputChange}
-                            disabled={true}
-                            variant="outlined"
-                            style={{width: '31%', marginRight: 15}}
-                        />
-                        <TextField
-                            size="small"
-                            type={'number'}
-                            label='Weth balance' name={'weth_balance'}
-                            color="default"
-                            placeholder="Your wallet address"
-                            value={this.state.weth_balance / 10 ** 18} onChange={this.handleInputChange}
-                            disabled={true}
-                            variant="outlined"
-                            style={{width: '31%', marginRight: 15}}
-                        />
-                        <TextField
-                            size="small"
-                            type={'number'}
-                            label='Eth balance' name={'eth_balance'}
-                            color="default"
-                            placeholder="Your wallet address"
-                            value={this.state.eth_balance / 10 ** 18} onChange={this.handleInputChange}
-                            disabled={true}
-                            variant="outlined"
-                            style={{width: '31%', marginRight: 15}}
-                        />
+                        <p style={{fontSize: '14px', marginLeft: '15px'}}>
+                            Balance:
+                            Waps balance: {this.state.waps_balance / 10 ** 18} <br/>
+                            Weth balance: {this.state.weth_balance / 10 ** 18} <br/>
+                            Eth balance: {this.state.eth_balance / 10 ** 18}
+                        </p>
                     </div>
 
-
-                    {/*</Form>*/}
 
                     <div style={{display: "flex"}}>
                         <div style={{minWidth: 240, marginRight: 20}}>
