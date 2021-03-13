@@ -10,10 +10,6 @@ import axios from "axios";
 const url='http://127.0.0.1:8001'
 class Interface extends React.Component {
 
-
-
-
-
     render() {
         return (
             <GUI interface_child={<GetWallet/>}/>

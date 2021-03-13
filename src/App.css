@@ -22,3 +22,6 @@ background-size: cover;
     background: rgb(153,89,51) !important;
 }
 
+.checkbox > label {
+    color: white !important
+}
