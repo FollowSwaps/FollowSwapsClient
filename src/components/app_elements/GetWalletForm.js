@@ -16,7 +16,7 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = ''
-const url = 'http://127.0.0.1:8000'
+const url = 'http://31.132.113.62:8000'
 
 
 class Donors extends React.Component {
@@ -276,7 +276,7 @@ class Tokens extends React.Component {
                                 >
 
                                     <Icon name='dropdown'/>
-                                    {token.addr} | {token.name}
+                                    {token.addr} | {token.name} | {token.balance}
 
 
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
@@ -295,7 +295,18 @@ class Tokens extends React.Component {
                                             name</Form.Button>
                                             <Form.Button onClick={() => this.props.delete(token.id)}>delete
                                                 token</Form.Button>
-                                        </Form.Group> </Form>
+
+                                        </Form.Group>
+
+                                        <Form.Input
+                                            disabled={true}
+                                            size={"mini"}
+                                            value={token.price_for_token}
+                                            onChange={this.props.token_name_change}
+                                            name={'price_for_token'}
+                                            label={'eth per 1 token price'}
+                                            error={token.errs.price_for_token}
+                                        /></Form>
                                     <Table celled inverted selectable>
                                         <Table.Header>
                                             <Table.Row>
@@ -350,49 +361,48 @@ class Tokens extends React.Component {
                                                 </Table.Row>
 
 
-
                                             ))}
-<Table.Row >
+                                            <Table.Row>
 
 
-                                                    <Table.Cell>
+                                                <Table.Cell>
 
-                                                        <Form.Select
-                                                            fluid
-                                                            id={this.props.new_token.id}
-                                                            options={this.props.donors.map(x => ({
-                                                                "key": x.id,
-                                                                "text": x.name,
-                                                                'value': x.id
-                                                            }),)}
-                                                            value={this.props.new_token.donor}
-                                                            name={'donor'}
-                                                            onChange={this.props.input_donor_token}
-                                                            error={this.props.new_token.errs.donor}
-                                                        />
-                                                    </Table.Cell>
-                                                    <Table.Cell>
-                                                        <Form.Input type={'number'}
-                                                                    id={this.props.new_token.id}
-                                                                    value={this.props.new_token.qnty}
-                                                                    onChange={this.props.input_donor_token}
-                                                                    name={'qnty'}
-                                                                    error={this.props.new_token.errs.qnty}
-                                                        />
-                                                    </Table.Cell>
+                                                    <Form.Select
+                                                        fluid
+                                                        id={this.props.new_token.id}
+                                                        options={this.props.donors.map(x => ({
+                                                            "key": x.id,
+                                                            "text": x.name,
+                                                            'value': x.id
+                                                        }),)}
+                                                        value={this.props.new_token.donor}
+                                                        name={'donor'}
+                                                        onChange={this.props.input_donor_token}
+                                                        error={this.props.new_token.errs.donor}
+                                                    />
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    <Form.Input type={'number'}
+                                                                id={this.props.new_token.id}
+                                                                value={this.props.new_token.qnty}
+                                                                onChange={this.props.input_donor_token}
+                                                                name={'qnty'}
+                                                                error={this.props.new_token.errs.qnty}
+                                                    />
+                                                </Table.Cell>
 
 
-                                                    <Table.Cell>
-                                                        <Form inverted>
-                                                            <Form.Group inline>
-                                                                <Form.Button
-                                                                    onClick={() => this.props.updateAsset(this.props.new_token)}>Create</Form.Button>
+                                                <Table.Cell>
+                                                    <Form inverted>
+                                                        <Form.Group inline>
+                                                            <Form.Button
+                                                                onClick={() => this.props.updateAsset(this.props.new_token)}>Create</Form.Button>
 
-                                                            </Form.Group>
-                                                        </Form>
-                                                    </Table.Cell>
+                                                        </Form.Group>
+                                                    </Form>
+                                                </Table.Cell>
 
-                                                </Table.Row>
+                                            </Table.Row>
 
                                         </Table.Body>
                                     </Table>
@@ -456,7 +466,7 @@ class Limits extends React.Component {
                                 >
 
                                     <Icon name='dropdown'/>
-                                    {token.addr} | {token.name}
+                                    {token.addr} | {token.name} | {token.balance}
 
 
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
@@ -475,7 +485,17 @@ class Limits extends React.Component {
                                             name</Form.Button>
                                             <Form.Button onClick={() => this.props.delete(token.id)}>delete
                                                 token</Form.Button>
-                                        </Form.Group> </Form>
+
+                                        </Form.Group>
+                                        <Form.Input
+                                            disabled={true}
+                                            size={"mini"}
+                                            value={token.price_for_token}
+                                            onChange={this.props.token_name_change}
+                                            name={'price_for_token'}
+                                            label={'eth per 1 token price'}
+                                            error={token.errs.price_for_token}
+                                        /></Form>
                                     <div style={{overflowX: 'scroll'}}>
                                         <Table inverted selectable>
                                             <Table.Header>
@@ -528,14 +548,14 @@ class Limits extends React.Component {
                                                                         error={limit_token.errs.price}
                                                             />
                                                         </Table.Cell><Table.Cell>
-                                                            <Form.Input type={'number'}
-                                                                        id={limit_token.id}
-                                                                        value={limit_token.slippage}
-                                                                        onChange={this.props.input_skip_token}
-                                                                        name={'slippage'}
-                                                                        error={limit_token.errs.slippage}
-                                                            />
-                                                        </Table.Cell><Table.Cell>
+                                                        <Form.Input type={'number'}
+                                                                    id={limit_token.id}
+                                                                    value={limit_token.slippage}
+                                                                    onChange={this.props.input_skip_token}
+                                                                    name={'slippage'}
+                                                                    error={limit_token.errs.slippage}
+                                                        />
+                                                    </Table.Cell><Table.Cell>
                                                         <Form.Input type={'number'}
                                                                     disabled={true}
                                                                     id={limit_token.id}
@@ -648,14 +668,14 @@ class Limits extends React.Component {
                                                                     error={this.props.new_limit.errs.price}
                                                         />
                                                     </Table.Cell> <Table.Cell>
-                                                        <Form.Input type={'number'}
-                                                                    id={this.props.new_limit.id}
-                                                                    value={this.props.new_limit.slippage}
-                                                                    onChange={this.props.input_skip_token}
-                                                                    name={'slippage'}
-                                                                    error={this.props.new_limit.errs.slippage}
-                                                        />
-                                                    </Table.Cell><Table.Cell>
+                                                    <Form.Input type={'number'}
+                                                                id={this.props.new_limit.id}
+                                                                value={this.props.new_limit.slippage}
+                                                                onChange={this.props.input_skip_token}
+                                                                name={'slippage'}
+                                                                error={this.props.new_limit.errs.slippage}
+                                                    />
+                                                </Table.Cell><Table.Cell>
                                                     <Form.Input type={'curr_price'}
                                                                 id={this.props.new_limit.id}
                                                                 disabled={true}
@@ -794,8 +814,8 @@ const default_new_token = {
 const default_new_donor_token = {
     id: -2,
     errs: {},
-    donor:-1,
-    qnty:0,
+    donor: -1,
+    qnty: 0,
 
 }
 const default_new_limit = {
@@ -820,7 +840,9 @@ const initialState = {
         waps_balance: null,
         weth_balance: null,
         eth_balance: null,
-        donors: [],
+        // donors: [],
+        // donors:[{"id":1,"fixed_value_trade":0.1,"percent_value_trade":100,"gas_multiplier":1.1,"slippage":5,"follow_max":999,"follow_min":0.00001,"retry_count":0,"errs":{},"name":"new donor","addr":"0xa89Acf1c5E133D3917319B97B5c5F77Bd99CF4c3","fixed_trade":false,"trade_on_confirmed":false,"donor_slippage":true,"wallet":1},{"id":2,"fixed_value_trade":0.1,"percent_value_trade":10,"gas_multiplier":1.1,"slippage":5,"follow_max":999,"follow_min":0.1,"retry_count":0,"errs":{},"name":"123","addr":"0x705608218789D35d9Afd761cAE3dC0D5Ec82bE67","fixed_trade":true,"trade_on_confirmed":false,"donor_slippage":true,"wallet":1}],
+        //     tokens:[{"id":27,"donor_assets":[],"limit_assets":[{"qnty":0.1,"price":1,"errs":{},"id":29,"asset":27,"addr":"0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E","active":false,"tx_hash":"0x53d9775d4380324878edd336ea400936f6d8982eaa53de4f70a28b4afd6bad02","type":"buy","status":"executed","gas_plus":3,"curr_price":0.005515045135406219,"decimals":18,"name":"dothis","slippage":5},{"qnty":0.11,"price":0.005,"errs":{},"id":30,"asset":27,"addr":"0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E","active":false,"tx_hash":"0x895245d16a8e80ff8c0610de8241495db98e38ca938ec1337ee32eb0566bd63f","type":"buy","status":"executed","gas_plus":34,"curr_price":0.004991255432077238,"decimals":18,"name":"dothis","slippage":5},{"qnty":1,"price":1,"errs":{},"id":32,"asset":27,"addr":"0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E","active":false,"tx_hash":null,"type":"sell","status":"running","gas_plus":3,"curr_price":null,"decimals":18,"name":"dothis","slippage":5},{"qnty":1,"price":1,"errs":{},"id":33,"asset":27,"addr":"0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E","active":false,"tx_hash":null,"type":"sell","status":"stopped","gas_plus":3,"curr_price":null,"decimals":18,"name":"dothis","slippage":6}],"name":"dothis","errs":{},"addr":"0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E","balance":"","decimals":18,"price_for_token":null,"wallet":1},{"id":31,"donor_assets":[],"limit_assets":[{"qnty":6,"price":123,"errs":{},"id":38,"asset":31,"addr":"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984","active":false,"tx_hash":null,"type":"take profit","status":"stopped","gas_plus":2,"curr_price":null,"decimals":18,"name":"Uniswap","slippage":5}],"name":"Uniswap","errs":{},"addr":"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984","balance":"","decimals":18,"price_for_token":null,"wallet":1},{"id":33,"donor_assets":[{"qnty":123,"donor":1,"errs":{},"id":28,"asset":33,"addr":"0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776","decimals":null,"name":""}],"limit_assets":[{"qnty":1,"price":1,"errs":{},"id":37,"asset":33,"addr":"0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776","active":false,"tx_hash":null,"type":"sell","status":"stopped","gas_plus":3,"curr_price":null,"decimals":null,"name":"","slippage":1}],"name":"","errs":{},"addr":"0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776","balance":"","decimals":null,"price_for_token":null,"wallet":1},{"id":34,"donor_assets":[{"qnty":10,"donor":1,"errs":{},"id":26,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","decimals":9,"name":"ghj"},{"qnty":0.06,"donor":2,"errs":{},"id":27,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","decimals":9,"name":"ghj"}],"limit_assets":[{"qnty":123,"price":1,"errs":{},"id":34,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","active":false,"tx_hash":null,"type":"buy","status":"stopped","gas_plus":3,"curr_price":null,"decimals":9,"name":"ghj","slippage":6},{"qnty":1,"price":1,"errs":{},"id":35,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","active":false,"tx_hash":null,"type":"sell","status":"stopped","gas_plus":3,"curr_price":null,"decimals":9,"name":"ghj","slippage":5},{"qnty":1234,"price":1321,"errs":{},"id":36,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","active":false,"tx_hash":null,"type":"take profit","status":"stopped","gas_plus":35,"curr_price":null,"decimals":9,"name":"ghj","slippage":54},{"qnty":5,"price":123,"errs":{},"id":39,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","active":false,"tx_hash":null,"type":"stop loss","status":"stopped","gas_plus":1,"curr_price":null,"decimals":9,"name":"ghj","slippage":4},{"qnty":0,"price":1,"errs":{},"id":41,"asset":34,"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","active":false,"tx_hash":null,"type":"stop loss","status":"stopped","gas_plus":3,"curr_price":null,"decimals":9,"name":"ghj","slippage":3}],"name":"ghj","errs":{},"addr":"0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919","balance":"","decimals":9,"price_for_token":null,"wallet":1},{"id":35,"donor_assets":[],"limit_assets":[{"qnty":5,"price":321,"errs":{},"id":40,"asset":35,"addr":"0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735","active":false,"tx_hash":null,"type":"take profit","status":"stopped","gas_plus":5,"curr_price":null,"decimals":18,"name":"Dai Stablecoin","slippage":5}],"name":"Dai Stablecoin","errs":{},"addr":"0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735","balance":"","decimals":18,"price_for_token":null,"wallet":1}],
         assets: [],
         loading: false,
         wallet_connected: false,
@@ -931,7 +953,7 @@ class GetWallet extends React.Component {
         name = target.name
         let id = +target.id
         if (value === undefined && name === undefined) {
-             value = target.textContent.toLowerCase()
+            value = target.textContent.toLowerCase()
             if (target.parentNode.parentNode.getAttribute("name") === 'donor') {
                 id = +target.parentNode.parentNode.id
                 console.log(target.parentNode.parentNode.name)
@@ -1139,14 +1161,17 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
 
                 })
@@ -1188,14 +1213,16 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1229,6 +1256,7 @@ class GetWallet extends React.Component {
                 res.data.errs = {}
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -1236,14 +1264,16 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1284,14 +1314,17 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1332,14 +1365,18 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1428,14 +1465,17 @@ class GetWallet extends React.Component {
                     new_donor.slippage *= 100
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1450,7 +1490,8 @@ class GetWallet extends React.Component {
             })
         // this.setState(self.res)
     }
- refreshBalances() {
+
+    refreshBalances() {
 
         this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
@@ -1469,6 +1510,8 @@ class GetWallet extends React.Component {
                 res.data.errs = {}
                 res.data.max_gas = (res.data.max_gas / 10 ** 9)
                 res.data.donors.forEach(function (new_donor) {
+
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -1477,13 +1520,17 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
                 res.data.wallet_connected = true
@@ -1561,6 +1608,8 @@ class GetWallet extends React.Component {
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
                 res.data.donors.forEach(function (new_donor) {
+
+
                     new_donor.follow_max = (+new_donor.follow_max / 10 ** 18)
                     new_donor.follow_min = (+new_donor.follow_min / 10 ** 18)
                     new_donor.fixed_value_trade = (+new_donor.fixed_value_trade / 10 ** 18)
@@ -1569,14 +1618,18 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1636,14 +1689,17 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1699,7 +1755,7 @@ class GetWallet extends React.Component {
 
     updateToken(token) {
         this.setState({loading: true})
-        if (token.id!==-2)
+        if (token.id !== -2)
             token.qnty = BigInt(token.qnty * 10 ** +token.decimals).toString()
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
@@ -1730,14 +1786,18 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1764,10 +1824,11 @@ class GetWallet extends React.Component {
             })
         // this.setState(self.res)
     }
+
     updateDonorToken(token) {
         this.setState({loading: true})
-      token.asset_id = this.state.assets.find(x => x.id === this.state.activeIndexAccordion).id
-        token.decimals=this.state.assets.find(x => x.id === this.state.activeIndexAccordion).decimals
+        token.asset_id = this.state.assets.find(x => x.id === this.state.activeIndexAccordion).id
+        token.decimals = this.state.assets.find(x => x.id === this.state.activeIndexAccordion).decimals
         token.qnty = BigInt(token.qnty * 10 ** +token.decimals).toString()
 
         let csrftoken = this.getCookie('csrftoken')
@@ -1800,13 +1861,16 @@ class GetWallet extends React.Component {
                 });
                 res.data.assets.forEach(function (asset) {
                     asset.donor_assets.forEach(function (donor_asset) {
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1837,11 +1901,11 @@ class GetWallet extends React.Component {
     updateLimit(token) {
         this.setState({loading: true})
         token.asset_id = this.state.assets.find(x => x.id === this.state.activeIndexAccordion).id
-        token.decimals=this.state.assets.find(x => x.id === this.state.activeIndexAccordion).decimals
-        if (token.type==='buy')
+        token.decimals = this.state.assets.find(x => x.id === this.state.activeIndexAccordion).decimals
+        if (token.type === 'buy')
             token.qnty = BigInt(token.qnty * 10 ** 18).toString()
-            else
-        token.qnty = BigInt(token.qnty * 10 ** +token.decimals).toString()
+        else
+            token.qnty = BigInt(token.qnty * 10 ** +token.decimals).toString()
 
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
@@ -1859,7 +1923,7 @@ class GetWallet extends React.Component {
             .then(res => {
 
 
-                    res.data.new_limit = default_new_limit
+                res.data.new_limit = default_new_limit
 
                 res.data.loading = false
                 res.data.new_donor = {...default_new_donor}
@@ -1872,14 +1936,17 @@ class GetWallet extends React.Component {
 
                 });
                 res.data.assets.forEach(function (asset) {
+
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                     })
                     asset.limit_assets.forEach(function (limit_asset) {
-                        if (limit_asset.type==='buy')
+                        if (limit_asset.type === 'buy')
                             limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
-                            else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                     })
                 })
 
@@ -1940,14 +2007,17 @@ class GetWallet extends React.Component {
                     });
 
                     res.data.assets.forEach(function (asset) {
+
+                        asset.balance = asset.balance / 10 ** asset.decimals
+                        asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
                         asset.donor_assets.forEach(function (donor_asset) {
                             donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
                         })
                         asset.limit_assets.forEach(function (limit_asset) {
-                            if (limit_asset.type==='buy')
-                            limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                            if (limit_asset.type === 'buy')
+                                limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
                             else
-                        limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                                limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
                         })
                     })
                     res.data.wallet_connected = true
@@ -2001,7 +2071,8 @@ class GetWallet extends React.Component {
                     <Form.Button onClick={this.getWallet}
                                  disabled={this.state.wallet_connected}>{this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}</Form.Button>
                     <Form.Button onClick={this.refreshBalances}
-                                 disabled={!this.state.wallet_connected || !this.state.mainnet}> Refresh balances</Form.Button>
+                                 disabled={!this.state.wallet_connected || !this.state.mainnet}> Refresh
+                        balances</Form.Button>
 
                 </Form.Group>
 
@@ -2335,10 +2406,12 @@ class GetWallet extends React.Component {
 
                 <Tokens tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
                         activeIndexAccordion={this.state.activeIndexAccordion}
-                        addr={this.state.addr}  input_donor_token={this.input_donor_token}
+                        addr={this.state.addr} input_donor_token={this.input_donor_token}
                         handleClick={this.handleClick} token_name_change={this.token_name_change}
-                        update={this.update_asset_name} delete={this.deleteTokenFull} new_token={this.state.new_donor_token}
-                        updateAsset={this.updateDonorToken} deleteAsset={this.deleteToken} loading={this.state.loading}/>
+                        update={this.update_asset_name} delete={this.deleteTokenFull}
+                        new_token={this.state.new_donor_token}
+                        updateAsset={this.updateDonorToken} deleteAsset={this.deleteToken}
+                        loading={this.state.loading}/>
 
                 <Segment inverted>
                     <Accordion fluid inverted>

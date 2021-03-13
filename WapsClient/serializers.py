@@ -14,7 +14,7 @@ class DonorAssetSerializer(serializers.ModelSerializer):
     decimals=serializers.IntegerField(source='asset.decimals',read_only=True)
     class Meta:
         model=DonorAsset
-        fields=['qnty','donor','errs','id','asset','addr','decimals','name']
+        fields=['qnty','donor','errs','id','asset','addr','decimals','name','our_confirmed']
 
 class LimitAssetSerializer(serializers.ModelSerializer):
     qnty = serializers.IntegerField()
@@ -31,6 +31,7 @@ class LimitAssetSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['qnty'] in (None,'',0):
             raise ValidationError({'qnty':'required field'})
+        return attrs
 
 class SkipTokensSerializer(serializers.ModelSerializer):
     name=serializers.CharField(max_length=128)
@@ -67,6 +68,7 @@ class tempSer(serializers.ModelSerializer):
     limit_assets=LimitAssetSerializer(many=True,read_only=True)
     name=serializers.CharField(max_length=128)
     errs=serializers.DictField(read_only=True,default={})
+    balance=serializers.IntegerField()
     class Meta:
         model = Asset
         exclude=[]
