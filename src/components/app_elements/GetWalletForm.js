@@ -415,7 +415,7 @@ class SkipTokens extends React.Component {
     render() {
         return (
 
-            <Segment inverted>
+            <Segment inverted style={{backgroundColor: "#151719"}}>
                 <Accordion fluid inverted>
                     {
                         this.props.tokens.map(token => (
@@ -430,27 +430,38 @@ class SkipTokens extends React.Component {
                                     {token.name}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}
-                                          error={token.errs.non_field_errors}>
-                                        <Form.Group grouped>
-                                            <Form.Input
-                                                label={'token name'}
-                                                value={token.name} onChange={this.props.input_skip_token} name={'name'}
-                                                error={token.errs.name}
-                                            />
-                                            <Form.Input
-                                                label={'token address'}
-                                                value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
-                                                error={token.errs.addr}
-                                            />
-                                        </Form.Group>
-                                        <Form.Group inline>
-                                            <Form.Button
-                                                onClick={() => this.props.updateSkip(token)}>Update</Form.Button>
-                                            <Form.Button
-                                                onClick={() => this.props.deleteSkip(token.addr)}>Delete</Form.Button>
-                                        </Form.Group>
-                                    </Form>
+                                    <div style={{display: "flex", flexDirection: "column"}}>
+                                        <TextField
+                                            size="small"
+                                            color="default"
+                                            label={'token name'}
+                                            value={token.name} onChange={this.props.input_skip_token} name={'name'}
+                                            error={token.errs.name}
+                                            variant="outlined"
+                                            fullWidth
+                                            style={{marginBottom: 10}}
+                                        />
+                                        <TextField
+                                            size="small"
+                                            color="default"
+                                            label={'token address'}
+                                            value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
+                                            error={token.errs.addr}
+                                            variant="outlined"
+                                            fullWidth
+                                            style={{marginBottom: 10}}
+                                        />
+                                        <div style={{display: "flex"}}>
+                                            <Button size="small" onClick={() => this.props.updateSkip(token)}
+                                                    variant="contained">
+                                                Update
+                                            </Button>
+                                            <Button style={{marginLeft: 20}} size="small" onClick={() => this.props.deleteSkip(token.addr)}
+                                                    variant="contained">
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </Accordion.Content>
 
                             </div>
@@ -519,16 +530,19 @@ class Tokens extends React.Component {
                                                 Delete token
                                             </Button>
                                         </div>
-                                        <Form.Input
+                                        <TextField
+                                            style={{marginTop: 15}}
+                                            size="small"
+                                            color="default"
+                                            variant="outlined"
+                                            fullWidth
                                             disabled={true}
-                                            size={"mini"}
                                             value={token.price_for_token}
                                             onChange={this.props.token_name_change}
                                             name={'price_for_token'}
                                             label={'eth per 1 token price'}
                                             error={token.errs.price_for_token}
                                         />
-
                                     </Form.Group>
                                     {/*</Form>*/}
                                     <Table style={{backgroundColor: "transparent"}} size="small">
@@ -687,38 +701,7 @@ class Tokens extends React.Component {
 
                                         </TableBody>
                                     </Table>
-                                    {/*                          <Form inverted style={{marginBottom: '30px'}} loading={this.props.loading}*/}
-                                    {/*                                error={token.errs.non_field_errors}>*/}
-                                    {/*                              <Form.Group grouped>*/}
-                                    {/*                                  <Form.Input*/}
-                                    {/*                                      label={'token address'}*/}
-                                    {/*                                      value={token.addr} onChange={this.props.input_skip_token} name={'addr'}*/}
-                                    {/*                                      error={token.errs.addr}*/}
-                                    {/*                                  />*/}
-                                    {/*                                  <Form.Input type={'number'}*/}
-                                    {/*                                      label={'token quantity'}*/}
-                                    {/*                                      value={token.qnty} onChange={this.props.input_skip_token} name={'qnty'}*/}
-                                    {/*                                      error={token.errs.qnty}*/}
-                                    {/*                                  />*/}
-                                    {/*                                  <Form.Select*/}
-                                    {/*  fluid*/}
-                                    {/*  label='Donor'*/}
-                                    {/*  options={this.props.donors.map(x=> ({ "key": x.id, "text": x.name, 'value': x.id}),)}*/}
-                                    {/*  value={token.donor}*/}
-                                    {/*  name={'donor'}*/}
-                                    {/*  onChange={this.props.input_skip_token}*/}
-                                    {/*/>*/}
-
-                                    {/*                              </Form.Group>*/}
-                                    {/*                              <Form.Group inline>*/}
-                                    {/*                                  <Form.Button*/}
-                                    {/*                                      onClick={() => this.props.updateAsset(token)}>Update</Form.Button>*/}
-                                    {/*                                  <Form.Button*/}
-                                    {/*                                      onClick={() => this.props.deleteAsset(token.id)}>Delete</Form.Button>*/}
-                                    {/*                              </Form.Group>*/}
-                                    {/*                          </Form>*/}
                                 </Accordion.Content>
-
                             </div>
                         ))}
                 </Accordion>
@@ -776,16 +759,19 @@ class Limits extends React.Component {
                                                 variant="contained">
                                             Delete token
                                         </Button>
-                                        <Form.Input
-                                            disabled={true}
-                                            size={"mini"}
-                                            value={token.price_for_token}
-                                            onChange={this.props.token_name_change}
-                                            name={'price_for_token'}
-                                            label={'eth per 1 token price'}
-                                            error={token.errs.price_for_token}
-                                        />
                                     </div>
+                                    <TextField
+                                        size="small"
+                                        color="default"
+                                        variant="outlined"
+                                        fullWidth
+                                        disabled={true}
+                                        value={token.price_for_token}
+                                        onChange={this.props.token_name_change}
+                                        name={'price_for_token'}
+                                        label={'eth per 1 token price'}
+                                        error={token.errs.price_for_token}
+                                    />
 
                                     <Table style={{backgroundColor: "transparent"}} size="small">
                                         <TableHead>
@@ -1222,317 +1208,11 @@ const initialState = {
         weth_balance: null,
         eth_balance: null,
         // donors: [],
-        donors: [{
-            "id": 1,
-            "fixed_value_trade": 0.1,
-            "percent_value_trade": 100,
-            "gas_multiplier": 1.1,
-            "slippage": 5,
-            "follow_max": 999,
-            "follow_min": 0.00001,
-            "retry_count": 0,
-            "errs": {},
-            "name": "new donor",
-            "addr": "0xa89Acf1c5E133D3917319B97B5c5F77Bd99CF4c3",
-            "fixed_trade": false,
-            "trade_on_confirmed": false,
-            "donor_slippage": true,
-            "wallet": 1
-        }, {
-            "id": 2,
-            "fixed_value_trade": 0.1,
-            "percent_value_trade": 10,
-            "gas_multiplier": 1.1,
-            "slippage": 5,
-            "follow_max": 999,
-            "follow_min": 0.1,
-            "retry_count": 0,
-            "errs": {},
-            "name": "123",
-            "addr": "0x705608218789D35d9Afd761cAE3dC0D5Ec82bE67",
-            "fixed_trade": true,
-            "trade_on_confirmed": false,
-            "donor_slippage": true,
-            "wallet": 1
-        }],
-        assets: [{
-            "id": 27,
-            "donor_assets": [],
-            "limit_assets": [{
-                "qnty": 0.1,
-                "price": 1,
-                "errs": {},
-                "id": 29,
-                "asset": 27,
-                "addr": "0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E",
-                "active": false,
-                "tx_hash": "0x53d9775d4380324878edd336ea400936f6d8982eaa53de4f70a28b4afd6bad02",
-                "type": "buy",
-                "status": "executed",
-                "gas_plus": 3,
-                "curr_price": 0.005515045135406219,
-                "decimals": 18,
-                "name": "dothis",
-                "slippage": 5
-            }, {
-                "qnty": 0.11,
-                "price": 0.005,
-                "errs": {},
-                "id": 30,
-                "asset": 27,
-                "addr": "0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E",
-                "active": false,
-                "tx_hash": "0x895245d16a8e80ff8c0610de8241495db98e38ca938ec1337ee32eb0566bd63f",
-                "type": "buy",
-                "status": "executed",
-                "gas_plus": 34,
-                "curr_price": 0.004991255432077238,
-                "decimals": 18,
-                "name": "dothis",
-                "slippage": 5
-            }, {
-                "qnty": 1,
-                "price": 1,
-                "errs": {},
-                "id": 32,
-                "asset": 27,
-                "addr": "0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E",
-                "active": false,
-                "tx_hash": null,
-                "type": "sell",
-                "status": "running",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": 18,
-                "name": "dothis",
-                "slippage": 5
-            }, {
-                "qnty": 1,
-                "price": 1,
-                "errs": {},
-                "id": 33,
-                "asset": 27,
-                "addr": "0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E",
-                "active": false,
-                "tx_hash": null,
-                "type": "sell",
-                "status": "stopped",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": 18,
-                "name": "dothis",
-                "slippage": 6
-            }],
-            "name": "dothis",
-            "errs": {},
-            "addr": "0x1C21d179BBcd6b3ff60a9CF5585C5828E091de9E",
-            "balance": "",
-            "decimals": 18,
-            "price_for_token": null,
-            "wallet": 1
-        }, {
-            "id": 31,
-            "donor_assets": [],
-            "limit_assets": [{
-                "qnty": 6,
-                "price": 123,
-                "errs": {},
-                "id": 38,
-                "asset": 31,
-                "addr": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-                "active": false,
-                "tx_hash": null,
-                "type": "take profit",
-                "status": "stopped",
-                "gas_plus": 2,
-                "curr_price": null,
-                "decimals": 18,
-                "name": "Uniswap",
-                "slippage": 5
-            }],
-            "name": "Uniswap",
-            "errs": {},
-            "addr": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-            "balance": "",
-            "decimals": 18,
-            "price_for_token": null,
-            "wallet": 1
-        }, {
-            "id": 33,
-            "donor_assets": [{
-                "qnty": 123,
-                "donor": 1,
-                "errs": {},
-                "id": 28,
-                "asset": 33,
-                "addr": "0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776",
-                "decimals": null,
-                "name": ""
-            }],
-            "limit_assets": [{
-                "qnty": 1,
-                "price": 1,
-                "errs": {},
-                "id": 37,
-                "asset": 33,
-                "addr": "0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776",
-                "active": false,
-                "tx_hash": null,
-                "type": "sell",
-                "status": "stopped",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": null,
-                "name": "",
-                "slippage": 1
-            }],
-            "name": "",
-            "errs": {},
-            "addr": "0x9E3D09A7Db7d4F9AC714a59ce7eac1Af4A52B776",
-            "balance": "",
-            "decimals": null,
-            "price_for_token": null,
-            "wallet": 1
-        }, {
-            "id": 34,
-            "donor_assets": [{
-                "qnty": 10,
-                "donor": 1,
-                "errs": {},
-                "id": 26,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "decimals": 9,
-                "name": "ghj"
-            }, {
-                "qnty": 0.06,
-                "donor": 2,
-                "errs": {},
-                "id": 27,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "decimals": 9,
-                "name": "ghj"
-            }],
-            "limit_assets": [{
-                "qnty": 123,
-                "price": 1,
-                "errs": {},
-                "id": 34,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "active": false,
-                "tx_hash": null,
-                "type": "buy",
-                "status": "stopped",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": 9,
-                "name": "ghj",
-                "slippage": 6
-            }, {
-                "qnty": 1,
-                "price": 1,
-                "errs": {},
-                "id": 35,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "active": false,
-                "tx_hash": null,
-                "type": "sell",
-                "status": "stopped",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": 9,
-                "name": "ghj",
-                "slippage": 5
-            }, {
-                "qnty": 1234,
-                "price": 1321,
-                "errs": {},
-                "id": 36,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "active": false,
-                "tx_hash": null,
-                "type": "take profit",
-                "status": "stopped",
-                "gas_plus": 35,
-                "curr_price": null,
-                "decimals": 9,
-                "name": "ghj",
-                "slippage": 54
-            }, {
-                "qnty": 5,
-                "price": 123,
-                "errs": {},
-                "id": 39,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "active": false,
-                "tx_hash": null,
-                "type": "stop loss",
-                "status": "stopped",
-                "gas_plus": 1,
-                "curr_price": null,
-                "decimals": 9,
-                "name": "ghj",
-                "slippage": 4
-            }, {
-                "qnty": 0,
-                "price": 1,
-                "errs": {},
-                "id": 41,
-                "asset": 34,
-                "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-                "active": false,
-                "tx_hash": null,
-                "type": "stop loss",
-                "status": "stopped",
-                "gas_plus": 3,
-                "curr_price": null,
-                "decimals": 9,
-                "name": "ghj",
-                "slippage": 3
-            }],
-            "name": "ghj",
-            "errs": {},
-            "addr": "0xE9dccd5c218582C6A85c3C4E8a9Ff5005375A919",
-            "balance": "",
-            "decimals": 9,
-            "price_for_token": null,
-            "wallet": 1
-        }, {
-            "id": 35,
-            "donor_assets": [],
-            "limit_assets": [{
-                "qnty": 5,
-                "price": 321,
-                "errs": {},
-                "id": 40,
-                "asset": 35,
-                "addr": "0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735",
-                "active": false,
-                "tx_hash": null,
-                "type": "take profit",
-                "status": "stopped",
-                "gas_plus": 5,
-                "curr_price": null,
-                "decimals": 18,
-                "name": "Dai Stablecoin",
-                "slippage": 5
-            }],
-            "name": "Dai Stablecoin",
-            "errs": {},
-            "addr": "0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735",
-            "balance": "",
-            "decimals": 18,
-            "price_for_token": null,
-            "wallet": 1
-        }],
+        donors: [],
+        assets: [],
         // assets: [],
         loading: false,
-        wallet_connected: true,
+        wallet_connected: false,
         new_donor: {...default_new_donor},
         new_donor_token: {...default_new_donor_token},
         new_skip_token: {...default_new_skip_token},
@@ -3074,7 +2754,7 @@ class GetWallet extends React.Component {
                             handleClick={this.handleClick}
                             updateSkip={this.updateSkip} deleteSkip={this.deleteSkip}
                             loading={this.state.loading}/>
-                <Segment inverted>
+                <Segment inverted style={{backgroundColor: "#151719"}}>
                     <Accordion fluid inverted>
 
 
@@ -3089,36 +2769,38 @@ class GetWallet extends React.Component {
                             </Accordion.Title>
                             <Accordion.Content
                                 active={this.state.activeIndexAccordion === this.state.new_skip_token.id}>
-                                <Form inverted style={{marginBottom: '30px'}} loading={this.state.loading}
-                                      error={this.state.new_skip_token.errs.non_field_errors}>
-                                    <Form.Group grouped>
-                                        <Form.Input
-                                            label={'token name'}
-                                            value={this.state.new_skip_token.name} onChange={this.input_skip_token}
-                                            name={'name'}
-                                            error={this.state.new_skip_token.errs.name}
-                                        />
-                                        <Form.Input
-                                            label={'token address'}
-                                            value={this.state.new_skip_token.addr} onChange={this.input_skip_token}
-                                            name={'addr'}
-                                            error={this.state.new_skip_token.errs.addr}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group inline>
-                                        <Form.Button
-                                            onClick={() => this.updateSkip(this.state.new_skip_token)}>Create skip
-                                            token</Form.Button>
-
-                                    </Form.Group>
-                                </Form>
+                                <div style={{display: "flex", flexDirection: "column"}}>
+                                    <TextField
+                                        size="small"
+                                        color="default"
+                                        label={'token name'}
+                                        value={this.state.new_skip_token.name} onChange={this.input_skip_token}
+                                        name={'name'}
+                                        error={this.state.new_skip_token.errs.name}
+                                        variant="outlined"
+                                        fullWidth
+                                        style={{marginBottom: 10}}
+                                    />
+                                    <TextField
+                                        size="small"
+                                        color="default"
+                                        label={'token address'}
+                                        value={this.state.new_skip_token.addr} onChange={this.input_skip_token}
+                                        name={'addr'}
+                                        error={this.state.new_skip_token.errs.addr}
+                                        variant="outlined"
+                                        fullWidth
+                                        style={{marginBottom: 10}}
+                                    />
+                                    <Button style={{width: 200}} size="small" onClick={() => this.updateSkip(this.state.new_skip_token)}
+                                            variant="contained">
+                                        Create skip token
+                                    </Button>
+                                </div>
                             </Accordion.Content>
-
                         </div>
-
                     </Accordion>
                 </Segment>
-
             </div>
         else if (this.state.activeItem === 'BotMemory')
             return <div style={{backgroundColor: "#151719"}}>
