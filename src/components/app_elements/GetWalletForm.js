@@ -404,7 +404,16 @@ class Donors extends React.Component {
                                                             not
                                                             following</p>
                                                     </Grid.Column>
+                                                    <Button style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
+                                                            variant="contained">
+                                                        Update
+                                                    </Button>
+                                                    <Button style={{marginLeft: 10}} size="small" onClick={() => this.props.deleteDonor(donor.addr)}
+                                                            variant="contained">
+                                                        Delete
+                                                    </Button>
                                                 </Grid.Row>
+
                                             </Grid>
 
 
@@ -546,19 +555,7 @@ class Tokens extends React.Component {
                                                 Delete token
                                             </Button>
                                         </div>
-                                        <TextField
-                                            style={{marginTop: 15}}
-                                            size="small"
-                                            color="default"
-                                            variant="outlined"
-                                            fullWidth
-                                            disabled={true}
-                                            value={token.price_for_token}
-                                            onChange={this.props.token_name_change}
-                                            name={'price_for_token'}
-                                            label={'eth per 1 token price'}
-                                            error={token.errs.price_for_token}
-                                        />
+                                        <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
                                     </Form.Group>
                                     {/*</Form>*/}
                                     <Table style={{backgroundColor: "transparent"}} size="small">
@@ -776,18 +773,7 @@ class Limits extends React.Component {
                                             Delete token
                                         </Button>
                                     </div>
-                                    <TextField
-                                        size="small"
-                                        color="default"
-                                        variant="outlined"
-                                        fullWidth
-                                        disabled={true}
-                                        value={token.price_for_token}
-                                        onChange={this.props.token_name_change}
-                                        name={'price_for_token'}
-                                        label={'eth per 1 token price'}
-                                        error={token.errs.price_for_token}
-                                    />
+                                    <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
 
                                     <Table style={{backgroundColor: "transparent"}} size="small">
                                         <TableHead>
@@ -888,18 +874,7 @@ class Limits extends React.Component {
                                                             />
                                                         </TableCell>
                                                         <TableCell>
-                                                            <TextField
-                                                                size="small"
-                                                                color="default"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                disabled={true}
-                                                                id={limit_token.id}
-                                                                value={limit_token.curr_price}
-                                                                onChange={this.props.input_skip_token}
-                                                                name={'curr_price'}
-                                                                error={limit_token.errs.curr_price}
-                                                            />
+                                                            <span style={{fontSize: 14}}>{limit_token.curr_price}</span>
                                                         </TableCell>
 
 
@@ -1055,18 +1030,7 @@ class Limits extends React.Component {
 
                                                 </TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        color="default"
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        id={this.props.new_limit.id}
-                                                        disabled={true}
-                                                        value={this.props.new_limit.curr_price}
-                                                        onChange={this.props.input_skip_token}
-                                                        name={'curr_price'}
-                                                        error={this.props.new_limit.errs.curr_price}
-                                                    />
+                                                    <span style={{fontSize: 14}}>{this.props.new_limit.curr_price}</span>
                                                 </TableCell>
 
 
@@ -2884,7 +2848,7 @@ class GetWallet extends React.Component {
                 </Segment>
 
             </div>
-        else if (this.state.activeItem === 'Limit orders')
+        else if (this.state.activeItem === 'LimitOrders')
             return <div>
 
                 <Limits tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
