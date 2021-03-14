@@ -62,7 +62,7 @@ export class Tokens extends React.Component {
                                                 Delete token
                                             </Button>
                                         </div>
-                                        <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
+                                        <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
                                     </Form.Group>
                                     {/*</Form>*/}
                                     <Table style={{backgroundColor: "transparent"}} size="small">

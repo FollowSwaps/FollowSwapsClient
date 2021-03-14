@@ -212,9 +212,9 @@ class Wallet(models.Model):
         try:
             r=requests.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle').json()
             if r['status']=='1':
-                self.low_gas=int(r['result']['SafeGasPrice'])
-                self.medium_gas=int(r['result']['ProposeGasPrice'])
-                self.fast_gas=int(r['result']['FastGasPrice'])
+                self.low_gas=int(r['result']['SafeGasPrice'])*10**9
+                self.medium_gas=int(r['result']['ProposeGasPrice'])*10**9
+                self.fast_gas=int(r['result']['FastGasPrice'])*10**9
                 self.save()
             else:
                 logger.info('gas price was not refreshed due to req limit')
@@ -279,7 +279,7 @@ class Wallet(models.Model):
                     limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
                     limit_asset.status='executed'
                     limit_asset.save()
-                    self.approve_if_not(limit_asset)
+                    self.approve_if_not(limit_asset.asset)
                     self.refresh_token_balance(token_id=limit_asset.asset.id)
                 # follow on confirmed
                 if DonorAddr.objects.filter(addr=from_addr, trade_on_confirmed=True).exists():
@@ -345,7 +345,7 @@ class Wallet(models.Model):
                     logger.info(msg)
                     wallet.send_msg_to_subscriber_tlg(msg)
                     wallet.refresh_balances()
-                    wallet.approve_if_not(new_asset, gas_price)
+                    wallet.approve_if_not(new_asset.asset, gas_price)
 
                 # если наша подтвердилась на покупку, берем количество токенов из транзакции, и ставим подтверждение
                 elif DonorAsset.objects.filter(our_tx_hash=tx_hash).exists():
@@ -358,7 +358,7 @@ class Wallet(models.Model):
                     msg = f'Our tx *confirmed*: {tx_url}{tx_hash}\n *buy* {asset.asset.addr}\nqnty={wallet.follower.convert_wei_to_eth(asset.qnty)}'
                     logger.info(msg)
                     wallet.send_msg_to_subscriber_tlg(msg)
-                    wallet.approve_if_not(asset, gas_price)
+                    wallet.approve_if_not(asset.asset, gas_price)
                     wallet.refresh_balances()
                 # если наша подтвердилась на продажу, удаляем ассет, берем значение, за которое продалась, отправляем сооб
                 elif DonorAsset.objects.filter(our_sell_tx_hash=tx_hash).exists():
@@ -767,9 +767,9 @@ class Wallet(models.Model):
         appr_tx = None
         try:
             # всегда передаем в аргумент фолловера, ему нужно присвоить правильные ключи, чтобы он торговал с этого акка
-
-            if self.follower.get_allowance(asset.asset.addr) < int(asset.qnty):
-                appr_tx = self.follower.approve(asset.asset.addr, gas_price=gas_price)
+            allowance=self.follower.get_allowance(asset.addr)
+            if allowance < int(asset.balance) or (allowance==0):
+                appr_tx = self.follower.approve(asset.addr, gas_price=gas_price)
                 asset.approve_tx_hash = appr_tx
                 asset.save()
                 msg = f'approve tx sent: tx_url{appr_tx}'
@@ -856,6 +856,7 @@ class Asset(models.Model):
     decimals=models.IntegerField(null=True)
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='assets')
     price_for_token=models.FloatField(null=True)
+    approve_tx_hash = models.CharField(max_length=128, null=True)
     # def save(self,*args,**kwargs):
     #     if self.decimals is None:
     #         self.decimals = self.wallet.follower.get_erc_contract_by_addr(self.addr).functions.decimals().call()
@@ -893,7 +894,6 @@ class DonorAsset(models.Model):
     donor_sell_tx_hash = models.CharField(max_length=128, null=True)
     our_tx_hash = models.CharField(max_length=128, null=False)
     our_sell_tx_hash = models.CharField(max_length=128, null=True)
-    approve_tx_hash = models.CharField(max_length=128, null=True)
     approve_failed = models.BooleanField(default=False)
     donor_confirmed = models.BooleanField(default=False)
     our_confirmed = models.BooleanField(default=False)

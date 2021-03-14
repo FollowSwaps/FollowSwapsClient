@@ -842,7 +842,8 @@ class GetWallet extends React.Component {
         // this.setState(self.res)
     }
 
-    activateWallet() {
+    activateWallet(e) {
+        e.stopPropagation();
         this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
@@ -1353,7 +1354,7 @@ class GetWallet extends React.Component {
             .then(res => {
                 res.data.assets.forEach(function (asset) {
                     asset.balance = asset.balance / 10 ** asset.decimals
-                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** 18
 
                     asset.donor_assets.forEach(function (donor_asset) {
                         donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
@@ -1431,7 +1432,7 @@ class GetWallet extends React.Component {
                 const tempArr = [...this.state.assets]
                 const findToken = tempArr.find(item => item.id === token.id);
                 if (findToken) {
-                    findToken.price_for_token = newPrice / 10 ** token.decimals
+                    findToken.price_for_token = newPrice / 10 ** 18
                 }
                 this.setState({
                     assets: tempArr,
@@ -1477,7 +1478,6 @@ class GetWallet extends React.Component {
     renderForm = () => {
         if (this.state.activeItem === 'Donors')
             return <div style={{backgroundColor: "#151719"}}>
-                <h3>Donor wallets</h3>
 
 
                 <Donors donors={this.state.donors} delete_donor={this.deleteDonor} key={this.state.key}
@@ -1508,295 +1508,247 @@ class GetWallet extends React.Component {
                                                 header='Validation error'
                                                 content={this.state.new_donor.errs.non_field_errors}
                                             /> : null}
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 1
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus
-                                                            nobis omnis, perspiciatis placeat praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            value={this.state.new_donor.name}
-                                                            onChange={this.input_change}
-                                                            name={'name'}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                        />
-                                                        {/*<Form.Input*/}
-                                                        {/*    value={this.state.new_donor.name} onChange={this.input_change}*/}
-                                                        {/*    name={'name'}*/}
-                                                        {/*/>*/}
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            value={this.state.new_donor.addr}
-                                                            onChange={this.input_change}
-                                                            name={'addr'}
-                                                            error={this.state.new_donor.errs.addr}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                        />
-                                                        {/*<Form.Input*/}
-                                                        {/*    value={this.state.new_donor.addr} onChange={this.input_change}*/}
-                                                        {/*    name={'addr'}*/}
-                                                        {/*    error={this.state.new_donor.errs.addr}*/}
-                                                        {/*/>*/}
-                                                        <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
 
-                                                                       checked={this.state.new_donor.fixed_trade}
-                                                                       onChange={this.input_change}
-                                                                       error={this.state.new_donor.errs.fixed_trade}
 
-                                                        />
-                                                        <p style={{fontSize: '14px'}}>If checked bot will trade on fixed
-                                                            value</p>
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                value={this.state.new_donor.name}
+                                                onChange={this.input_change}
+                                                name={'name'}
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                            />
+                                            {/*<Form.Input*/}
+                                            {/*    value={this.state.new_donor.name} onChange={this.input_change}*/}
+                                            {/*    name={'name'}*/}
+                                            {/*/>*/}
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                value={this.state.new_donor.addr}
+                                                onChange={this.input_change}
+                                                name={'addr'}
+                                                error={this.state.new_donor.errs.addr}
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                            />
+                                            {/*<Form.Input*/}
+                                            {/*    value={this.state.new_donor.addr} onChange={this.input_change}*/}
+                                            {/*    name={'addr'}*/}
+                                            {/*    error={this.state.new_donor.errs.addr}*/}
+                                            {/*/>*/}
+                                            <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
 
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'} label='Fixed trade value (weth)'
-                                                            name={'fixed_value_trade'}
-                                                            placeholder='Fixed trade value (WETH)'
-                                                            value={this.state.new_donor.fixed_value_trade}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.fixed_value_trade}
-                                                        />
+                                                           checked={this.state.new_donor.fixed_trade}
+                                                           onChange={this.input_change}
+                                                           error={this.state.new_donor.errs.fixed_trade}
 
-                                                        {/*<Form.Input fluid type={'number'} label='Fixed trade value (weth)'*/}
-                                                        {/*            name={'fixed_value_trade'}*/}
-                                                        {/*            placeholder='Fixed trade value (WETH)'*/}
-                                                        {/*            value={this.state.new_donor.fixed_value_trade}*/}
-                                                        {/*            onChange={this.input_change}*/}
-                                                        {/*            error={this.state.new_donor.errs.fixed_value_trade}*/}
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Fixed trade value (WETH) how much
-                                                            you
-                                                            willing
-                                                            to
-                                                            risk
-                                                            for
-                                                            every
-                                                            donors
-                                                            trade</p>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'} label='Percent trade value (%)'
-                                                            name={'percent_value_trade'}
-                                                            placeholder=''
-                                                            value={this.state.new_donor.percent_value_trade}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.percent_value_trade}
-                                                        />
-                                                        {/*<Form.Input fluid type={'number'} label='Percent trade value (%)'*/}
-                                                        {/*            name={'percent_value_trade'}*/}
-                                                        {/*            placeholder=''*/}
-                                                        {/*            value={this.state.new_donor.percent_value_trade}*/}
-                                                        {/*            onChange={this.input_change}*/}
-                                                        {/*            error={this.state.new_donor.errs.percent_value_trade}*/}
+                                            />
+                                            <p style={{fontSize: '14px'}}>If checked bot will trade on fixed
+                                                value</p>
 
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Percent trade value (%) how much
-                                                            you
-                                                            willing
-                                                            to
-                                                            risk
-                                                            for
-                                                            every
-                                                            donors
-                                                            trade in %</p>
-                                                        <Form.Checkbox label='Trade on confirmed tx'
-                                                                       name={'trade_on_confirmed'}
-                                                                       style={{color: "white"}}
-                                                                       checked={this.state.new_donor.trade_on_confirmed}
-                                                                       onChange={this.input_change}
-                                                                       error={this.state.new_donor.errs.trade_on_confirmed}
-                                                        />
-                                                        <p style={{fontSize: '14px'}}>Trade on confirmed TX. This is
-                                                            normal
-                                                            following
-                                                            and
-                                                            you
-                                                            should
-                                                            tick,
-                                                            unless you need <span style={{
-                                                                color: 'rgb(153,89,51)',
-                                                            }}><b>front run</b></span> option</p>
-                                                        <Form.Checkbox label='Use donor slippage'
-                                                                       name={'donor_slippage'}
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'} label='Fixed trade value (weth)'
+                                                name={'fixed_value_trade'}
+                                                placeholder='Fixed trade value (WETH)'
+                                                value={this.state.new_donor.fixed_value_trade}
+                                                onChange={this.input_change}
+                                                error={this.state.new_donor.errs.fixed_value_trade}
+                                            />
 
-                                                                       checked={this.state.new_donor.donor_slippage}
-                                                                       onChange={this.props.input_change}
-                                                                       error={this.state.new_donor.errs.donor_slippage}
-                                                        />
-                                                        <p style={{fontSize: '14px'}}>donor slippage <span style={{
-                                                            color: 'rgb(153,89,51)',
-                                                        }}><b>front run</b></span> option</p>
+                                            {/*<Form.Input fluid type={'number'} label='Fixed trade value (weth)'*/}
+                                            {/*            name={'fixed_value_trade'}*/}
+                                            {/*            placeholder='Fixed trade value (WETH)'*/}
+                                            {/*            value={this.state.new_donor.fixed_value_trade}*/}
+                                            {/*            onChange={this.input_change}*/}
+                                            {/*            error={this.state.new_donor.errs.fixed_value_trade}*/}
+                                            {/*/>*/}
+                                            <p style={{fontSize: '14px'}}>Fixed trade value (WETH) how much
+                                                you
+                                                willing
+                                                to
+                                                risk
+                                                for
+                                                every
+                                                donors
+                                                trade</p>
 
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'} label='Slippage tolerance (%)'
-                                                            name={'slippage'}
-                                                            placeholder='0'
-                                                            value={this.state.new_donor.slippage}
-                                                            onChange={this.input_change}
-                                                            disabled={this.state.new_donor.donor_slippage}
-                                                            error={this.state.new_donor.errs.slippage}
-                                                        />
 
-                                                        {/*<Form.Input fluid type={'number'} label='Slippage tolerance (%)'*/}
-                                                        {/*            name={'slippage'}*/}
-                                                        {/*            placeholder='0'*/}
-                                                        {/*            value={this.state.new_donor.slippage}*/}
-                                                        {/*            onChange={this.input_change}*/}
-                                                        {/*            disabled={this.state.new_donor.donor_slippage}*/}
-                                                        {/*            error={this.state.new_donor.errs.slippage}*/}
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Slippage tolerance (%) Your
-                                                            transaction will
-                                                            revert if
-                                                            the
-                                                            price
-                                                            changes unfavourably by more then this percentage</p>
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'} label='Percent trade value (%)'
+                                                name={'percent_value_trade'}
+                                                placeholder=''
+                                                value={this.state.new_donor.percent_value_trade}
+                                                onChange={this.input_change}
+                                                error={this.state.new_donor.errs.percent_value_trade}
+                                            />
+                                            {/*<Form.Input fluid type={'number'} label='Percent trade value (%)'*/}
+                                            {/*            name={'percent_value_trade'}*/}
+                                            {/*            placeholder=''*/}
+                                            {/*            value={this.state.new_donor.percent_value_trade}*/}
+                                            {/*            onChange={this.input_change}*/}
+                                            {/*            error={this.state.new_donor.errs.percent_value_trade}*/}
 
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'} label='Gas multiplier'
-                                                            name={'gas_multiplier'}
+                                            {/*/>*/}
+                                            <p style={{fontSize: '14px'}}>Percent trade value (%) how much
+                                                you
+                                                willing
+                                                to
+                                                risk
+                                                for
+                                                every
+                                                donors
+                                                trade in %</p>
+                                            <Form.Checkbox label='Trade on confirmed tx'
+                                                           name={'trade_on_confirmed'}
+                                                           style={{color: "white"}}
+                                                           checked={this.state.new_donor.trade_on_confirmed}
+                                                           onChange={this.input_change}
+                                                           error={this.state.new_donor.errs.trade_on_confirmed}
+                                            />
+                                            <p style={{fontSize: '14px'}}>Trade on confirmed TX. This is
+                                                normal
+                                                following
+                                                and
+                                                you
+                                                should
+                                                tick,
+                                                unless you need <span style={{
+                                                    color: 'rgb(153,89,51)',
+                                                }}><b>front run</b></span> option</p>
+                                            <Form.Checkbox label='Use donor slippage'
+                                                           name={'donor_slippage'}
 
-                                                            value={this.state.new_donor.gas_multiplier}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.gas_multiplier}
-                                                        />
+                                                           checked={this.state.new_donor.donor_slippage}
+                                                           onChange={this.props.input_change}
+                                                           error={this.state.new_donor.errs.donor_slippage}
+                                            />
+                                            <p style={{fontSize: '14px'}}>donor slippage <span style={{
+                                                color: 'rgb(153,89,51)',
+                                            }}><b>front run</b></span> option</p>
 
-                                                        {/*<Form.Input fluid type={'number'} label='Gas multiplier'*/}
-                                                        {/*            name={'gas_multiplier'}*/}
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'} label='Slippage tolerance (%)'
+                                                name={'slippage'}
+                                                placeholder='0'
+                                                value={this.state.new_donor.slippage}
+                                                onChange={this.input_change}
+                                                disabled={this.state.new_donor.donor_slippage}
+                                                error={this.state.new_donor.errs.slippage}
+                                            />
 
-                                                        {/*            value={this.state.new_donor.gas_multiplier}*/}
-                                                        {/*            onChange={this.input_change}*/}
-                                                        {/*            error={this.state.new_donor.errs.gas_multiplier}*/}
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Gas multiplier: put 1.1 for 10%
-                                                            higher
-                                                            then
-                                                            donors gas 1.2 for 20%
-                                                            higher
-                                                            etc</p>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 2
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus
-                                                            nobis omnis, perspiciatis placeat praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                            </Grid>
+                                            {/*<Form.Input fluid type={'number'} label='Slippage tolerance (%)'*/}
+                                            {/*            name={'slippage'}*/}
+                                            {/*            placeholder='0'*/}
+                                            {/*            value={this.state.new_donor.slippage}*/}
+                                            {/*            onChange={this.input_change}*/}
+                                            {/*            disabled={this.state.new_donor.donor_slippage}*/}
+                                            {/*            error={this.state.new_donor.errs.slippage}*/}
+                                            {/*/>*/}
+                                            <p style={{fontSize: '14px'}}>Slippage tolerance (%) Your
+                                                transaction will
+                                                revert if
+                                                the
+                                                price
+                                                changes unfavourably by more then this percentage</p>
 
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 3
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus
-                                                            nobis omnis, perspiciatis placeat praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <h3 style={{marginTop: '20px'}}>Filters</h3>
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'} label='Gas multiplier'
+                                                name={'gas_multiplier'}
 
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'}
-                                                            label='Minimum value to follow (eth)'
-                                                            name={'follow_min'}
-                                                            value={this.state.new_donor.follow_min}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.follow_min}
-                                                        />
+                                                value={this.state.new_donor.gas_multiplier}
+                                                onChange={this.input_change}
+                                                error={this.state.new_donor.errs.gas_multiplier}
+                                            />
 
-                                                        <TextField
-                                                            size="small"
-                                                            color="default"
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                            type={'number'}
-                                                            label='Maximum value to follow (eth)'
-                                                            name={'follow_max'}
-                                                            value={this.state.new_donor.follow_max}
-                                                            onChange={this.input_change}
-                                                            error={this.state.new_donor.errs.follow_max}
-                                                        />
+                                            {/*<Form.Input fluid type={'number'} label='Gas multiplier'*/}
+                                            {/*            name={'gas_multiplier'}*/}
 
-                                                        {/*<Form.Input fluid type={'number'}*/}
-                                                        {/*            label='Maximum value to follow (eth)'*/}
-                                                        {/*            name={'follow_max'}*/}
+                                            {/*            value={this.state.new_donor.gas_multiplier}*/}
+                                            {/*            onChange={this.input_change}*/}
+                                            {/*            error={this.state.new_donor.errs.gas_multiplier}*/}
+                                            {/*/>*/}
+                                            <p style={{fontSize: '14px'}}>Gas multiplier: put 1.1 for 10%
+                                                higher
+                                                then
+                                                donors gas 1.2 for 20%
+                                                higher
+                                                etc</p>
 
-                                                        {/*            value={this.state.new_donor.follow_max}*/}
-                                                        {/*            onChange={this.input_change}*/}
-                                                        {/*            error={this.state.new_donor.errs.follow_max}*/}
 
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px', marginBottom: '30px'}}>Donor
-                                                            transaction
-                                                            Minimum -
-                                                            Maximum
-                                                            value.
-                                                            If its not in range we
-                                                            are
-                                                            not
-                                                            following</p>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                            </Grid>
+                                            <h3 style={{marginTop: '20px'}}>Filters</h3>
+
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'}
+                                                label='Minimum value to follow (eth)'
+                                                name={'follow_min'}
+                                                value={this.state.new_donor.follow_min}
+                                                onChange={this.input_change}
+                                                error={this.state.new_donor.errs.follow_min}
+                                            />
+
+                                            <TextField
+                                                size="small"
+                                                color="default"
+                                                variant="outlined"
+                                                fullWidth
+                                                style={{marginBottom: 10}}
+                                                type={'number'}
+                                                label='Maximum value to follow (eth)'
+                                                name={'follow_max'}
+                                                value={this.state.new_donor.follow_max}
+                                                onChange={this.input_change}
+                                                error={this.state.new_donor.errs.follow_max}
+                                            />
+
+                                            {/*<Form.Input fluid type={'number'}*/}
+                                            {/*            label='Maximum value to follow (eth)'*/}
+                                            {/*            name={'follow_max'}*/}
+
+                                            {/*            value={this.state.new_donor.follow_max}*/}
+                                            {/*            onChange={this.input_change}*/}
+                                            {/*            error={this.state.new_donor.errs.follow_max}*/}
+
+                                            {/*/>*/}
+                                            <p style={{fontSize: '14px', marginBottom: '30px'}}>Donor
+                                                transaction
+                                                Minimum -
+                                                Maximum
+                                                value.
+                                                If its not in range we
+                                                are
+                                                not
+                                                following</p>
+
+
                                             <Button
                                                 size="small" variant="contained"
                                                 onClick={() => this.updateDonor(this.state.new_donor)}>Create
@@ -1812,15 +1764,6 @@ class GetWallet extends React.Component {
             </div>
         else if (this.state.activeItem === 'Blacklist')
             return <div>
-                <h5>
-                    Blacklist - token you don't want to trade, for example all USD tokens or any other tokens
-                </h5>
-                <ul>
-                    <li>You can make your own non trade list, add and remove any token</li>
-                    <li>No need to stop or update wallet to add to blacklist</li>
-
-
-                </ul>
 
 
                 <SkipTokens tokens={this.state.skip_tokens} key={this.state.key}
@@ -2045,8 +1988,14 @@ class GetWallet extends React.Component {
                             expandIcon={<ExpandMoreIcon/>}
                         >
                             <Typography>
-                                Start <br/>
-                                <span style={{fontSize: 14}}>Waps balance: {this.state.waps_balance / 10 ** 18} Weth balance: {this.state.weth_balance / 10 ** 18} Eth balance: {this.state.eth_balance / 10 ** 18}</span>
+                                <Button style={{marginRight: 10}} size="small"
+                                        onClick={(e) => this.activateWallet(e)}
+                                        variant="contained"
+                                        disabled={!this.state.wallet_connected || this.state.initial_state === true}>
+                                    {this.state.active ? 'Stop bot' : 'Run bot'}
+                                </Button> <br/>
+                                <span
+                                    style={{fontSize: 14}}>Waps balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)} | Weth balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)} | Eth balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}</span>
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails style={{width: "100%"}}>
@@ -2072,7 +2021,7 @@ class GetWallet extends React.Component {
                                             value={this.state.addr} onChange={this.handleInputChange}
                                             error={this.state.errs.addr}
                                             variant="outlined"
-                                            disabled={true}
+                                            disabled={false}
                                             inputProps={{style: {fontSize: 17}}}
                                             style={{width: "100%"}}
                                         />
@@ -2087,7 +2036,7 @@ class GetWallet extends React.Component {
                                             error={this.state.errs.key}
                                             variant="outlined"
                                             type="password"
-                                            disabled={true}
+                                            disabled={false}
                                             inputProps={{style: {fontSize: 17}}}
                                             style={{marginLeft: 10, width: "100%"}}
                                         />
@@ -2097,7 +2046,8 @@ class GetWallet extends React.Component {
                                         width: "100%",
                                         display: "flex",
                                         justifyContent: "flex-start",
-                                        marginTop: 10,
+                                        marginTop: 25,
+                                        marginBottom: 25,
                                         alignItems: "center"
                                     }}>
                                         <Button style={{marginRight: 10}} size="small" type='submit'
@@ -2155,6 +2105,20 @@ class GetWallet extends React.Component {
                                             What is it?
                                         </p>
                                     </Tooltip>
+                                    <TextField
+                                        size="small"
+                                        label="Max gas (gwei)"
+                                        name={'max_gas'}
+                                        color="default"
+                                        placeholder=""
+                                        value={this.state.max_gas} onChange={this.handleInputChange}
+                                        error={this.state.errs.max_gas}
+                                        variant="outlined"
+                                        type="number"
+                                        InputLabelProps={{shrink: true}}
+                                        style={{width: "200px", marginLeft: 15}}
+                                    />
+                                    <span style={{fontSize: 14, marginLeft: 10}}>Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher</span>
                                 </div>
 
                                 <div style={{display: "flex", alignItems: "center"}}>
@@ -2173,20 +2137,7 @@ class GetWallet extends React.Component {
                                         checked={this.state.mainnet === false}
                                         onChange={this.handleChange}
                                     />
-                                    <TextField
-                                        size="small"
-                                        label="Max gas (gwei)"
-                                        name={'max_gas'}
-                                        color="default"
-                                        placeholder=""
-                                        value={this.state.max_gas} onChange={this.handleInputChange}
-                                        error={this.state.errs.max_gas}
-                                        variant="outlined"
-                                        type="number"
-                                        InputLabelProps={{shrink: true}}
-                                        style={{width: "200px", marginLeft: 15}}
-                                    />
-                                    <span style={{fontSize: 14, marginLeft: 10}}>Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher</span>
+
                                 </div>
 
                             </div>
@@ -2216,7 +2167,24 @@ class GetWallet extends React.Component {
                                         active={this.state.activeItem === 'Blacklist'}
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
-                                    />
+                                    >
+                                        <p><Tooltip title={<>
+                                            token you don't want to trade, for example all USD tokens or any other
+                                            tokens
+                                            <ul>
+                                                <li>You can make your own non trade list, add and remove any token</li>
+                                                <li>No need to stop or update wallet to add to blacklist</li>
+
+
+                                            </ul>
+                                        </>
+                                        }
+                                                    placement="right-start"><p>Blacklist
+                                            <p style={{fontSize: '12px', marginLeft: '15px'}}>
+                                                What is it?
+                                            </p></p>
+                                        </Tooltip></p>
+                                    </Menu.Item>
                                     <Menu.Item
                                         style={{color: "white"}}
                                         name='BotMemory'

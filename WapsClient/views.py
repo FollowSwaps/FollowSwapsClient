@@ -664,8 +664,9 @@ def approve_token(request):
 
     else:
         wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
+        wallet.get_gas_price()
         if Asset.objects.filter(id=data['token_id']).exists():
-            approve_tx=wallet.approve_if_not(Asset.objects.get(id=data['token_id']))
+            approve_tx=wallet.approve_if_not(Asset.objects.get(id=data['token_id']),gas_price=wallet.fast_gas)
             if approve_tx is not None:
                 return JsonResponse({'approve': approve_tx}, status=200)
             else:

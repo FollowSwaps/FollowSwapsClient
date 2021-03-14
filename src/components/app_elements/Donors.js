@@ -28,26 +28,7 @@ export class Donors extends React.Component {
                                                 header='Validation error'
                                                 content={donor.errs.non_field_errors}
                                             /> : null}
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{
-                                                            border: "1px solid #ae6a42",
-                                                            padding: 10,
-                                                            fontFamily: 'Montserrat'
-                                                        }}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 1
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
+
                                                         <TextField
                                                             size="small"
                                                             name={'name'}
@@ -122,10 +103,7 @@ export class Donors extends React.Component {
                                                             every
                                                             donors
                                                             trade</p>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
+
                                                         <TextField
                                                             size="small"
                                                             type='number'
@@ -248,39 +226,7 @@ export class Donors extends React.Component {
                                                             donors gas 1.2 for 20%
                                                             higher
                                                             etc</p>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 2
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                            </Grid>
 
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 3
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
                                                         <h3 style={{marginTop: '20px'}}>Filters</h3>
                                                         <TextField
                                                             size="small"
@@ -338,7 +284,7 @@ export class Donors extends React.Component {
                                                             are
                                                             not
                                                             following</p>
-                                                    </Grid.Column>
+
                                                     <Button color="secondary" style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
                                                             variant="outlined">
                                                         Update
@@ -347,9 +293,7 @@ export class Donors extends React.Component {
                                                             variant="contained">
                                                         Delete
                                                     </Button>
-                                                </Grid.Row>
 
-                                            </Grid>
 
 
                                             {/*<Form.Button size="mini"*/}

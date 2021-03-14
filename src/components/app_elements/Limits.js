@@ -23,7 +23,7 @@ export class Limits extends React.Component {
                                     onClick={this.props.handleClick}
                                 >
 
-                                    <Icon name='dropdown'/>
+                                    <Icon name='dropdown' style={{color: '#995933'}}/>
                                     {token.addr} | {token.name} | {token.balance}
 
 
@@ -34,7 +34,7 @@ export class Limits extends React.Component {
                                         <TextField
                                             size="small"
                                             color="default"
-                                            variant="outlined"
+                                            variant="standard"
                                             fullWidth
                                             style={{width: 500}}
                                             value={token.name}
@@ -54,7 +54,7 @@ export class Limits extends React.Component {
                                             Delete token
                                         </Button>
                                     </div>
-                                    <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
+                                    <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
 
                                     <Table style={{backgroundColor: "transparent"}} size="small">
                                         <TableHead>
@@ -73,7 +73,7 @@ export class Limits extends React.Component {
                                         <TableBody>
                                             {token.limit_assets.map(limit_token => {
                                                 return (
-                                                    <TableRow>
+                                                    <TableRow >
                                                         <TableCell>
 
                                                             <Select
@@ -132,8 +132,10 @@ export class Limits extends React.Component {
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
-                                                                variant="outlined"
+                                                                variant="standard"
                                                                 fullWidth
+style={{width: "130px",}}
+                                                                inputProps={{style: {fontSize: '10px'}}}
                                                                 id={limit_token.id}
                                                                 value={limit_token.price}
                                                                 onChange={this.props.input_skip_token}
@@ -155,7 +157,7 @@ export class Limits extends React.Component {
                                                             />
                                                         </TableCell>
                                                         <TableCell>
-                                                            <span style={{fontSize: 14}}>{limit_token.curr_price}</span>
+                                                            <span style={{fontSize: 14}}>{limit_token.curr_price.toFixed(6)}</span>
                                                         </TableCell>
 
 
@@ -288,6 +290,7 @@ export class Limits extends React.Component {
                                                         size="small"
                                                         color="default"
                                                         variant="outlined"
+                                                        style={{width: "130px",}}
                                                         fullWidth
                                                         id={this.props.new_limit.id}
                                                         value={this.props.new_limit.price}
