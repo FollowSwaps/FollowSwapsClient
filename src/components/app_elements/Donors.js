@@ -32,7 +32,7 @@ export class Donors extends React.Component {
                                                 <Grid.Row columns={2}>
                                                     <Grid.Column>
                                                         <div style={{
-                                                            border: "1px solid #16b157",
+                                                            border: "1px solid #ae6a42",
                                                             padding: 10,
                                                             fontFamily: 'Montserrat'
                                                         }}>
@@ -250,7 +250,7 @@ export class Donors extends React.Component {
                                                             etc</p>
                                                     </Grid.Column>
                                                     <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
+                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
                                                             <h3 style={{fontFamily: 'Montserrat'}}>
                                                                 Шаг 2
                                                             </h3>
@@ -268,7 +268,7 @@ export class Donors extends React.Component {
                                             <Grid divided='vertically'>
                                                 <Grid.Row columns={2}>
                                                     <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
+                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
                                                             <h3 style={{fontFamily: 'Montserrat'}}>
                                                                 Шаг 3
                                                             </h3>
@@ -339,11 +339,11 @@ export class Donors extends React.Component {
                                                             not
                                                             following</p>
                                                     </Grid.Column>
-                                                    <Button style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
-                                                            variant="contained">
+                                                    <Button color="secondary" style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
+                                                            variant="outlined">
                                                         Update
                                                     </Button>
-                                                    <Button style={{marginLeft: 10}} size="small" onClick={() => this.props.deleteDonor(donor.addr)}
+                                                    <Button color="secondary" style={{marginLeft: 10}} size="small" onClick={() => this.props.deleteDonor(donor.addr)}
                                                             variant="contained">
                                                         Delete
                                                     </Button>

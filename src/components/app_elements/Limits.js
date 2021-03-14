@@ -403,7 +403,24 @@ export class Limits extends React.Component {
 
                                         </TableBody>
                                     </Table>
-                                </Accordion.Content>
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.refreshTokenBalance(token)}
+                                            variant="contained">
+                                        Refresh token balance
+                                    </Button>
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.refreshTokenPrice(token)}
+                                            variant="contained">
+                                        Refresh token price
+                                    </Button>
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.handleApprove(token)}
+                                            variant="contained">
+                                        Approve
+                                    </Button>
+                                    <span style={{color: this.props.approveResponse.error ? "red" : "white", fontSize: 14}}>
+                                        {token.id === this.props.approveResponse.id && this.props.approveResponse.text}
+                                    </span>                                </Accordion.Content>
                             </div>
                         ))}
                 </Accordion>

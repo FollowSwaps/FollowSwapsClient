@@ -77,10 +77,7 @@ export class Tokens extends React.Component {
                                         <TableBody>
                                             {token.donor_assets.map(donor_token => (
                                                 <TableRow>
-
-
                                                     <TableCell>
-
                                                         <Select
                                                             fullWidth
                                                             name={"donor"}
@@ -221,6 +218,25 @@ export class Tokens extends React.Component {
 
                                         </TableBody>
                                     </Table>
+                                    {/*  refresh token balance, refresh token price и approve  */}
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.refreshTokenBalance(token)}
+                                            variant="contained">
+                                        Refresh token balance
+                                    </Button>
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.refreshTokenPrice(token)}
+                                            variant="contained">
+                                        Refresh token price
+                                    </Button>
+                                    <Button style={{marginRight: 10}}
+                                            onClick={() => this.props.handleApprove(token)}
+                                            variant="contained">
+                                        Approve
+                                    </Button>
+                                    <span style={{color: this.props.approveResponse.error ? "red" : "white", fontSize: 14}}>
+                                        {token.id === this.props.approveResponse.id && this.props.approveResponse.text}
+                                    </span>
                                 </Accordion.Content>
                             </div>
                         ))}

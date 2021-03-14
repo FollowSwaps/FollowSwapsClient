@@ -5,23 +5,9 @@ import '../../App.css'
 import {Accordion, Form, Grid, Icon, Menu, Message, Segment} from 'semantic-ui-react'
 import axios from "axios";
 import Modal from '../elements/Modal';
-import Checkbox from '@material-ui/core/Checkbox';
-import {
-    AccordionSummary,
-    createMuiTheme,
-    MenuItem,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    TextField,
-    Tooltip
-} from "@material-ui/core";
+import {Accordion as MaterialAccordion, AccordionSummary, createMuiTheme, TextField, Tooltip} from "@material-ui/core";
 import {ThemeProvider} from '@material-ui/core/styles';
 import Button from "@material-ui/core/Button";
-import Select from '@material-ui/core/Select';
-import {Accordion as MaterialAccordion} from '@material-ui/core';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -51,10 +37,10 @@ const darkTheme = createMuiTheme({
             contrastText: '#ffffff'
         },
         secondary: {
-            light: '#819ca9',
-            main: '#546e7a',
-            dark: '#29434e',
-            contrastText: '#fff'
+            light: '#f5b347',
+            main: '#eea82a',
+            dark: '#e9a021',
+            contrastText: '#000000'
         },
         error: {
             light: 'rgba(222, 123, 123, 1)',
@@ -141,7 +127,8 @@ const initialState = {
         modal: false,
         activeItem: 'Donors',
         activeIndexAccordion: -1,
-        isAutoUpdateActivated: true
+        isAutoUpdateActivated: true,
+        approveResponse: {text: "", error: false, id: null}
     }
 ;
 
@@ -181,6 +168,9 @@ class GetWallet extends React.Component {
         this.handleInputChange = this.handleInputChange.bind(this);
         this.updateTokensInState = this.updateTokensInState.bind(this);
         this.changeTokensUpdateStatus = this.changeTokensUpdateStatus.bind(this);
+        this.refreshTokenPrice = this.refreshTokenPrice.bind(this);
+        this.refreshTokenBalance = this.refreshTokenBalance.bind(this);
+        this.handleApprove = this.handleApprove.bind(this);
     }
 
     componentDidMount() {
@@ -1346,7 +1336,7 @@ class GetWallet extends React.Component {
     /**
      * Метод для обновления токенов в таблицах по интервалу
      */
-    updateTokensInState(){
+    updateTokensInState() {
         console.log('tokens update');
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
@@ -1384,10 +1374,99 @@ class GetWallet extends React.Component {
      * Включить или выключить автоматическое обновление токенов по таймауту
      * @param value - boolean
      */
-    changeTokensUpdateStatus(value){
+    changeTokensUpdateStatus(value) {
         this.setState({
             isAutoUpdateActivated: value
         })
+    }
+
+    refreshTokenBalance(token) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/refresh_token_balance`, {
+            'token_id': token.id,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                const newBalance = res.data.balance;
+                const tempArr = [...this.state.assets]
+                const findToken = tempArr.find(item => item.id === token.id);
+                if (findToken) {
+                    findToken.balance = newBalance / 10 ** token.decimals
+                    console.log(token)
+                    console.log(newBalance)
+                }
+                this.setState({
+                    assets: tempArr,
+                    loading: false
+                })
+            })
+    }
+
+    refreshTokenPrice(token) {
+        this.setState({loading: true})
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/refresh_token_price`, {
+            'token_id': token.id,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                const newPrice = res.data.price_for_token;
+                const tempArr = [...this.state.assets]
+                const findToken = tempArr.find(item => item.id === token.id);
+                if (findToken) {
+                    findToken.price_for_token = newPrice / 10 ** token.decimals
+                }
+                this.setState({
+                    assets: tempArr,
+                    loading: false
+                })
+            })
+    }
+
+    handleApprove(token) {
+        this.setState({loading: true, approveResponse: {text: "", error: false}})
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/approve_token`, {
+            'token_id': token.id,
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                this.setState({
+                    approveResponse: {text: res.data.approve, error: false, id: token.id},
+                    loading: false
+                })
+            })
+            .catch(err => {
+                this.setState({
+                    approveResponse: {text: "Already approved", error: true, id: token.id},
+                    loading: false
+                })
+            })
     }
 
     closeModal = (e) => {
@@ -1432,7 +1511,7 @@ class GetWallet extends React.Component {
                                             <Grid divided='vertically'>
                                                 <Grid.Row columns={2}>
                                                     <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
+                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
                                                             <h3 style={{fontFamily: 'Montserrat'}}>
                                                                 Шаг 1
                                                             </h3>
@@ -1636,7 +1715,7 @@ class GetWallet extends React.Component {
                                                             etc</p>
                                                     </Grid.Column>
                                                     <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
+                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
                                                             <h3 style={{fontFamily: 'Montserrat'}}>
                                                                 Шаг 2
                                                             </h3>
@@ -1654,7 +1733,7 @@ class GetWallet extends React.Component {
                                             <Grid divided='vertically'>
                                                 <Grid.Row columns={2}>
                                                     <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
+                                                        <div style={{border: "1px solid #ae6a42", padding: 10}}>
                                                             <h3 style={{fontFamily: 'Montserrat'}}>
                                                                 Шаг 3
                                                             </h3>
@@ -1812,14 +1891,25 @@ class GetWallet extends React.Component {
 
                 </ul>
 
-                <Tokens tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
+                <Tokens tokens={this.state.assets}
+                        key={this.state.key}
+                        donors={this.state.donors}
                         activeIndexAccordion={this.state.activeIndexAccordion}
-                        addr={this.state.addr} input_donor_token={this.input_donor_token}
-                        handleClick={this.handleClick} token_name_change={this.token_name_change}
-                        update={this.update_asset_name} delete={this.deleteTokenFull}
+                        addr={this.state.addr}
+                        input_donor_token={this.input_donor_token}
+                        handleClick={this.handleClick}
+                        token_name_change={this.token_name_change}
+                        update={this.update_asset_name}
+                        delete={this.deleteTokenFull}
                         new_token={this.state.new_donor_token}
-                        updateAsset={this.updateDonorToken} deleteAsset={this.deleteToken}
-                        loading={this.state.loading}/>
+                        updateAsset={this.updateDonorToken}
+                        deleteAsset={this.deleteToken}
+                        loading={this.state.loading}
+                        handleApprove={this.handleApprove}
+                        refreshTokenPrice={this.refreshTokenPrice}
+                        refreshTokenBalance={this.refreshTokenBalance}
+                        approveResponse={this.state.approveResponse}
+                />
 
                 <Segment inverted style={{backgroundColor: "#151719"}}>
                     <Accordion fluid inverted>
@@ -1839,7 +1929,6 @@ class GetWallet extends React.Component {
                                     isinput={true}
                                     size="small"
                                     color="default"
-                                    type="number"
                                     label={'Token address'}
                                     variant="outlined"
                                     fullWidth
@@ -1867,13 +1956,25 @@ class GetWallet extends React.Component {
         else if (this.state.activeItem === 'LimitOrders')
             return <div>
 
-                <Limits tokens={this.state.assets} key={this.state.key} donors={this.state.donors}
+                <Limits tokens={this.state.assets}
+                        key={this.state.key}
+                        donors={this.state.donors}
                         activeIndexAccordion={this.state.activeIndexAccordion}
-                        addr={this.state.addr} input_skip_token={this.input_change_limit}
-                        handleClick={this.handleClick} token_name_change={this.token_name_change}
-                        update={this.update_asset_name} delete={this.deleteTokenFull}
-                        updateAsset={this.updateLimit} deleteAsset={this.deleteLimit} loading={this.state.loading}
-                        new_limit={this.state.new_limit}/>
+                        addr={this.state.addr}
+                        input_skip_token={this.input_change_limit}
+                        handleClick={this.handleClick}
+                        token_name_change={this.token_name_change}
+                        update={this.update_asset_name}
+                        delete={this.deleteTokenFull}
+                        updateAsset={this.updateLimit}
+                        deleteAsset={this.deleteLimit}
+                        loading={this.state.loading}
+                        new_limit={this.state.new_limit}
+                        handleApprove={this.handleApprove}
+                        refreshTokenPrice={this.refreshTokenPrice}
+                        refreshTokenBalance={this.refreshTokenBalance}
+                        approveResponse={this.state.approveResponse}
+                />
                 <Segment inverted style={{backgroundColor: "#151719"}}>
                     <Accordion fluid inverted>
                         <div>
@@ -1908,9 +2009,7 @@ class GetWallet extends React.Component {
                                     </Form.Group>
                                 </Form>
                             </Accordion.Content>
-
                         </div>
-
                     </Accordion>
                 </Segment>
             </div>
@@ -1943,7 +2042,7 @@ class GetWallet extends React.Component {
                     <MaterialAccordion defaultExpanded={true} style={{backgroundColor: "transparent"}}>
                         <AccordionSummary
                             style={{backgroundColor: "transparent"}}
-                            expandIcon={<ExpandMoreIcon />}
+                            expandIcon={<ExpandMoreIcon/>}
                         >
                             <Typography>
                                 Start <br/>
@@ -1974,7 +2073,7 @@ class GetWallet extends React.Component {
                                             error={this.state.errs.addr}
                                             variant="outlined"
                                             disabled={true}
-                                            inputProps={{style:{fontSize: 17}}}
+                                            inputProps={{style: {fontSize: 17}}}
                                             style={{width: "100%"}}
                                         />
 
@@ -1989,18 +2088,25 @@ class GetWallet extends React.Component {
                                             variant="outlined"
                                             type="password"
                                             disabled={true}
-                                            inputProps={{style:{fontSize: 17}}}
+                                            inputProps={{style: {fontSize: 17}}}
                                             style={{marginLeft: 10, width: "100%"}}
                                         />
                                     </div>
 
-                                    <div style={{width: "100%", display: "flex", justifyContent: "flex-start", marginTop: 10, alignItems: "center"}}>
+                                    <div style={{
+                                        width: "100%",
+                                        display: "flex",
+                                        justifyContent: "flex-start",
+                                        marginTop: 10,
+                                        alignItems: "center"
+                                    }}>
                                         <Button style={{marginRight: 10}} size="small" type='submit'
                                                 onClick={() => this.updateWallet()}
                                                 variant="contained"
                                                 disabled={!this.state.wallet_connected}>Update wallet
                                         </Button>
-                                        <Button style={{marginRight: 10}} size="small" onClick={() => this.activateWallet()}
+                                        <Button style={{marginRight: 10}} size="small"
+                                                onClick={() => this.activateWallet()}
                                                 variant="contained"
                                                 disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                             {this.state.active ? 'Stop bot' : 'Run bot'}
@@ -2010,7 +2116,8 @@ class GetWallet extends React.Component {
                                                 disabled={this.state.wallet_connected}>
                                             {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
                                         </Button>
-                                        <Button style={{marginRight: 10}} size="small" onClick={() => this.refreshBalances()}
+                                        <Button style={{marginRight: 10}} size="small"
+                                                onClick={() => this.refreshBalances()}
                                                 variant="contained"
                                                 disabled={!this.state.wallet_connected || !this.state.mainnet}>
                                             Refresh balances
@@ -2030,14 +2137,15 @@ class GetWallet extends React.Component {
                                         variant="outlined"
                                         type="number"
                                         InputLabelProps={{shrink: true}}
-                                        inputProps={{style:{fontSize: 17}}}
+                                        inputProps={{style: {fontSize: 17}}}
                                         style={{marginBottom: 10, marginTop: 10, width: "50%"}}
                                     />
                                     <Tooltip title={<>
                                         1. Create new private channel on telegram (any name) <br/>
                                         2. Add your bot as admin <br/>
                                         3. Get your telegram id <br/>
-                                        4. Easiest way to get telegram ID is to forward a message to the @userinfobot bot from your
+                                        4. Easiest way to get telegram ID is to forward a message to the @userinfobot
+                                        bot from your
                                         new
                                         channel
                                     </>
@@ -2076,7 +2184,7 @@ class GetWallet extends React.Component {
                                         variant="outlined"
                                         type="number"
                                         InputLabelProps={{shrink: true}}
-                                        style={{ width: "200px", marginLeft: 15}}
+                                        style={{width: "200px", marginLeft: 15}}
                                     />
                                     <span style={{fontSize: 14, marginLeft: 10}}>Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher</span>
                                 </div>
