@@ -728,8 +728,8 @@ def refresh_tokens(request):
 
     else:
         assets = Asset.objects.all()
-        ser=tempSer(assets,)
-        return JsonResponse({'assets': assets}, status=200)
+        ser=tempSer(assets,many=True)
+        return JsonResponse({'assets': ser}, status=200)
 
         # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
         # return JsonResponse(wallet_ser.data, status=200)
