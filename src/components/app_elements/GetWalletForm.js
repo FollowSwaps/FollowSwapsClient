@@ -25,6 +25,10 @@ import {Accordion as MaterialAccordion} from '@material-ui/core';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import {Donors} from "./Donors";
+import {SkipTokens} from "./SkipTokens";
+import {Tokens} from "./Tokens";
+import {Limits} from "./Limits";
 
 var md5 = require('md5');
 var BigInt = require("big-integer");
@@ -66,1070 +70,6 @@ const darkTheme = createMuiTheme({
         }
     }
 });
-
-
-class Donors extends React.Component {
-
-
-    render() {
-        return (
-            <Segment inverted style={{backgroundColor: "#151719"}}>
-                <Accordion fluid inverted>
-                    {
-                        this.props.donors.map(donor => (
-                                <div>
-                                    <Accordion.Title
-                                        active={this.props.activeIndexAccordion === donor.id}
-                                        index={donor.id}
-                                        onClick={this.props.handleClick}
-                                    >
-                                        <Icon name='dropdown'/>
-                                        {donor.name}
-                                    </Accordion.Title>
-                                    <Accordion.Content active={this.props.activeIndexAccordion === donor.id}>
-                                        <form style={{marginBottom: '30px', fontFamily: 'Montserrat'}}>
-                                            {donor.errs.non_field_errors ? <Message
-                                                error
-                                                header='Validation error'
-                                                content={donor.errs.non_field_errors}
-                                            /> : null}
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{
-                                                            border: "1px solid #16b157",
-                                                            padding: 10,
-                                                            fontFamily: 'Montserrat'
-                                                        }}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 1
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <TextField
-                                                            size="small"
-                                                            name={'name'}
-                                                            color="default"
-                                                            value={donor.name} onChange={this.props.input_change}
-                                                            error={donor.errs.name}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                        />
-                                                        {/*<Form.Input*/}
-                                                        {/*    value={donor.name} onChange={this.props.input_change}*/}
-                                                        {/*    name={'name'}*/}
-                                                        {/*    error={donor.errs.name}*/}
-                                                        {/*/>*/}
-                                                        <TextField
-                                                            size="small"
-                                                            name={'name'}
-                                                            color="default"
-                                                            value={donor.addr} onChange={this.props.input_change}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            error={donor.errs.addr}
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-                                                        {/*<Form.Input*/}
-                                                        {/*    value={donor.addr} onChange={this.props.input_change}*/}
-                                                        {/*    name={'addr'}*/}
-                                                        {/*    error={donor.errs.addr}*/}
-                                                        {/*/>*/}
-
-
-                                                        <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
-
-                                                                       checked={donor.fixed_trade}
-                                                                       onChange={this.props.input_change}
-
-                                                        />
-
-                                                        <p style={{fontSize: '14px'}}>If checked bot will trade on fixed
-                                                            value</p>
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Fixed trade value (weth)'
-                                                            name={'fixed_value_trade'}
-                                                            placeholder='Fixed trade value (WETH)'
-                                                            value={donor.fixed_value_trade}
-                                                            onChange={this.props.input_change}
-                                                            error={donor.errs.fixed_value_trade}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-                                                        {/*<Form.Input fluid type={'number'}*/}
-                                                        {/*            label='Fixed trade value (weth)'*/}
-                                                        {/*            name={'fixed_value_trade'}*/}
-                                                        {/*            placeholder='Fixed trade value (WETH)'*/}
-                                                        {/*            value={donor.fixed_value_trade}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            error={donor.errs.fixed_value_trade}/>*/}
-
-                                                        <p style={{fontSize: '14px'}}>Fixed trade value (WETH) how much
-                                                            you
-                                                            willing
-                                                            to
-                                                            risk
-                                                            for
-                                                            every
-                                                            donors
-                                                            trade</p>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Percent trade value (%)'
-                                                            name={'percent_value_trade'}
-                                                            placeholder=''
-                                                            value={donor.percent_value_trade}
-                                                            onChange={this.props.input_change}
-                                                            error={donor.errs.percent_value_trade}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-                                                        {/*<Form.Input fluid type={'number'}*/}
-                                                        {/*            label='Percent trade value (%)'*/}
-                                                        {/*            name={'percent_value_trade'}*/}
-                                                        {/*            placeholder=''*/}
-                                                        {/*            value={donor.percent_value_trade}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            error={donor.errs.percent_value_trade}*/}
-
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Percent trade value (%) how much
-                                                            you
-                                                            willing
-                                                            to
-                                                            risk
-                                                            for
-                                                            every
-                                                            donors
-                                                            trade in %</p>
-                                                        <Form.Checkbox label='Trade on confirmed tx'
-                                                                       name={'trade_on_confirmed'}
-
-                                                                       checked={donor.trade_on_confirmed}
-                                                                       onChange={this.props.input_change}
-                                                                       error={donor.errs.trade_on_confirmed}
-                                                        />
-                                                        <p style={{fontSize: '14px'}}>Trade on confirmed TX. This is
-                                                            normal
-                                                            following
-                                                            and
-                                                            you
-                                                            should
-                                                            tick,
-                                                            unless you need <span style={{
-                                                                color: 'rgb(153,89,51)',
-                                                            }}><b>front run</b></span> option</p>
-                                                        <Form.Checkbox label='Use donor slippage'
-                                                                       name={'donor_slippage'}
-
-                                                                       checked={donor.donor_slippage}
-                                                                       onChange={this.props.input_change}
-                                                                       error={donor.errs.donor_slippage}
-                                                        />
-                                                        <p style={{fontSize: '14px'}}>donor slippage <span style={{
-                                                            color: 'rgb(153,89,51)',
-                                                        }}><b>front run</b></span> option</p>
-
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Slippage tolerance (%)'
-                                                            name={'slippage'}
-                                                            placeholder='0'
-                                                            value={donor.slippage}
-                                                            onChange={this.props.input_change}
-                                                            disabled={donor.donor_slippage}
-                                                            error={donor.errs.slippage}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-
-                                                        {/*<Form.Input fluid type={'number'} label='Slippage tolerance (%)'*/}
-                                                        {/*            name={'slippage'}*/}
-                                                        {/*            placeholder='0'*/}
-                                                        {/*            value={donor.slippage}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            disabled={donor.donor_slippage}*/}
-                                                        {/*            error={donor.errs.slippage}*/}
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Slippage tolerance (%) Your
-                                                            transaction
-                                                            will
-                                                            revert if
-                                                            the
-                                                            price
-                                                            changes unfavourably by more then this percentage</p>
-
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Gas multiplier'
-                                                            name={'gas_multiplier'}
-                                                            value={donor.gas_multiplier}
-                                                            onChange={this.props.input_change}
-                                                            error={donor.errs.gas_multiplier}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-
-                                                        {/*<Form.Input fluid type={'number'} label='Gas multiplier'*/}
-                                                        {/*            name={'gas_multiplier'}*/}
-
-                                                        {/*            value={donor.gas_multiplier}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            error={donor.errs.gas_multiplier}*/}
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px'}}>Gas multiplier: put 1.1 for 10%
-                                                            higher
-                                                            then
-                                                            donors gas 1.2 for 20%
-                                                            higher
-                                                            etc</p>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 2
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                            </Grid>
-
-                                            <Grid divided='vertically'>
-                                                <Grid.Row columns={2}>
-                                                    <Grid.Column>
-                                                        <div style={{border: "1px solid #16b157", padding: 10}}>
-                                                            <h3 style={{fontFamily: 'Montserrat'}}>
-                                                                Шаг 3
-                                                            </h3>
-                                                            <br style={{marginTop: 15}}/>
-                                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                                                            Accusamus aliquam aliquid animi asperiores dignissimos
-                                                            doloremque ea facilis id ipsum molestias natus
-                                                            necessitatibus nobis omnis, perspiciatis placeat
-                                                            praesentium, quam quo rem.
-                                                        </div>
-                                                    </Grid.Column>
-                                                    <Grid.Column>
-                                                        <h3 style={{marginTop: '20px'}}>Filters</h3>
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Minimum value to follow (eth)'
-                                                            name={'follow_min'}
-                                                            value={donor.follow_min}
-                                                            onChange={this.props.input_change}
-                                                            error={donor.errs.follow_min}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-
-                                                        />
-
-                                                        {/*<Form.Input type={'number'}*/}
-                                                        {/*            style={{width: "100%"}}*/}
-                                                        {/*            label='Minimum value to follow (eth)'*/}
-                                                        {/*            name={'follow_min'}*/}
-                                                        {/*            value={donor.follow_min}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            error={donor.errs.follow_min}*/}
-                                                        {/*/>*/}
-
-                                                        <TextField
-                                                            size="small"
-                                                            type='number'
-                                                            color="default"
-                                                            label='Maximum value to follow (eth)'
-                                                            name={'follow_max'}
-                                                            value={donor.follow_max}
-                                                            onChange={this.props.input_change}
-                                                            error={donor.errs.follow_max}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            style={{marginBottom: 10}}
-                                                        />
-
-                                                        {/*<Form.Input type={'number'}*/}
-                                                        {/*            label='Maximum value to follow (eth)'*/}
-                                                        {/*            name={'follow_max'}*/}
-
-                                                        {/*            value={donor.follow_max}*/}
-                                                        {/*            onChange={this.props.input_change}*/}
-                                                        {/*            error={donor.errs.follow_max}*/}
-
-                                                        {/*/>*/}
-                                                        <p style={{fontSize: '14px', marginBottom: '30px'}}>Donor
-                                                            transaction
-                                                            Minimum -
-                                                            Maximum
-                                                            value.
-                                                            If its not in range we
-                                                            are
-                                                            not
-                                                            following</p>
-                                                    </Grid.Column>
-                                                    <Button style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
-                                                            variant="contained">
-                                                        Update
-                                                    </Button>
-                                                    <Button style={{marginLeft: 10}} size="small" onClick={() => this.props.deleteDonor(donor.addr)}
-                                                            variant="contained">
-                                                        Delete
-                                                    </Button>
-                                                </Grid.Row>
-
-                                            </Grid>
-
-
-                                            {/*<Form.Button size="mini"*/}
-                                            {/*             onClick={() => this.props.updateDonor(donor)}>Update</Form.Button>*/}
-                                            {/*<Form.Button size="mini"*/}
-                                            {/*             onClick={() => this.props.deleteDonor(donor.addr)}>Delete</Form.Button>*/}
-                                        </form>
-
-                                    </Accordion.Content>
-                                </div>
-                            )
-                        )
-                    }
-                </Accordion></Segment>
-        )
-    }
-}
-
-class SkipTokens extends React.Component {
-
-
-    render() {
-        return (
-
-            <Segment inverted style={{backgroundColor: "#151719"}}>
-                <Accordion fluid inverted>
-                    {
-                        this.props.tokens.map(token => (
-
-                            <div>
-                                <Accordion.Title
-                                    active={this.props.activeIndexAccordion === token.id}
-                                    index={token.id}
-                                    onClick={this.props.handleClick}
-                                >
-                                    <Icon name='dropdown'/>
-                                    {token.name}
-                                </Accordion.Title>
-                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <div style={{display: "flex", flexDirection: "column"}}>
-                                        <TextField
-                                            size="small"
-                                            color="default"
-                                            label={'token name'}
-                                            value={token.name} onChange={this.props.input_skip_token} name={'name'}
-                                            error={token.errs.name}
-                                            variant="outlined"
-                                            fullWidth
-                                            style={{marginBottom: 10}}
-                                        />
-                                        <TextField
-                                            size="small"
-                                            color="default"
-                                            label={'token address'}
-                                            value={token.addr} onChange={this.props.input_skip_token} name={'addr'}
-                                            error={token.errs.addr}
-                                            variant="outlined"
-                                            fullWidth
-                                            style={{marginBottom: 10}}
-                                        />
-                                        <div style={{display: "flex"}}>
-                                            <Button size="small" onClick={() => this.props.updateSkip(token)}
-                                                    variant="contained">
-                                                Update
-                                            </Button>
-                                            <Button style={{marginLeft: 20}} size="small"
-                                                    onClick={() => this.props.deleteSkip(token.addr)}
-                                                    variant="contained">
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </Accordion.Content>
-
-                            </div>
-                        ))}
-                </Accordion>
-            </Segment>
-        )
-    }
-}
-
-class Tokens extends React.Component {
-
-
-    render() {
-        return (
-            <Segment inverted style={{backgroundColor: "#151719"}}>
-                <Accordion fluid inverted>
-                    {
-                        this.props.tokens.map(token => (
-
-                            <div>
-                                <Accordion.Title
-                                    active={this.props.activeIndexAccordion === token.id}
-                                    index={token.id}
-                                    onClick={this.props.handleClick}
-                                >
-
-                                    <Icon name='dropdown'/>
-                                    {token.addr} | {token.name} | {token.balance}
-
-
-                                    {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
-                                </Accordion.Title>
-                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    {/*<Form inverted>*/}
-                                    <Form.Group inline>
-                                        <TextField
-                                            size="small"
-                                            color="default"
-                                            value={token.name}
-                                            onChange={this.props.token_name_change}
-                                            name={'name'}
-                                            label={'token name'}
-                                            error={token.errs.name}
-                                            variant="outlined"
-                                            fullWidth
-                                            style={{marginBottom: 10}}
-                                        />
-                                        {/*<Form.Input*/}
-                                        {/*    size={"mini"}*/}
-                                        {/*    value={token.name}*/}
-                                        {/*    onChange={this.props.token_name_change}*/}
-                                        {/*    name={'name'}*/}
-                                        {/*    label={'token name'}*/}
-                                        {/*    error={token.errs.name}*/}
-                                        {/*/>*/}
-
-                                        <div style={{display: "flex"}}>
-                                            <Button style={{marginRight: 10}} size="small"
-                                                    onClick={() => this.props.update(token)}
-                                                    variant="contained">
-                                                Save name
-                                            </Button>
-                                            <Button size="small" onClick={() => this.props.delete(token.id)}
-                                                    variant="contained">
-                                                Delete token
-                                            </Button>
-                                        </div>
-                                        <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
-                                    </Form.Group>
-                                    {/*</Form>*/}
-                                    <Table style={{backgroundColor: "transparent"}} size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Donor</TableCell>
-                                                <TableCell>Quantity</TableCell>
-                                                <TableCell>Action</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-
-                                        <TableBody>
-                                            {token.donor_assets.map(donor_token => (
-                                                <TableRow>
-
-
-                                                    <TableCell>
-
-                                                        <Select
-                                                            fullWidth
-                                                            name={"donor"}
-                                                            margin="dense"
-                                                            id={donor_token.id}
-                                                            onChange={this.props.input_donor_token}
-                                                            error={this.props.new_token.errs.donor}
-                                                            value={donor_token.donor}
-                                                        >
-                                                            {this.props.donors.map(item => {
-                                                                return (
-                                                                    <MenuItem parentId={donor_token.id}
-                                                                              style={{color: "black"}} name={item.name}
-                                                                              value={item.id} id={item.id}
-                                                                              key={item.id}>{item.name}</MenuItem>
-                                                                )
-                                                            })}
-                                                        </Select>
-
-                                                        {/*<Form.Select*/}
-                                                        {/*    fluid*/}
-                                                        {/*    id={donor_token.id}*/}
-                                                        {/*    options={this.props.donors.map(x => ({*/}
-                                                        {/*        "key": x.id,*/}
-                                                        {/*        "text": x.name,*/}
-                                                        {/*        'value': x.id*/}
-                                                        {/*    }),)}*/}
-                                                        {/*    value={donor_token.donor}*/}
-                                                        {/*    name={'donor'}*/}
-                                                        {/*    onChange={this.props.input_donor_token}*/}
-                                                        {/*    error={donor_token.errs.donor}*/}
-                                                        {/*/>*/}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <TextField
-                                                            isinput={true}
-                                                            size="small"
-                                                            color="default"
-                                                            type="number"
-                                                            label={'token name'}
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            id={donor_token.id}
-                                                            inputProps={{id: donor_token.id}}
-                                                            value={donor_token.qnty}
-                                                            onChange={this.props.input_donor_token}
-                                                            name={'qnty'}
-                                                            error={donor_token.errs.qnty}
-                                                        />
-                                                    </TableCell>
-
-
-                                                    <TableCell>
-                                                        <div style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                            alignItems: "column"
-                                                        }}>
-                                                            <Button onClick={() => this.props.updateAsset(donor_token)}
-                                                                    variant="contained">
-                                                                Update
-                                                            </Button>
-                                                            <Button style={{marginTop: 10}}
-                                                                    onClick={() => this.props.deleteAsset(donor_token.id)}
-                                                                    variant="contained">
-                                                                Delete
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-
-                                                </TableRow>
-
-                                            ))}
-                                            <TableRow>
-
-
-                                                <TableCell>
-
-                                                    <Select
-                                                        fullWidth
-                                                        name={"donor"}
-                                                        margin="dense"
-                                                        id={this.props.new_token.id}
-                                                        onChange={this.props.input_donor_token}
-                                                        label="Age"
-                                                        error={this.props.new_token.errs.donor}
-                                                    >
-                                                        {this.props.donors.map(item => {
-                                                            return (
-                                                                <MenuItem parentId={this.props.new_token.id}
-                                                                          style={{color: "black"}} name={item.name}
-                                                                          value={item.id} id={item.id}
-                                                                          key={item.id}>{item.name}</MenuItem>
-                                                            )
-                                                        })}
-                                                    </Select>
-
-                                                    {/*<Form.Select*/}
-                                                    {/*    fluid*/}
-                                                    {/*    id={this.props.new_token.id}*/}
-                                                    {/*    options={this.props.donors.map(x => ({*/}
-                                                    {/*        "key": x.id,*/}
-                                                    {/*        "text": x.name,*/}
-                                                    {/*        'value': x.id*/}
-                                                    {/*    }),)}*/}
-                                                    {/*    value={this.props.new_token.donor}*/}
-                                                    {/*    name={'donor'}*/}
-                                                    {/*    onChange={this.props.input_donor_token}*/}
-                                                    {/*    error={this.props.new_token.errs.donor}*/}
-                                                    {/*/>*/}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        isinput={true}
-                                                        size="small"
-                                                        color="default"
-                                                        type="number"
-                                                        label={'token name'}
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        id={this.props.new_token.id}
-                                                        value={this.props.new_token.qnty}
-                                                        onChange={this.props.input_donor_token}
-                                                        name={'qnty'}
-                                                        error={this.props.new_token.errs.qnty}
-                                                    />
-                                                </TableCell>
-
-
-                                                <TableCell>
-                                                    <Button onClick={() => this.props.updateAsset(this.props.new_token)}
-                                                            variant="contained">
-                                                        Create
-                                                    </Button>
-                                                </TableCell>
-
-                                            </TableRow>
-
-                                        </TableBody>
-                                    </Table>
-                                </Accordion.Content>
-                            </div>
-                        ))}
-                </Accordion>
-            </Segment>
-        )
-    }
-}
-
-
-class Limits extends React.Component {
-
-
-    render() {
-        return (
-
-            <Segment inverted style={{backgroundColor: "#151719"}}>
-                <Accordion fluid inverted>
-                    {
-                        this.props.tokens.map(token => (
-
-                            <div>
-                                <Accordion.Title
-                                    active={this.props.activeIndexAccordion === token.id}
-                                    index={token.id}
-                                    onClick={this.props.handleClick}
-                                >
-
-                                    <Icon name='dropdown'/>
-                                    {token.addr} | {token.name} | {token.balance}
-
-
-                                    {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
-                                </Accordion.Title>
-                                <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <div style={{display: "flex", marginBottom: 15}}>
-                                        <TextField
-                                            size="small"
-                                            color="default"
-                                            variant="outlined"
-                                            fullWidth
-                                            style={{width: 500}}
-                                            value={token.name}
-                                            onChange={this.props.token_name_change}
-                                            name={'name'}
-                                            label={'token name'}
-                                            error={token.errs.name}
-                                        />
-                                        <Button size="small" style={{marginLeft: 10}}
-                                                onClick={() => this.props.update(token)}
-                                                variant="contained">
-                                            Save name
-                                        </Button>
-                                        <Button size="small" style={{marginLeft: 10}}
-                                                onClick={() => this.props.delete(token.id)}
-                                                variant="contained">
-                                            Delete token
-                                        </Button>
-                                    </div>
-                                    <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token}</span>
-
-                                    <Table style={{backgroundColor: "transparent"}} size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell>Price</TableCell>
-                                                <TableCell>Slippage</TableCell>
-                                                <TableCell>Current price</TableCell>
-                                                <TableCell>Quantity</TableCell>
-                                                <TableCell>Fast gas + gwei</TableCell>
-                                                <TableCell>Status</TableCell>
-                                                <TableCell>Active</TableCell>
-                                                <TableCell>Save</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {token.limit_assets.map(limit_token => {
-                                                return (
-                                                    <TableRow>
-                                                        <TableCell>
-
-                                                            <Select
-                                                                fullWidth
-                                                                name={"type"}
-                                                                margin="dense"
-                                                                id={limit_token.id}
-                                                                error={limit_token.errs.type}
-                                                                onChange={this.props.input_skip_token}
-                                                                value={limit_token.type}
-                                                            >
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
-                                                                          value={'take profit'} id={'take profit'}
-                                                                          key={'take profit'}>take profit
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
-                                                                          value={'buy'} id={'buy'}
-                                                                          key={'buy'}>buy
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
-                                                                          value={'sell'} id={'sell'}
-                                                                          key={'sell'}>sell
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
-                                                                          value={'stop loss'} id={'stop loss'}
-                                                                          key={'stop loss'}>stop loss
-                                                                </MenuItem>
-                                                            </Select>
-
-                                                            {/*<Form.Select*/}
-                                                            {/*    fluid*/}
-                                                            {/*    id={limit_token.id}*/}
-                                                            {/*    options={[{key: 'buy', text: 'buy', value: 'buy'},*/}
-                                                            {/*        {key: 'sell', text: 'sell', value: 'sell'},*/}
-                                                            {/*        {*/}
-                                                            {/*            key: 'take profit',*/}
-                                                            {/*            text: 'take profit',*/}
-                                                            {/*            value: 'take profit'*/}
-                                                            {/*        },*/}
-                                                            {/*        {*/}
-                                                            {/*            key: 'stop loss',*/}
-                                                            {/*            text: 'stop loss',*/}
-                                                            {/*            value: 'stop loss'*/}
-                                                            {/*        }]}*/}
-                                                            {/*    value={limit_token.type}*/}
-                                                            {/*    name={'type'}*/}
-                                                            {/*    error={limit_token.errs.type}*/}
-                                                            {/*    onChange={this.props.input_skip_token}*/}
-                                                            {/*/>*/}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <TextField
-                                                                size="small"
-                                                                color="default"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                id={limit_token.id}
-                                                                value={limit_token.price}
-                                                                onChange={this.props.input_skip_token}
-                                                                name={'price'}
-                                                                error={limit_token.errs.price}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <TextField
-                                                                size="small"
-                                                                color="default"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                id={limit_token.id}
-                                                                value={limit_token.slippage}
-                                                                onChange={this.props.input_skip_token}
-                                                                name={'slippage'}
-                                                                error={limit_token.errs.slippage}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span style={{fontSize: 14}}>{limit_token.curr_price}</span>
-                                                        </TableCell>
-
-
-                                                        <TableCell>
-                                                            <TextField
-                                                                size="small"
-                                                                color="default"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                id={limit_token.id}
-                                                                value={limit_token.qnty}
-                                                                onChange={this.props.input_skip_token}
-                                                                name={'qnty'}
-                                                                error={limit_token.errs.qnty}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <TextField
-                                                                size="small"
-                                                                color="default"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                id={limit_token.id}
-                                                                value={limit_token.gas_plus}
-                                                                onChange={this.props.input_skip_token}
-                                                                name={'gas_plus'}
-                                                                error={limit_token.errs.gas_plus}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Select
-                                                                fullWidth
-                                                                value={limit_token.status}
-                                                                name={'status'}
-                                                                onChange={this.props.input_skip_token}
-                                                                margin="dense"
-                                                                disabled={true}
-                                                                id={limit_token.id}
-                                                                error={limit_token.errs.type}
-                                                            >
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'running'}
-                                                                          value={'running'} id={'running'}
-                                                                          key={'running'}>running
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'stopped'}
-                                                                          value={'stopped'} id={'stopped'}
-                                                                          key={'stopped'}>stopped
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'failed'}
-                                                                          value={'failed'} id={'failed'}
-                                                                          key={'failed'}>failed
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'executed'}
-                                                                          value={'executed'} id={'executed'}
-                                                                          key={'executed'}>executed
-                                                                </MenuItem>
-                                                                <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'pending'}
-                                                                          value={'pending'} id={'pending'}
-                                                                          key={'pending'}>pending
-                                                                </MenuItem>
-                                                            </Select>
-                                                        </TableCell>
-
-                                                        <TableCell>
-                                                            <Checkbox name={'active'}
-                                                                      slider
-                                                                      id={limit_token.id}
-                                                                      checked={limit_token.active}
-                                                                      onChange={this.props.input_skip_token}
-
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div style={{display: "flex", flexDirection: "column"}}>
-                                                                <Button
-                                                                    onClick={() => this.props.updateAsset(limit_token)}
-                                                                    variant="contained">
-                                                                    Save
-                                                                </Button>
-                                                                <Button style={{marginTop: 10}}
-                                                                        onClick={() => this.props.deleteAsset(limit_token.id)}
-                                                                        variant="contained">
-                                                                    Delete
-                                                                </Button>
-                                                            </div>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )
-                                            })}
-                                            <TableRow>
-                                                <TableCell>
-                                                    <Select
-                                                        fullWidth
-                                                        margin="dense"
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.type}
-                                                        name={'type'}
-                                                        onChange={this.props.input_skip_token}
-                                                        error={this.props.new_limit.errs.type}
-                                                    >
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
-                                                                  value={'take profit'} id={'take profit'}
-                                                                  key={'take profit'}>take profit
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
-                                                                  value={'buy'} id={'buy'}
-                                                                  key={'buy'}>buy
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
-                                                                  value={'sell'} id={'sell'}
-                                                                  key={'sell'}>sell
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
-                                                                  value={'stop loss'} id={'stop loss'}
-                                                                  key={'stop loss'}>stop loss
-                                                        </MenuItem>
-                                                    </Select>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        color="default"
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.price}
-                                                        onChange={this.props.input_skip_token}
-                                                        name={'price'}
-                                                        error={this.props.new_limit.errs.price}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        color="default"
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.slippage}
-                                                        onChange={this.props.input_skip_token}
-                                                        name={'slippage'}
-                                                        error={this.props.new_limit.errs.slippage}
-                                                    />
-
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span style={{fontSize: 14}}>{this.props.new_limit.curr_price}</span>
-                                                </TableCell>
-
-
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        color="default"
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        type={'number'}
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.qnty}
-                                                        onChange={this.props.input_skip_token}
-                                                        name={'qnty'}
-                                                        error={this.props.new_limit.errs.qnty}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        color="default"
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        type={'number'}
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.gas_plus}
-                                                        onChange={this.props.input_skip_token}
-                                                        name={'gas_plus'}
-                                                        error={this.props.new_limit.errs.gas_plus}
-                                                    />
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <Select
-                                                        fullWidth
-                                                        margin="dense"
-                                                        disabled={true}
-                                                        id={this.props.new_limit.id}
-                                                        value={this.props.new_limit.status}
-                                                        name={'status'}
-                                                        onChange={this.props.input_skip_token}
-                                                    >
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'running'}
-                                                                  value={'running'} id={'running'}
-                                                                  key={'running'}>running
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'stopped'}
-                                                                  value={'stopped'} id={'stopped'}
-                                                                  key={'stopped'}>stopped
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'failed'}
-                                                                  value={'failed'} id={'failed'}
-                                                                  key={'failed'}>failed
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'executed'}
-                                                                  value={'executed'} id={'executed'}
-                                                                  key={'executed'}>executed
-                                                        </MenuItem>
-                                                        <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'pending'}
-                                                                  value={'pending'} id={'pending'}
-                                                                  key={'pending'}>pending
-                                                        </MenuItem>
-                                                    </Select>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <Checkbox name={'active'}
-                                                              slider
-                                                              id={this.props.new_limit.id}
-                                                              checked={this.props.new_limit.active}
-                                                              onChange={this.props.input_skip_token}
-
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        onClick={() => this.props.updateAsset(this.props.new_limit)}
-                                                        variant="contained">
-                                                        Create
-                                                    </Button>
-
-                                                </TableCell>
-                                            </TableRow>
-
-                                        </TableBody>
-                                    </Table>
-                                </Accordion.Content>
-                            </div>
-                        ))}
-                </Accordion>
-            </Segment>
-        )
-    }
-}
 
 
 const default_new_donor = {
@@ -1179,7 +119,6 @@ const default_new_limit = {
 }
 const initialState = {
         active: false,
-
         telegram_channel_id: null,
         mainnet: true,
         max_gas: null,
@@ -1201,16 +140,17 @@ const initialState = {
         errs: {},
         modal: false,
         activeItem: 'Donors',
-        activeIndexAccordion: -1
+        activeIndexAccordion: -1,
+        isAutoUpdateActivated: true
     }
 ;
 
 
 class GetWallet extends React.Component {
 
-
     constructor(props) {
         super(props);
+        this.updateTokensInterval = null;
         this.state = initialState;
         this.state.addr = '0x9bF0aefa4BA011B3987c7c6554CFB0D94DB5332f';
         this.state.key = 'ee6f3ed4cd2f158ec61cba7a9457f9dce8b212a0cb00630633cc119a03a49c93';
@@ -1239,10 +179,24 @@ class GetWallet extends React.Component {
         this.update_asset_name = this.update_asset_name.bind(this);
         this.input_change_limit = this.input_change_limit.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
+        this.updateTokensInState = this.updateTokensInState.bind(this);
+        this.changeTokensUpdateStatus = this.changeTokensUpdateStatus.bind(this);
     }
 
+    componentDidMount() {
+        this.updateTokensInterval = setInterval(() => {
+            if (this.state.isAutoUpdateActivated && this.state.wallet_connected) {
+                this.updateTokensInState();
+            }
+        }, 3000)
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.updateTokensInterval)
+    }
 
     token_name_change(event) {
+        this.changeTokensUpdateStatus(false)
         const target = event.target;
 
         var value = null
@@ -1288,6 +242,7 @@ class GetWallet extends React.Component {
     }
 
     input_change_limit(event) {
+        this.changeTokensUpdateStatus(false)
         const currentTarget = event.currentTarget;
         const target = event.target
         let value = null
@@ -1343,8 +298,8 @@ class GetWallet extends React.Component {
 
     }
 
-
     input_donor_token(event) {
+        this.changeTokensUpdateStatus(false)
         const currentTarget = event.currentTarget;
         const target = event.target
         let value = null
@@ -1474,7 +429,6 @@ class GetWallet extends React.Component {
             }
         }
         return 'cookieValue';
-        // return cookieValue;
     }
 
     deleteDonor(addr) {
@@ -1621,7 +575,10 @@ class GetWallet extends React.Component {
                 })
                 res.data.wallet_connected = true
 
-                this.setState(res.data)
+                this.setState(res.data);
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
             })
             .catch(err => {
                 let new_donors = this.state.assets
@@ -1724,12 +681,18 @@ class GetWallet extends React.Component {
                 })
                 res.data.wallet_connected = true
 
-                this.setState(res.data)
+                this.setState(res.data);
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
             })
             .catch(err => {
                 let new_donors = this.state.assets
                 new_donors.find(x => x.id === this.state.activeIndexAccordion)['errs'] = err.response.data
-                this.setState({assets: new_donors, loading: false})
+                this.setState({assets: new_donors, loading: false});
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
             })
     }
 
@@ -1925,7 +888,6 @@ class GetWallet extends React.Component {
         // this.setState(self.res)
     }
 
-
     updateDonor(donor) {
         this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
@@ -2084,11 +1046,15 @@ class GetWallet extends React.Component {
             'key_hash': key_hash,
         }, {headers: {'X-CSRFToken': csrftoken}})
             .then(res => {
-
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
 
             })
             .catch(err => {
-
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
 
                 // res.data.loading=false
                 // this.setState(err.data)
@@ -2297,6 +1263,9 @@ class GetWallet extends React.Component {
 
                 console.log(res.data.new_token)
                 this.setState(res.data)
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
             })
             .catch(err => {
                 token.qnty = (+token.qnty / 10 ** token.decimals)
@@ -2371,6 +1340,53 @@ class GetWallet extends React.Component {
             this.setState({'loading': false, 'errs': err.response.data})
             // res.data.loading=false
             // this.setState(res.data)
+        })
+    }
+
+    /**
+     * Метод для обновления токенов в таблицах по интервалу
+     */
+    updateTokensInState(){
+        console.log('tokens update');
+        let csrftoken = this.getCookie('csrftoken')
+        if (csrftoken === null || csrftoken === '') {
+            this.setState({errs: {non_field_errors: 'Session is expired, refresh page please. Enter wallet address and key again then press Connect wallet.'}})
+            this.setState({loading: false})
+            return
+        }
+
+        let key_hash = md5(this.state.key)
+        axios.post(url + `/refresh_tokens`, {
+            'addr': this.state.addr,
+            'key_hash': key_hash,
+        }, {headers: {'X-CSRFToken': csrftoken}})
+            .then(res => {
+                res.data.assets.forEach(function (asset) {
+                    asset.balance = asset.balance / 10 ** asset.decimals
+                    asset.price_for_token = asset.price_for_token / 10 ** asset.decimals
+
+                    asset.donor_assets.forEach(function (donor_asset) {
+                        donor_asset.qnty = (+donor_asset.qnty / 10 ** asset.decimals)
+                    })
+                    asset.limit_assets.forEach(function (limit_asset) {
+                        if (limit_asset.type === 'buy')
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** 18)
+                        else
+                            limit_asset.qnty = (+limit_asset.qnty / 10 ** asset.decimals)
+                    })
+
+                })
+                this.setState({assets: res.data.assets})
+            })
+    }
+
+    /**
+     * Включить или выключить автоматическое обновление токенов по таймауту
+     * @param value - boolean
+     */
+    changeTokensUpdateStatus(value){
+        this.setState({
+            isAutoUpdateActivated: value
         })
     }
 
