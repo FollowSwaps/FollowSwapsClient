@@ -635,7 +635,7 @@ def refresh_token_balance(request):
     else:
         wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
         if Asset.objects.filter(id=data['token_id']).exists():
-            new_balance=wallet.refresh_token(data['token_id'])
+            new_balance=wallet.refresh_token_balance(data['token_id'])
             return JsonResponse({'balance': new_balance}, status=200)
         else:
             return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
@@ -665,7 +665,7 @@ def approve_token(request):
     else:
         wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
         if Asset.objects.filter(id=data['token_id']).exists():
-            approve_tx=wallet.approve_if_not(Asset.objects.filter(id=data['token_id']))
+            approve_tx=wallet.approve_if_not(Asset.objects.get(id=data['token_id']))
             if approve_tx is not None:
                 return JsonResponse({'approve': approve_tx}, status=200)
             else:
@@ -699,7 +699,7 @@ def refresh_token_price(request):
     else:
         wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
         if Asset.objects.filter(id=data['token_id']).exists():
-            new_price=wallet.refresh_token_balance(data['token_id'])
+            new_price=wallet.refresh_token_price(data['token_id'])
             return JsonResponse({'price_for_token': new_price}, status=200)
         else:
             return JsonResponse({'non_field_errors': ['Token does not exists']}, status=400)
@@ -729,7 +729,7 @@ def refresh_tokens(request):
     else:
         assets = Asset.objects.all()
         ser=tempSer(assets,many=True)
-        return JsonResponse({'assets': ser}, status=200)
+        return JsonResponse({'assets': ser.data}, status=200)
 
         # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
         # return JsonResponse(wallet_ser.data, status=200)

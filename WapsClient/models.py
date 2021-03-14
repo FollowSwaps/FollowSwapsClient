@@ -152,7 +152,7 @@ class Wallet(models.Model):
     def refresh_token_price(self,token_id):
         asset=self.assets.get(id=token_id)
         new_price_for_token = self.follower.get_out_qnty_by_path(10**asset.decimals,
-                                                            [asset.asset.addr, self.follower.weth_addr, ])
+                                                            [asset.addr, self.follower.weth_addr, ])
         asset.price_for_token=new_price_for_token
         asset.save()
         return new_price_for_token
