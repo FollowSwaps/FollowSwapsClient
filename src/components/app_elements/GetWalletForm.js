@@ -23,6 +23,9 @@ const {ethers} = require("ethers");
 const url = 'http://31.132.114.51:8000'
 
 const darkTheme = createMuiTheme({
+    typography: {
+        fontFamily: 'Montserrat, sans-serif',
+    },
     palette: {
         type: 'dark',
         common: {black: '#fff', white: '#fff'},
@@ -37,9 +40,9 @@ const darkTheme = createMuiTheme({
             contrastText: '#ffffff'
         },
         secondary: {
-            light: '#f5b347',
-            main: '#eea82a',
-            dark: '#e9a021',
+            light: '#995933',
+            main: '#995933',
+            dark: '#995933',
             contrastText: '#000000'
         },
         error: {
@@ -171,6 +174,7 @@ class GetWallet extends React.Component {
         this.refreshTokenPrice = this.refreshTokenPrice.bind(this);
         this.refreshTokenBalance = this.refreshTokenBalance.bind(this);
         this.handleApprove = this.handleApprove.bind(this);
+        this.handleSetMax = this.handleSetMax.bind(this);
     }
 
     componentDidMount() {
@@ -1470,6 +1474,20 @@ class GetWallet extends React.Component {
             })
     }
 
+    handleSetMax (tokenId, itemId, arrayName) {
+        const assetsTemp = [...this.state.assets];
+        const asset = assetsTemp.find(item => item.id === tokenId)
+        if (asset) {
+            const assetsArr = [...asset[arrayName]];
+            const itemIndex = assetsArr.findIndex(item => item.id === itemId);
+            if (itemIndex !== -1) {
+                assetsArr[itemIndex].qnty = asset.balance;
+            }
+            asset[arrayName] = assetsArr;
+        }
+        this.setState(({assets: assetsTemp, isAutoUpdateActivated: false}))
+    }
+
     closeModal = (e) => {
         e.preventDefault();
         this.setState({modal: false});
@@ -1843,6 +1861,7 @@ class GetWallet extends React.Component {
                         refreshTokenPrice={this.refreshTokenPrice}
                         refreshTokenBalance={this.refreshTokenBalance}
                         approveResponse={this.state.approveResponse}
+                        handleSetMax={this.handleSetMax}
                 />
 
                 <Segment inverted style={{backgroundColor: "#151719"}}>
@@ -1909,6 +1928,7 @@ class GetWallet extends React.Component {
                         refreshTokenPrice={this.refreshTokenPrice}
                         refreshTokenBalance={this.refreshTokenBalance}
                         approveResponse={this.state.approveResponse}
+                        handleSetMax={this.handleSetMax}
                 />
                 <Segment inverted style={{backgroundColor: "#151719"}}>
                     <Accordion fluid inverted>
@@ -1980,16 +2000,17 @@ class GetWallet extends React.Component {
                             style={{backgroundColor: "transparent"}}
                             expandIcon={<ExpandMoreIcon style={{color: "#995933"}}/>}
                         >
-                            <Typography>
-                                <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small"
+                            <div style={{flexDirection: "column", display: "flex"}}>
+                                <Button style={{marginRight: 10, height: "min-content", width: "150px"}} color="secondary" variant="outlined" size="small"
                                         onClick={(e) => this.activateWallet(e)}
 
                                         disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                     {this.state.active ? 'Stop bot' : 'Run bot'}
-                                </Button> <br/>
+                                </Button>
                                 <span
                                     style={{fontSize: 14}}>Waps balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)} | Weth balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)} | Eth balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}</span>
-                            </Typography>
+                            </div>
+
                         </AccordionSummary>
                         <AccordionDetails style={{width: "100%"}}>
                             <div style={{display: "flex", flexDirection: "column", width: "100%"}}>
@@ -2076,14 +2097,14 @@ class GetWallet extends React.Component {
                                         label="Telegram"
                                         name={'telegram_channel_id'}
                                         color="default"
-                                        placeholder="Your telegram channel id for notifications, must be negative 13 digit number"
+                                        placeholder="Your telegram channel id"
                                         value={this.state.telegram_channel_id} onChange={this.handleInputChange}
                                         error={this.state.errs.telegram_channel_id}
                                         variant="outlined"
                                         type="number"
                                         InputLabelProps={{shrink: true}}
                                         inputProps={{style: {fontSize: 17}}}
-                                        style={{marginBottom: 10, marginTop: 10, width: "50%"}}
+                                        style={{marginBottom: 10, marginTop: 10, width: "300px"}}
                                     />
                                     <Tooltip title={<>
                                         1. Create new private channel on telegram (any name) <br/>
@@ -2096,9 +2117,9 @@ class GetWallet extends React.Component {
                                     </>
                                     }
                                              placement="top">
-                                        <p style={{fontSize: '14px', marginLeft: '15px'}}>
-                                            🛈
-                                        </p>
+                                        <span style={{fontSize: '14px', marginLeft: '15px'}}>
+                                            ?
+                                        </span>
                                     </Tooltip>
                                     <TextField
                                         size="small"

@@ -1,5 +1,5 @@
 import React from "react";
-import {Accordion, Segment} from "semantic-ui-react";
+import {Accordion, Segment,Icon} from "semantic-ui-react";
 import {MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
@@ -8,7 +8,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
 import AddIcon from '@material-ui/icons/Add';
 import IconButton from '@material-ui/core/IconButton';
-import Icon from '@material-ui/core/Icon';
+import CallMissedOutgoingIcon from '@material-ui/icons/CallMissedOutgoing';
+
 export class Limits extends React.Component {
 
 
@@ -47,16 +48,19 @@ export class Limits extends React.Component {
                                             label={'token name'}
                                             error={token.errs.name}
                                         />
-                                        <Button color="secondary" variant="outlined" size="small" style={{marginLeft: 10}}
-                                                onClick={() => this.props.update(token)}
-                                                >
-                                            Save name
-                                        </Button>
-                                        <Button color="secondary"  size="small" style={{marginLeft: 10}}
-                                                onClick={() => this.props.delete(token.id)}
-                                                variant="contained">
-                                            Delete token
-                                        </Button>
+                                        <div style={{display: "flex", height: "min-content", marginTop: "auto"}}>
+                                            <Button size="small" style={{marginLeft: 10}}
+                                                    onClick={() => this.props.update(token)}
+                                                    color="secondary" variant="outlined">
+                                                Save name
+                                            </Button>
+                                            <Button size="small" style={{marginLeft: 10}}
+                                                    onClick={() => this.props.delete(token.id)}
+                                                    variant="contained" color="secondary" >
+                                                Delete token
+                                            </Button>
+                                        </div>
+
                                     </div>
                                     <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
 
@@ -267,6 +271,9 @@ export class Limits extends React.Component {
                                                                 <IconButton color="secondary" variant="contained" size="small" aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
                                                                     <DeleteIcon fontSize="small"/>
                                                                   </IconButton>
+                                                                <IconButton size={'small'} aria-label="delete" onClick={() => this.props.handleSetMax(token.id, limit_token.id, "limit_assets")}>
+                                                                    <CallMissedOutgoingIcon fontSize="small"/>
+                                                                </IconButton>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
