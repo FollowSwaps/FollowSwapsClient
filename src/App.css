@@ -1,3 +1,11 @@
+html, body > * {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.title {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
 #asd {
   position: fixed;
   z-index: -1;
@@ -26,8 +34,6 @@ background-size: cover;
     color: white !important
 }
 
-.accordion {
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 5px;
-    padding: 10px;
+.center-content {
+    text-align: start !important;
 }

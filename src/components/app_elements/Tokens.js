@@ -3,6 +3,10 @@ import {Accordion, Form, Icon, Segment} from "semantic-ui-react";
 import {MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
+import CallMissedOutgoingIcon from "@material-ui/icons/CallMissedOutgoing";
+import IconButton from "@material-ui/core/IconButton";
+import SaveIcon from "@material-ui/icons/Save";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 export class Tokens extends React.Component {
 
@@ -133,18 +137,18 @@ export class Tokens extends React.Component {
                                                     <TableCell>
                                                         <div style={{
                                                             display: "flex",
-                                                            flexDirection: "column",
-                                                            alignItems: "column"
                                                         }}>
-                                                            <Button onClick={() => this.props.updateAsset(donor_token)}
-                                                                    variant="contained">
-                                                                Update
-                                                            </Button>
-                                                            <Button style={{marginTop: 10}}
-                                                                    onClick={() => this.props.deleteAsset(donor_token.id)}
-                                                                    variant="contained">
-                                                                Delete
-                                                            </Button>
+                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(donor_token)}>
+                                                                <SaveIcon fontSize="small"/>
+                                                            </IconButton>
+
+                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.deleteAsset(donor_token.id)}>
+                                                                <DeleteIcon fontSize="small"/>
+                                                            </IconButton>
+
+                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.handleSetMax(token.id, donor_token.id, "donor_assets")}>
+                                                                <CallMissedOutgoingIcon fontSize="small"/>
+                                                            </IconButton>
                                                         </div>
                                                     </TableCell>
 
