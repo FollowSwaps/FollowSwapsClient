@@ -1,10 +1,13 @@
 import React from "react";
-import {Accordion, Icon, Segment} from "semantic-ui-react";
-import {MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField} from "@material-ui/core";
+import {Accordion, Segment} from "semantic-ui-react";
+import {MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import Checkbox from "@material-ui/core/Checkbox";
-
+import DeleteIcon from '@material-ui/icons/Delete';
+import SaveIcon from '@material-ui/icons/Save';
+import IconButton from '@material-ui/core/IconButton';
+import Icon from '@material-ui/core/Icon';
 export class Limits extends React.Component {
 
 
@@ -56,18 +59,26 @@ export class Limits extends React.Component {
                                     </div>
                                     <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
 
-                                    <Table style={{backgroundColor: "transparent"}} size="small">
+                                    <Table style={{backgroundColor: "transparent",tableLayout: 'auto'}}  fixedHeader={false}>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell>Price</TableCell>
-                                                <TableCell>Slippage</TableCell>
-                                                <TableCell>Current price</TableCell>
-                                                <TableCell>Quantity</TableCell>
-                                                <TableCell>Fast gas + gwei</TableCell>
-                                                <TableCell>Status</TableCell>
-                                                <TableCell>Active</TableCell>
-                                                <TableCell>Save</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Type</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Price</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }} >Slippage</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Current price</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Quantity</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Gas <Tooltip title={<>
+                                       we will use fast gas plus input amount of gwei
+                                    </>
+                                    }
+                                             placement="top">
+                                        <span style={{fontSize: '12px', marginLeft: '5px'}}>
+                                            🛈
+                                        </span>
+                                    </Tooltip></TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Status</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Active</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Save</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -77,31 +88,32 @@ export class Limits extends React.Component {
                                                         <TableCell>
 
                                                             <Select
-                                                                fullWidth
+
+                                                                style={{fontSize: '14px'}}
                                                                 name={"type"}
-                                                                margin="dense"
+
                                                                 id={limit_token.id}
                                                                 error={limit_token.errs.type}
                                                                 onChange={this.props.input_skip_token}
                                                                 value={limit_token.type}
                                                             >
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                           value={'take profit'} id={'take profit'}
                                                                           key={'take profit'}>take profit
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                           value={'buy'} id={'buy'}
                                                                           key={'buy'}>buy
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                           value={'sell'} id={'sell'}
                                                                           key={'sell'}>sell
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'type'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                           value={'stop loss'} id={'stop loss'}
                                                                           key={'stop loss'}>stop loss
                                                                 </MenuItem>
@@ -132,10 +144,11 @@ export class Limits extends React.Component {
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
+
+
                                                                 variant="standard"
-                                                                fullWidth
-style={{width: "130px",}}
-                                                                inputProps={{style: {fontSize: '10px'}}}
+                                                                style={{width: "70px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
                                                                 id={limit_token.id}
                                                                 value={limit_token.price}
                                                                 onChange={this.props.input_skip_token}
@@ -147,8 +160,10 @@ style={{width: "130px",}}
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
-                                                                variant="outlined"
-                                                                fullWidth
+                                                                variant="standard"
+                                                                style={{width: "30px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
+
                                                                 id={limit_token.id}
                                                                 value={limit_token.slippage}
                                                                 onChange={this.props.input_skip_token}
@@ -165,8 +180,10 @@ style={{width: "130px",}}
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
-                                                                variant="outlined"
-                                                                fullWidth
+                                                                variant="standard"
+                                                                style={{width: "70px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
+
                                                                 id={limit_token.id}
                                                                 value={limit_token.qnty}
                                                                 onChange={this.props.input_skip_token}
@@ -178,8 +195,10 @@ style={{width: "130px",}}
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
-                                                                variant="outlined"
-                                                                fullWidth
+                                                                variant="standard"
+                                                                style={{width: "30px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
+
                                                                 id={limit_token.id}
                                                                 value={limit_token.gas_plus}
                                                                 onChange={this.props.input_skip_token}
@@ -189,37 +208,40 @@ style={{width: "130px",}}
                                                         </TableCell>
                                                         <TableCell>
                                                             <Select
-                                                                fullWidth
+
                                                                 value={limit_token.status}
                                                                 name={'status'}
                                                                 onChange={this.props.input_skip_token}
                                                                 margin="dense"
+                                                                variant="standard"
+
+                                                                style={{fontSize: '14px'}}
                                                                 disabled={true}
                                                                 id={limit_token.id}
                                                                 error={limit_token.errs.type}
                                                             >
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'running'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'running'}
                                                                           value={'running'} id={'running'}
                                                                           key={'running'}>running
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'stopped'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'stopped'}
                                                                           value={'stopped'} id={'stopped'}
                                                                           key={'stopped'}>stopped
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'failed'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'failed'}
                                                                           value={'failed'} id={'failed'}
                                                                           key={'failed'}>failed
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'executed'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'executed'}
                                                                           value={'executed'} id={'executed'}
                                                                           key={'executed'}>executed
                                                                 </MenuItem>
                                                                 <MenuItem parentId={limit_token.id}
-                                                                          style={{color: "black"}} name={'pending'}
+                                                                          style={{color: "black",fontSize: '14px'}} name={'pending'}
                                                                           value={'pending'} id={'pending'}
                                                                           key={'pending'}>pending
                                                                 </MenuItem>
@@ -236,50 +258,53 @@ style={{width: "130px",}}
                                                             />
                                                         </TableCell>
                                                         <TableCell>
-                                                            <div style={{display: "flex", flexDirection: "column"}}>
-                                                                <Button
-                                                                    onClick={() => this.props.updateAsset(limit_token)}
-                                                                    variant="contained">
-                                                                    Save
-                                                                </Button>
-                                                                <Button style={{marginTop: 10}}
-                                                                        onClick={() => this.props.deleteAsset(limit_token.id)}
-                                                                        variant="contained">
-                                                                    Delete
-                                                                </Button>
+                                                            <div style={{display: "flex", flexDirection: "row"}}>
+                                                                 <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(limit_token)}>
+                                                                    <SaveIcon fontSize="small"/>
+                                                                  </IconButton>
+
+                                                                <IconButton size={'small'} aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
+                                                                    <DeleteIcon fontSize="small"/>
+                                                                  </IconButton>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
                                                 )
                                             })}
                                             <TableRow>
-                                                <TableCell>
+                                                <TableCell >
                                                     <Select
-                                                        fullWidth
+
                                                         margin="dense"
                                                         id={this.props.new_limit.id}
                                                         value={this.props.new_limit.type}
                                                         name={'type'}
+                                                        variant="standard"
+                                                                style={{width: "70px",fontSize: '14px'}}
+
+
+
+
                                                         onChange={this.props.input_skip_token}
                                                         error={this.props.new_limit.errs.type}
                                                     >
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                   value={'take profit'} id={'take profit'}
                                                                   key={'take profit'}>take profit
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                   value={'buy'} id={'buy'}
                                                                   key={'buy'}>buy
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                   value={'sell'} id={'sell'}
                                                                   key={'sell'}>sell
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'type'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'type'}
                                                                   value={'stop loss'} id={'stop loss'}
                                                                   key={'stop loss'}>stop loss
                                                         </MenuItem>
@@ -289,8 +314,9 @@ style={{width: "130px",}}
                                                     <TextField
                                                         size="small"
                                                         color="default"
-                                                        variant="outlined"
-                                                        style={{width: "130px",}}
+                                                            variant="standard"
+                                                                style={{width: "70px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
                                                         fullWidth
                                                         id={this.props.new_limit.id}
                                                         value={this.props.new_limit.price}
@@ -303,7 +329,9 @@ style={{width: "130px",}}
                                                     <TextField
                                                         size="small"
                                                         color="default"
-                                                        variant="outlined"
+                                                            variant="standard"
+                                                                style={{width: "30px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
                                                         fullWidth
                                                         id={this.props.new_limit.id}
                                                         value={this.props.new_limit.slippage}
@@ -322,7 +350,9 @@ style={{width: "130px",}}
                                                     <TextField
                                                         size="small"
                                                         color="default"
-                                                        variant="outlined"
+                                                            variant="standard"
+                                                                style={{width: "70px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
                                                         fullWidth
                                                         type={'number'}
                                                         id={this.props.new_limit.id}
@@ -336,7 +366,9 @@ style={{width: "130px",}}
                                                     <TextField
                                                         size="small"
                                                         color="default"
-                                                        variant="outlined"
+                                                            variant="standard"
+                                                                style={{width: "30px",}}
+                                                                inputProps={{style: {fontSize: '14px'}}}
                                                         fullWidth
                                                         type={'number'}
                                                         id={this.props.new_limit.id}
@@ -352,33 +384,36 @@ style={{width: "130px",}}
                                                         fullWidth
                                                         margin="dense"
                                                         disabled={true}
+                                                            variant="standard"
+                                                                style={{width: "70px",fontSize: '14px'}}
+
                                                         id={this.props.new_limit.id}
                                                         value={this.props.new_limit.status}
                                                         name={'status'}
                                                         onChange={this.props.input_skip_token}
                                                     >
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'running'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'running'}
                                                                   value={'running'} id={'running'}
                                                                   key={'running'}>running
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'stopped'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'stopped'}
                                                                   value={'stopped'} id={'stopped'}
                                                                   key={'stopped'}>stopped
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'failed'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'failed'}
                                                                   value={'failed'} id={'failed'}
                                                                   key={'failed'}>failed
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'executed'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'executed'}
                                                                   value={'executed'} id={'executed'}
                                                                   key={'executed'}>executed
                                                         </MenuItem>
                                                         <MenuItem parentId={this.props.new_limit.id}
-                                                                  style={{color: "black"}} name={'pending'}
+                                                                  style={{color: "black",fontSize: '14px'}} name={'pending'}
                                                                   value={'pending'} id={'pending'}
                                                                   key={'pending'}>pending
                                                         </MenuItem>
@@ -395,11 +430,10 @@ style={{width: "130px",}}
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Button
-                                                        onClick={() => this.props.updateAsset(this.props.new_limit)}
-                                                        variant="contained">
-                                                        Create
-                                                    </Button>
+                                                    <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_limit)} >
+                                                                    <DeleteIcon fontSize="small"/>
+                                                                  </IconButton>
+
 
                                                 </TableCell>
                                             </TableRow>

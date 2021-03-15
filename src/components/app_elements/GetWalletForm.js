@@ -20,7 +20,7 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = ''
-const url = 'http://31.132.113.62:8000'
+const url = 'http://31.132.114.51:8000'
 
 const darkTheme = createMuiTheme({
     palette: {
@@ -1750,7 +1750,7 @@ class GetWallet extends React.Component {
 
 
                                             <Button
-                                                size="small" variant="contained"
+                                                color="secondary" variant="outlined" size="small"
                                                 onClick={() => this.updateDonor(this.state.new_donor)}>Create
                                                 donor</Button>
                                         </form>
@@ -1810,9 +1810,9 @@ class GetWallet extends React.Component {
                                         fullWidth
                                         style={{marginBottom: 10}}
                                     />
-                                    <Button style={{width: 200}} size="small"
+                                    <Button style={{width: 200}} color="secondary" variant="outlined" size="small"
                                             onClick={() => this.updateSkip(this.state.new_skip_token)}
-                                            variant="contained">
+                                            >
                                         Create skip token
                                     </Button>
                                 </div>
@@ -1882,8 +1882,8 @@ class GetWallet extends React.Component {
                                 <Form inverted style={{marginTop: '15px'}} loading={this.state.loading}
                                       error={this.state.new_token.errs.non_field_errors}>
                                     <Form.Group inline>
-                                        <Button size="small" onClick={() => this.updateToken(this.state.new_token)}
-                                                variant="contained">
+                                        <Button color="secondary" variant="outlined" size="small" onClick={() => this.updateToken(this.state.new_token)}
+                                                >
                                             Add token
                                         </Button>
                                     </Form.Group>
@@ -1946,7 +1946,7 @@ class GetWallet extends React.Component {
                                       error={this.state.new_token.errs.non_field_errors}>
                                     <Form.Group inline>
                                         <Button onClick={() => this.updateToken(this.state.new_token)}
-                                                variant="contained">
+                                                color="secondary" variant="outlined" size="small">
                                             Add token
                                         </Button>
                                     </Form.Group>
@@ -1976,7 +1976,7 @@ class GetWallet extends React.Component {
                                 service
                                 with
                                 a clean wallet and FUNDS you can afford to lose.</p>
-                            <Button onClick={this.closeModal}>Agreed</Button>
+                            <Button color="secondary" variant="outlined" size="small" onClick={this.closeModal}>Agreed</Button>
                         </div>
 
                         }
@@ -1988,9 +1988,9 @@ class GetWallet extends React.Component {
                             expandIcon={<ExpandMoreIcon/>}
                         >
                             <Typography>
-                                <Button style={{marginRight: 10}} size="small"
+                                <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small"
                                         onClick={(e) => this.activateWallet(e)}
-                                        variant="contained"
+
                                         disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                     {this.state.active ? 'Stop bot' : 'Run bot'}
                                 </Button> <br/>
@@ -2050,25 +2050,25 @@ class GetWallet extends React.Component {
                                         marginBottom: 25,
                                         alignItems: "center"
                                     }}>
-                                        <Button style={{marginRight: 10}} size="small" type='submit'
+                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small" type='submit'
                                                 onClick={() => this.updateWallet()}
-                                                variant="contained"
+
                                                 disabled={!this.state.wallet_connected}>Update wallet
                                         </Button>
-                                        <Button style={{marginRight: 10}} size="small"
+                                        <Button style={{marginRight: 10}}
                                                 onClick={() => this.activateWallet()}
-                                                variant="contained"
+                                                color="secondary" variant="outlined" size="small"
                                                 disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                             {this.state.active ? 'Stop bot' : 'Run bot'}
                                         </Button>
-                                        <Button style={{marginRight: 10}} size="small" onClick={() => this.getWallet()}
-                                                variant="contained"
+                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small" onClick={() => this.getWallet()}
+
                                                 disabled={this.state.wallet_connected}>
                                             {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
                                         </Button>
-                                        <Button style={{marginRight: 10}} size="small"
+                                        <Button style={{marginRight: 10}}
                                                 onClick={() => this.refreshBalances()}
-                                                variant="contained"
+                                                color="secondary" variant="outlined" size="small"
                                                 disabled={!this.state.wallet_connected || !this.state.mainnet}>
                                             Refresh balances
                                         </Button>
@@ -2102,7 +2102,7 @@ class GetWallet extends React.Component {
                                     }
                                              placement="top">
                                         <p style={{fontSize: '14px', marginLeft: '15px'}}>
-                                            What is it?
+                                            🛈
                                         </p>
                                     </Tooltip>
                                     <TextField
@@ -2168,7 +2168,7 @@ class GetWallet extends React.Component {
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
                                     >
-                                        <p><Tooltip title={<>
+                                        <div style={{display: "flex", alignItems: "center"}}><Tooltip title={<>
                                             token you don't want to trade, for example all USD tokens or any other
                                             tokens
                                             <ul>
@@ -2179,11 +2179,12 @@ class GetWallet extends React.Component {
                                             </ul>
                                         </>
                                         }
-                                                    placement="right-start"><p>Blacklist
-                                            <p style={{fontSize: '12px', marginLeft: '15px'}}>
-                                                What is it?
-                                            </p></p>
-                                        </Tooltip></p>
+                                                    placement="top">
+                                            <p>Blacklist
+                                            <span style={{fontSize: '12px',marginLeft:'5px' }}>
+                                                🛈
+                                            </span></p>
+                                        </Tooltip></div>
                                     </Menu.Item>
                                     <Menu.Item
                                         style={{color: "white"}}

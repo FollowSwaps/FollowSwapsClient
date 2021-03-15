@@ -285,8 +285,8 @@ export class Donors extends React.Component {
                                                             not
                                                             following</p>
 
-                                                    <Button color="secondary" style={{marginLeft: 20}} size="small" onClick={() => this.props.updateDonor(donor)}
-                                                            variant="outlined">
+                                                    <Button color="secondary" variant="outlined" size="small" style={{marginLeft: 20}}  onClick={() => this.props.updateDonor(donor)}
+                                                            >
                                                         Update
                                                     </Button>
                                                     <Button color="secondary" style={{marginLeft: 10}} size="small" onClick={() => this.props.deleteDonor(donor.addr)}
