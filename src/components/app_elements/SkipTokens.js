@@ -20,7 +20,7 @@ export class SkipTokens extends React.Component {
                                     index={token.id}
                                     onClick={this.props.handleClick}
                                 >
-                                    <Icon name='dropdown'/>
+                                    <Icon name='dropdown' style={{color: "#995933"}}/>
                                     {token.name}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
@@ -46,11 +46,11 @@ export class SkipTokens extends React.Component {
                                             style={{marginBottom: 10}}
                                         />
                                         <div style={{display: "flex"}}>
-                                            <Button size="small" onClick={() => this.props.updateSkip(token)}
-                                                    variant="contained">
+                                            <Button color="secondary" variant="outlined" size="small" onClick={() => this.props.updateSkip(token)}
+                                                    >
                                                 Update
                                             </Button>
-                                            <Button style={{marginLeft: 20}} size="small"
+                                            <Button style={{marginLeft: 20}} color="secondary"  size="small"
                                                     onClick={() => this.props.deleteSkip(token.addr)}
                                                     variant="contained">
                                                 Delete

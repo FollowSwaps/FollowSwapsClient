@@ -5,7 +5,8 @@ import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import Checkbox from "@material-ui/core/Checkbox";
 import DeleteIcon from '@material-ui/icons/Delete';
-import SaveIcon from '@material-ui/icons/Save';
+import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
+import AddIcon from '@material-ui/icons/Add';
 import IconButton from '@material-ui/core/IconButton';
 import Icon from '@material-ui/core/Icon';
 export class Limits extends React.Component {
@@ -33,7 +34,7 @@ export class Limits extends React.Component {
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <div style={{display: "flex", marginBottom: 15}}>
+                                    <div style={{display: "flex", marginBottom: 5}}>
                                         <TextField
                                             size="small"
                                             color="default"
@@ -46,12 +47,12 @@ export class Limits extends React.Component {
                                             label={'token name'}
                                             error={token.errs.name}
                                         />
-                                        <Button size="small" style={{marginLeft: 10}}
+                                        <Button color="secondary" variant="outlined" size="small" style={{marginLeft: 10}}
                                                 onClick={() => this.props.update(token)}
-                                                variant="contained">
+                                                >
                                             Save name
                                         </Button>
-                                        <Button size="small" style={{marginLeft: 10}}
+                                        <Button color="secondary"  size="small" style={{marginLeft: 10}}
                                                 onClick={() => this.props.delete(token.id)}
                                                 variant="contained">
                                             Delete token
@@ -259,11 +260,11 @@ export class Limits extends React.Component {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div style={{display: "flex", flexDirection: "row"}}>
-                                                                 <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(limit_token)}>
-                                                                    <SaveIcon fontSize="small"/>
+                                                                 <IconButton color="secondary" variant="outlined" size="small" aria-label="delete" onClick={() => this.props.updateAsset(limit_token)}>
+                                                                    <SaveOutlinedIcon fontSize="small"/>
                                                                   </IconButton>
 
-                                                                <IconButton size={'small'} aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
+                                                                <IconButton color="secondary" variant="contained" size="small" aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
                                                                     <DeleteIcon fontSize="small"/>
                                                                   </IconButton>
                                                             </div>
@@ -430,8 +431,8 @@ export class Limits extends React.Component {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_limit)} >
-                                                                    <DeleteIcon fontSize="small"/>
+                                                    <IconButton  aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_limit)} color="secondary"  size="small">
+                                                                    <AddIcon fontSize="small"/>
                                                                   </IconButton>
 
 
@@ -442,17 +443,17 @@ export class Limits extends React.Component {
                                     </Table>
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.refreshTokenBalance(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Refresh token balance
                                     </Button>
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.refreshTokenPrice(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Refresh token price
                                     </Button>
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.handleApprove(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Approve
                                     </Button>
                                     <span style={{color: this.props.approveResponse.error ? "red" : "white", fontSize: 14}}>

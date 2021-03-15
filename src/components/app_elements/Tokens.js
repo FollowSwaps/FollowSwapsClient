@@ -21,7 +21,7 @@ export class Tokens extends React.Component {
                                     onClick={this.props.handleClick}
                                 >
 
-                                    <Icon name='dropdown'/>
+                                    <Icon name='dropdown' style={{color: "#995933"}}/>
                                     {token.addr} | {token.name} | {token.balance}
 
 
@@ -52,12 +52,12 @@ export class Tokens extends React.Component {
                                         {/*/>*/}
 
                                         <div style={{display: "flex"}}>
-                                            <Button style={{marginRight: 10}} size="small"
+                                            <Button style={{marginRight: 10}}
                                                     onClick={() => this.props.update(token)}
-                                                    variant="contained">
+                                                    color="secondary" variant="outlined" size="small">
                                                 Save name
                                             </Button>
-                                            <Button size="small" onClick={() => this.props.delete(token.id)}
+                                            <Button color="secondary"  size="small" onClick={() => this.props.delete(token.id)}
                                                     variant="contained">
                                                 Delete token
                                             </Button>
@@ -137,12 +137,12 @@ export class Tokens extends React.Component {
                                                             alignItems: "column"
                                                         }}>
                                                             <Button onClick={() => this.props.updateAsset(donor_token)}
-                                                                    variant="contained">
+                                                                    color="secondary" variant="outlined" size="small">
                                                                 Update
                                                             </Button>
                                                             <Button style={{marginTop: 10}}
                                                                     onClick={() => this.props.deleteAsset(donor_token.id)}
-                                                                    variant="contained">
+                                                                    color="secondary"  size="small" variant="contained">
                                                                 Delete
                                                             </Button>
                                                         </div>
@@ -209,7 +209,7 @@ export class Tokens extends React.Component {
 
                                                 <TableCell>
                                                     <Button onClick={() => this.props.updateAsset(this.props.new_token)}
-                                                            variant="contained">
+                                                            color="secondary" variant="outlined" size="small">
                                                         Create
                                                     </Button>
                                                 </TableCell>
@@ -221,17 +221,17 @@ export class Tokens extends React.Component {
                                     {/*  refresh token balance, refresh token price и approve  */}
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.refreshTokenBalance(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Refresh token balance
                                     </Button>
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.refreshTokenPrice(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Refresh token price
                                     </Button>
                                     <Button style={{marginRight: 10}}
                                             onClick={() => this.props.handleApprove(token)}
-                                            variant="contained">
+                                            color="secondary" variant="outlined" size="small">
                                         Approve
                                     </Button>
                                     <span style={{color: this.props.approveResponse.error ? "red" : "white", fontSize: 14}}>

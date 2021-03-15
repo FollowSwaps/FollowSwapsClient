@@ -18,7 +18,7 @@ export class Donors extends React.Component {
                                         index={donor.id}
                                         onClick={this.props.handleClick}
                                     >
-                                        <Icon name='dropdown'/>
+                                        <Icon name='dropdown'  style={{color: "#995933"}}/>
                                         {donor.name}
                                     </Accordion.Title>
                                     <Accordion.Content active={this.props.activeIndexAccordion === donor.id}>

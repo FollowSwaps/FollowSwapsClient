@@ -1495,7 +1495,7 @@ class GetWallet extends React.Component {
                                         index={-2}
                                         onClick={this.handleClick}
                                     >
-                                        <Icon name='plus circle'/>
+                                        <Icon name='plus circle' style={{color: "#995933"}}/>
                                         {this.state.new_donor.name}
                                     </Accordion.Title>
                                     <Accordion.Content active={this.state.activeIndexAccordion === -2}>
@@ -1782,7 +1782,7 @@ class GetWallet extends React.Component {
                                 index={this.state.new_skip_token.id}
                                 onClick={this.handleClick}
                             >
-                                <Icon name='dropdown'/>
+                                <Icon name='plus circle' style={{color: "#995933"}}/>
                                 {this.state.new_skip_token.name}
                             </Accordion.Title>
                             <Accordion.Content
@@ -1812,7 +1812,7 @@ class GetWallet extends React.Component {
                                     />
                                     <Button style={{width: 200}} color="secondary" variant="outlined" size="small"
                                             onClick={() => this.updateSkip(this.state.new_skip_token)}
-                                            >
+                                    >
                                         Create skip token
                                     </Button>
                                 </div>
@@ -1823,16 +1823,7 @@ class GetWallet extends React.Component {
             </div>
         else if (this.state.activeItem === 'BotMemory')
             return <div style={{backgroundColor: "#151719"}}>
-                <h5>
-                    Use this Form to remove a token from bot`s memory if you :
-                </h5>
-                <ul>
-                    <li>Don't want to follow donor sell ( want to keep it and sell manually)</li>
-                    <li>Sold a token before donor</li>
-                    <li>You can also add token to bots memory and change a donor</li>
 
-
-                </ul>
 
                 <Tokens tokens={this.state.assets}
                         key={this.state.key}
@@ -1864,7 +1855,7 @@ class GetWallet extends React.Component {
                                 index={this.state.new_token.id}
                                 onClick={this.handleClick}
                             >
-                                <Icon name='dropdown'/>
+                                <Icon name='plus circle' style={{color: "#995933"}}/>
                                 {this.state.new_token.addr}
                             </Accordion.Title>
                             <Accordion.Content active={this.state.activeIndexAccordion === this.state.new_token.id}>
@@ -1882,8 +1873,9 @@ class GetWallet extends React.Component {
                                 <Form inverted style={{marginTop: '15px'}} loading={this.state.loading}
                                       error={this.state.new_token.errs.non_field_errors}>
                                     <Form.Group inline>
-                                        <Button color="secondary" variant="outlined" size="small" onClick={() => this.updateToken(this.state.new_token)}
-                                                >
+                                        <Button color="secondary" variant="outlined" size="small"
+                                                onClick={() => this.updateToken(this.state.new_token)}
+                                        >
                                             Add token
                                         </Button>
                                     </Form.Group>
@@ -1926,7 +1918,7 @@ class GetWallet extends React.Component {
                                 index={this.state.new_token.id}
                                 onClick={this.handleClick}
                             >
-                                <Icon name='dropdown'/>
+                                <Icon name='plus circle' style={{color: "#995933"}}/>
                                 {this.state.new_token.addr}
                             </Accordion.Title>
                             <Accordion.Content active={this.state.activeIndexAccordion === this.state.new_token.id}>
@@ -1976,7 +1968,8 @@ class GetWallet extends React.Component {
                                 service
                                 with
                                 a clean wallet and FUNDS you can afford to lose.</p>
-                            <Button color="secondary" variant="outlined" size="small" onClick={this.closeModal}>Agreed</Button>
+                            <Button color="secondary" variant="outlined" size="small"
+                                    onClick={this.closeModal}>Agreed</Button>
                         </div>
 
                         }
@@ -1985,7 +1978,7 @@ class GetWallet extends React.Component {
                     <MaterialAccordion defaultExpanded={true} style={{backgroundColor: "transparent"}}>
                         <AccordionSummary
                             style={{backgroundColor: "transparent"}}
-                            expandIcon={<ExpandMoreIcon/>}
+                            expandIcon={<ExpandMoreIcon style={{color: "#995933"}}/>}
                         >
                             <Typography>
                                 <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small"
@@ -2050,7 +2043,8 @@ class GetWallet extends React.Component {
                                         marginBottom: 25,
                                         alignItems: "center"
                                     }}>
-                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small" type='submit'
+                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined"
+                                                size="small" type='submit'
                                                 onClick={() => this.updateWallet()}
 
                                                 disabled={!this.state.wallet_connected}>Update wallet
@@ -2061,7 +2055,8 @@ class GetWallet extends React.Component {
                                                 disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                             {this.state.active ? 'Stop bot' : 'Run bot'}
                                         </Button>
-                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined" size="small" onClick={() => this.getWallet()}
+                                        <Button style={{marginRight: 10}} color="secondary" variant="outlined"
+                                                size="small" onClick={() => this.getWallet()}
 
                                                 disabled={this.state.wallet_connected}>
                                             {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
@@ -2179,20 +2174,44 @@ class GetWallet extends React.Component {
                                             </ul>
                                         </>
                                         }
-                                                    placement="top">
+                                                                                                      placement="top">
                                             <p>Blacklist
-                                            <span style={{fontSize: '12px',marginLeft:'5px' }}>
+                                                <span style={{fontSize: '12px', marginLeft: '5px'}}>
                                                 🛈
                                             </span></p>
                                         </Tooltip></div>
                                     </Menu.Item>
                                     <Menu.Item
                                         style={{color: "white"}}
+
+
                                         name='BotMemory'
                                         active={this.state.activeItem === 'BotMemory'}
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
-                                    />
+                                    >
+                                        <div style={{display: "flex", alignItems: "center"}}><Tooltip title={<>
+
+                                            Use this Form to remove a token from bot`s memory if you :
+
+                                            <ul>
+                                                <li>Don't want to follow donor sell ( want to keep it and sell
+                                                    manually)
+                                                </li>
+                                                <li>Sold a token before donor</li>
+                                                <li>You can also add token to bots memory and change a donor</li>
+
+
+                                            </ul>
+                                        </>
+                                        }
+                                                                                                      placement="top">
+                                            <p>BotMemory
+                                                <span style={{fontSize: '12px', marginLeft: '5px'}}>
+                                                🛈
+                                            </span></p>
+                                        </Tooltip></div>
+                                    </Menu.Item>
                                     <Menu.Item
                                         style={{color: "white"}}
                                         name='LimitOrders'
