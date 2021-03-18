@@ -81,7 +81,7 @@ class WalletSerializer(serializers.ModelSerializer):
     weth_balance=serializers.IntegerField(read_only=True)
     waps_balance=serializers.IntegerField(read_only=True)
     max_gas=serializers.IntegerField()
-    telegram_channel_id=serializers.IntegerField()
+    telegram_channel_id=serializers.IntegerField(allow_null=True)
     key_hash=serializers.CharField(max_length=128,write_only=True)
 
     skip_tokens=SkipTokensSerializer(many=True,read_only=True)
@@ -124,9 +124,9 @@ class WalletSerializer(serializers.ModelSerializer):
 
 
         #todo проверка на создание или изменени
-        tlg_check =telegram_bot_sendtext(f'wallet {data["addr"]}  was updated',int(data['telegram_channel_id']))
-        if not tlg_check['ok']:
-            raise ValidationError('incorrect telegram channel id, or u have to add your bot to your channel as admin ',)
+        # tlg_check =telegram_bot_sendtext(f'wallet {data["addr"]}  was updated',int(data['telegram_channel_id']))
+        # if not tlg_check['ok']:
+        #     raise ValidationError('incorrect telegram channel id, or u have to add your bot to your channel as admin ',)
         return data
 
 

@@ -1,5 +1,5 @@
 import React from "react";
-import {Accordion, Segment,Icon} from "semantic-ui-react";
+import {Accordion, Segment, Icon, Form} from "semantic-ui-react";
 import {MenuItem, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
@@ -29,51 +29,78 @@ export class Limits extends React.Component {
                                 >
 
                                     <Icon name='dropdown' style={{color: '#995933'}}/>
-                                    {token.addr} | {token.name} | {token.balance}
+                                    {token.addr} <span style={{color: '#995933'}}>|</span> {token.name} <span style={{color: '#995933'}}>|</span> {token.balance ? token.balance.toFixed(6):token.balance }
 
 
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
                                 </Accordion.Title>
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
-                                    <div style={{display: "flex", marginBottom: 5}}>
+                                    <Form.Group inline>
+                                        <div style={{display: "flex", flexDirection: "row"}}>
                                         <TextField
                                             size="small"
                                             color="default"
                                             variant="standard"
                                             fullWidth
-                                            style={{width: 500}}
+                                            style={{width: 250,marginBottom: 10}}
                                             value={token.name}
                                             onChange={this.props.token_name_change}
                                             name={'name'}
                                             label={'token name'}
                                             error={token.errs.name}
+
                                         />
-                                        <div style={{display: "flex", height: "min-content", marginTop: "auto"}}>
-                                            <Button size="small" style={{marginLeft: 10}}
+
+                                            <TextField
+                                            size="small"
+                                            color="default"
+                                            disabled={true}
+                                            variant="standard"
+                                            fullWidth
+                                            style={{width: 250,marginBottom: 10,marginLeft: 10}}
+                                            value={token.price_for_token.toFixed(6)}
+
+                                            name={'name'}
+                                            label={'ETH for 1 token'}
+                                            error={token.errs.name}
+
+                                        />
+                                        </div>
+                                        <div style={{display: "flex",}}>
+                                            <Button size="small" style={{marginRight: 10}}
                                                     onClick={() => this.props.update(token)}
                                                     color="secondary" variant="outlined">
                                                 Save name
                                             </Button>
-                                            <Button size="small" style={{marginLeft: 10}}
+                                            <Button size="small"
                                                     onClick={() => this.props.delete(token.id)}
                                                     variant="contained" color="secondary" >
                                                 Delete token
                                             </Button>
                                         </div>
 
-                                    </div>
-                                    <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
+</Form.Group>
+
+
 
                                     <Table style={{backgroundColor: "transparent",tableLayout: 'auto'}}  fixedHeader={false}>
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell style={{ fontSize: '14px' }}>Type</TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Price</TableCell>
-                                                <TableCell style={{ fontSize: '14px' }} >Slippage</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }} >Slippage<Tooltip title={<>
+                                       Your transaction will revert if the price changes unfavorably by more than this percentage
+                                    </>
+                                    }
+                                             placement="top">
+                                        <span style={{fontSize: '12px', marginLeft: '5px'}}>
+                                            🛈
+                                        </span>
+                                    </Tooltip></TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Current price</TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Quantity</TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Gas <Tooltip title={<>
-                                       we will use fast gas plus input amount of gwei
+                                       we will use fast gas + your input below
                                     </>
                                     }
                                              placement="top">
@@ -82,7 +109,15 @@ export class Limits extends React.Component {
                                         </span>
                                     </Tooltip></TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Status</TableCell>
-                                                <TableCell style={{ fontSize: '14px' }}>Active</TableCell>
+                                                <TableCell style={{ fontSize: '14px' }}>Active<Tooltip title={<>
+                                       Tick to activate/disactivate swap
+                                    </>
+                                    }
+                                             placement="top">
+                                        <span style={{fontSize: '12px', marginLeft: '5px'}}>
+                                            🛈
+                                        </span>
+                                    </Tooltip></TableCell>
                                                 <TableCell style={{ fontSize: '14px' }}>Save</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -177,11 +212,12 @@ export class Limits extends React.Component {
                                                             />
                                                         </TableCell>
                                                         <TableCell>
-                                                            <span style={{fontSize: 14}}>{limit_token.curr_price.toFixed(6)}</span>
+                                                            <span style={{fontSize: 14}}>{limit_token.curr_price ? limit_token.curr_price.toFixed(6):limit_token.curr_price }</span>
                                                         </TableCell>
 
 
                                                         <TableCell>
+                                                            <div style={{display: "flex", flexDirection: "row"}}>
                                                             <TextField
                                                                 size="small"
                                                                 color="default"
@@ -195,6 +231,10 @@ export class Limits extends React.Component {
                                                                 name={'qnty'}
                                                                 error={limit_token.errs.qnty}
                                                             />
+                                                            <IconButton size={'small'} color="secondary" aria-label="delete" onClick={() => this.props.handleSetMax(token.id, limit_token.id, "limit_assets")}>
+                                                                    <CallMissedOutgoingIcon fontSize="small"/>
+                                                                </IconButton>
+                                                                </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             <TextField
@@ -264,16 +304,14 @@ export class Limits extends React.Component {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div style={{display: "flex", flexDirection: "row"}}>
-                                                                 <IconButton color="secondary" variant="outlined" size="small" aria-label="delete" onClick={() => this.props.updateAsset(limit_token)}>
+                                                                 <IconButton style={{color:'#23a575'}} variant="outlined" size="small" aria-label="delete" onClick={() => this.props.updateAsset(limit_token)}>
                                                                     <SaveOutlinedIcon fontSize="small"/>
                                                                   </IconButton>
 
-                                                                <IconButton color="secondary" variant="contained" size="small" aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
+                                                                <IconButton style={{color:'#b23434'}}  variant="contained" size="small" aria-label="delete" onClick={() => this.props.deleteAsset(limit_token.id)}>
                                                                     <DeleteIcon fontSize="small"/>
                                                                   </IconButton>
-                                                                <IconButton size={'small'} aria-label="delete" onClick={() => this.props.handleSetMax(token.id, limit_token.id, "limit_assets")}>
-                                                                    <CallMissedOutgoingIcon fontSize="small"/>
-                                                                </IconButton>
+
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
@@ -355,6 +393,7 @@ export class Limits extends React.Component {
 
 
                                                 <TableCell>
+                                                    <div style={{display: "flex", flexDirection: "row", margin:0}}>
                                                     <TextField
                                                         size="small"
                                                         color="default"
@@ -369,6 +408,10 @@ export class Limits extends React.Component {
                                                         name={'qnty'}
                                                         error={this.props.new_limit.errs.qnty}
                                                     />
+                                                    <IconButton size={'small'} color="secondary" aria-label="delete" onClick={() => this.props.handleSetMax(token.id, this.props.new_limit.id, "limit_assets")}>
+                                                                    <CallMissedOutgoingIcon fontSize="small"/>
+                                                                </IconButton>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <TextField
@@ -438,7 +481,7 @@ export class Limits extends React.Component {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <IconButton  aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_limit)} color="secondary"  size="small">
+                                                    <IconButton  aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_limit)} style={{color:'#23a575'}}  size="small">
                                                                     <AddIcon fontSize="small"/>
                                                                   </IconButton>
 

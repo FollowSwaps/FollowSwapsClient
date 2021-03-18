@@ -13,7 +13,8 @@ from rest_framework import status
 from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset,LimitAsset
 from rest_framework.decorators import api_view
 from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer,LimitAssetSerializer, tempSer
-from .utils import sign_message, logger
+from .utils import sign_message
+from WapsClient.logger import logger
 import multiprocessing
 from rest_framework.parsers import JSONParser
 import json
@@ -39,17 +40,18 @@ def socket():
 
     async def hello():
         uri = f"wss://followswaps.com/ws/{addr}/"
-        msg = {"action": "logon", 'subscriber': addr,
+        conn_msg = {"action": "logon", 'subscriber': addr,
                'donors': donors}
+        _, signed_msg = sign_message(str(conn_msg), key)
         async with websockets.connect(uri) as ws:
 
-            _, signed_msg = sign_message(str(msg), key)
-            await ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
+
+            await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
             err = False
             while 1:
                 if ws.closed==False:
                     if err == True:
-                        Wallet.objects.get(addr=addr, key=key).send_msg_to_subscriber_tlg(' socket was reconnected')
+                        sync_to_async(w.send_msg_to_subscriber_tlg)(' socket was reconnected')
                         err = False
                     try:
                         msg = await ws.recv()
@@ -78,23 +80,87 @@ def socket():
 
                     except Exception as ex:
                         logger.exception(ex, exc_info=True)
+
                         if err == False:
                             w.send_msg_to_subscriber_tlg(
                                 'error with socket connection, we are trying to reconnect')
                             err = True
+                        else:
+                            logger.info('trying to reconnect to socket')
+                            try:
+                                ws=await websockets.connect(uri)
+                                await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
+
+                                msg = await ws.recv()
+                                logger.info(msg)
+
+                                if msg == 'Low balance':
+                                    w.active = False
+                                    w.send_msg_to_subscriber_tlg(' stopped, low balance')
+                                    w.refresh_balances()
+                                    w.save()
+                                    return
+                                if msg.startswith('Failed'):
+                                    w.active = False
+                                    w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
+                                    w.save()
+                                    return
+                                if msg == 'success':
+                                    pass
+                                    asyncio.ensure_future(limits())
+                                else:
+                                    try:
+                                        await sync_to_async(w.parse_client_msg)(msg)
+                                    except:
+                                        logger.exception(f'wrong message: {msg}')
+
+
+                            except:
+                                pass
+                            time.sleep(15)
+                else:
+                    if err == False:
+                        w.send_msg_to_subscriber_tlg(
+                            'error with socket connection, we are trying to reconnect')
+                        err = True
+                    else:
+                        logger.info('trying to reconnect to socket')
+                        try:
+                            ws=await websockets.connect(uri)
+                            print('123',ws.closed)
+                            await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
+
+                            msg = await ws.recv()
+                            logger.info(msg)
+
+                            if msg == 'Low balance':
+                                w.active = False
+                                w.send_msg_to_subscriber_tlg(' stopped, low balance')
+                                w.refresh_balances()
+                                w.save()
+                                return
+                            if msg.startswith('Failed'):
+                                w.active = False
+                                w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
+                                w.save()
+                                return
+                            if msg == 'success':
+                                pass
+                                asyncio.ensure_future(limits())
+                            else:
+                                try:
+                                    await sync_to_async(w.parse_client_msg)(msg)
+                                except:
+                                    logger.exception(f'wrong message: {msg}')
+
+
+                        except Exception as ex:
+                            logger.exception(ex,exc_info=True)
+                            pass
+                        time.sleep(15)
     loop=asyncio.new_event_loop()
     loop.run_until_complete(hello())
-                # else:
-                #     logger.info('trying to reconnect to socket')
-                #     try:
-                #         ws = create_connection(server_ws_url, )
-                #         msg = {"action": "logon", 'subscriber': addr,
-                #                'donors': [i.addr for i in Wallet.objects.get(addr=addr).donors.all()]}
-                #         _, signed_msg = sign_message(str(msg), key)
-                #         ws.send(json.dumps({'msg': msg, "hash": signed_msg}))
-                #     except:
-                #         pass
-                #     time.sleep(15)
+
 
 
     global new_process
@@ -112,7 +178,7 @@ new_process = None
 def index(request):
     if Wallet.objects.filter(addr=addr, key=key).exists() == False:
         Wallet.objects.create(addr=addr, key=key, key_hash=hashlib.md5(key.encode('utf-8')).hexdigest(),
-                              max_gas=str(500 * 10 ** 9))
+                              max_gas=str(500 * 10 ** 9),mainnet=True)
     w = Wallet.objects.get(addr=addr, key=key)
     w.refresh_balances(send_msg=False)
     w.save()
@@ -173,6 +239,13 @@ def update_wallet(request):
         return JsonResponse({'addr': ['invalid address']}, status=400)
     if Wallet.objects.filter(key_hash=key_hash).exists() == False:
         return JsonResponse({'key': ['invalid key for address']}, status=400)
+    # if int(Wallet.objects.get(key_hash=key_hash).waps_balance) / 10 ** 18 < 10 or Wallet.objects.get(key_hash=key_hash).waps_balance is None:
+    #     return JsonResponse(
+    #         {'non_field_errors': ['Insufficient WAPS balance']},
+    #         status=400)
+
+
+
     else:
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
         if wallet.initial_state == True:
@@ -203,6 +276,8 @@ def update_skip(request):
         return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
     if Wallet.objects.filter(key_hash=key_hash).exists() == False:
         return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
+    if token_addr in ('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', '0xc778417E063141139Fce010982780140Aa0cD5Ab'):
+        return JsonResponse({'addr': ['cant blacklist weth']}, status=400)
     else:
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
 
@@ -278,7 +353,8 @@ def update_asset(request):
         return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
     else:
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
-
+        if token_addr in ('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', '0xc778417E063141139Fce010982780140Aa0cD5Ab'):
+            return JsonResponse({'addr': ['cant trade weth']}, status=400)
         if data['token']['id'] != -2:
             skip_token = DonorAsset.objects.get(pk=data['token']['id'])
             changed=False
@@ -318,6 +394,8 @@ def update_asset(request):
                     asset.save()
                 wallet.refresh_token_balance(asset.id)
             except:
+                if created:
+                    asset.delete()
                 return JsonResponse({'addr': ['invalid address or wrong token']}, status=400)
             data['token']['asset'] = asset.id
             new_skip_token = DonorAssetSerializer(data=data['token'])
@@ -353,8 +431,13 @@ def update_limit(request):
         if data['token']['id'] != -2:
             skip_token =LimitAsset.objects.get(pk=data['token']['id'])
             skip_ser = LimitAssetSerializer(data=data['token'], instance=skip_token)
-            if data['token']['qnty']>skip_token.asset.balance:
-                data['token']['qnty'] = skip_token.asset.balance
+
+            if data['token']['type']!='buy':
+                if data['token']['qnty']>skip_token.asset.balance:
+                    data['token']['qnty'] = skip_token.asset.balance
+            else:
+                if data['token']['qnty']>skip_token.asset.wallet.weth_balance:
+                    data['token']['qnty'] = skip_token.asset.wallet.weth_balance
             if skip_ser.is_valid():
                 skip_ser.save()
             else:
@@ -364,8 +447,12 @@ def update_limit(request):
             data['token']['wallet'] = wallet.id
             asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
             data['token']['asset'] = asset.id
-            if data['token']['qnty']>asset.balance:
-                data['token']['qnty'] = asset.balance
+            if data['token']['type'] != 'buy':
+                if data['token']['qnty'] > asset.balance:
+                    data['token']['qnty'] = asset.balance
+            else:
+                if data['token']['qnty'] > asset.wallet.weth_balance:
+                    data['token']['qnty'] = asset.wallet.weth_balance
 
             new_skip_token = LimitAssetSerializer(data=data['token'])
 
@@ -398,8 +485,7 @@ def update_donor_token(request):
         wallet = Wallet.objects.get(addr=addr, key_hash=key_hash)
 
 
-        if DonorAsset.objects.filter(asset__id=data['token']['asset_id'], donor_id=data['token']['donor']).exists():
-            return JsonResponse({'donor': ['donor must be unique for each token']}, status=400)
+
         if data['token']['id'] != -2:
             skip_token =DonorAsset.objects.get(pk=data['token']['id'])
             if data['token']['qnty'] > skip_token.asset.balance:
@@ -412,7 +498,8 @@ def update_donor_token(request):
             else:
                 return JsonResponse(skip_ser.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-
+            if DonorAsset.objects.filter(asset__id=data['token']['asset_id'], donor_id=data['token']['donor']).exists():
+                return JsonResponse({'donor': ['donor must be unique for each token']}, status=400)
             data['token']['wallet'] = wallet.id
             asset,created=Asset.objects.get_or_create(wallet_id=wallet.id,id=data['token']['asset_id'])
             data['token']['asset'] = asset.id
@@ -665,8 +752,11 @@ def approve_token(request):
     else:
         wallet = Wallet.objects.get(key_hash=key_hash,addr=addr)
         wallet.get_gas_price()
-        if Asset.objects.filter(id=data['token_id']).exists():
-            approve_tx=wallet.approve_if_not(Asset.objects.get(id=data['token_id']),gas_price=wallet.fast_gas)
+        if Asset.objects.filter(id=data['token_id']).exists() or data['token_id']==-1:
+            if id==-1:
+                approve_tx = wallet.approve_if_not(-1, gas_price=wallet.fast_gas)
+            else:
+                approve_tx=wallet.approve_if_not(Asset.objects.get(id=data['token_id']),gas_price=wallet.fast_gas)
             if approve_tx is not None:
                 return JsonResponse({'approve': approve_tx}, status=200)
             else:
@@ -730,7 +820,9 @@ def refresh_tokens(request):
     else:
         assets = Asset.objects.all()
         ser=tempSer(assets,many=True)
-        return JsonResponse({'assets': ser.data}, status=200)
+        w=Wallet.objects.get(key_hash=key_hash)
+        balances={'eth_balance':int(w.eth_balance),'weth_balance':int(w.weth_balance),'waps_balance':int(w.waps_balance),}
+        return JsonResponse({'assets': ser.data,'balances':balances,'active':w.active}, status=200)
 
         # wallet_ser = WalletSerializer(instance=Wallet.objects.get(addr=addr, key_hash=key_hash))
         # return JsonResponse(wallet_ser.data, status=200)
@@ -757,10 +849,18 @@ def start_stop(request):
             'Seems like it\'s you first start, update all fields for your wallet and add donors first']}, status=400)
     w.refresh_balances(send_msg=False)
 
+
+
     if w.active == False:
         if w.weth_balance == 0 or w.weth_balance is None:
             return JsonResponse({'non_field_errors': ['You don\'t have weth on your wallet. The bot trade weth only.']},
                                 status=400)
+
+    # if w.active == False:
+    #     if int(w.waps_balance/10**18) < 10 or w.waps_balance is None:
+    #         return JsonResponse(
+    #             {'non_field_errors': ['Insufficient WAPS balance']},
+    #             status=400)
 
         if w.follower.get_allowance(w.follower.weth_addr) < 10 ** 20:
             return JsonResponse({'non_field_errors': ['Please approve weth on uniswap. The bot trade weth only.']},

@@ -1,6 +1,7 @@
 import json
 import web3
 import datetime
+from WapsClient.logger import logger
 
 class Uniswap():
 
@@ -157,6 +158,7 @@ class Uniswap():
             # исполнили
             return self.send_signed_raw_tx(signed_tx)
         except Exception as ex:
+            logger.exception(ex)
             return None
 
 

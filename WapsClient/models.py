@@ -7,7 +7,7 @@ from .utils import *
 import hashlib
 import os
 import requests
-
+from WapsClient.logger import logger
 
 addr = None
 key = None
@@ -71,7 +71,7 @@ except Exception as ex:
 
 class SkipTokens(models.Model):
     name = models.CharField(max_length=128, )
-    addr = models.CharField(max_length=128, )
+    addr = models.CharField(max_length=128, unique=True)
 
     def __str__(self):
         return str(self.addr)
@@ -132,7 +132,7 @@ class Wallet(models.Model):
             if asset.decimals!=int(token['tokenInfo']['decimals']):
                 asset.decimals=int(token['tokenInfo']['decimals'])
                 changed=True
-            if asset.name==''  and asset.name is  None:
+            if asset.name==''  or asset.name is  None:
                 asset.name=token['tokenInfo']['name']
                 changed=True
             if asset.balance!=token['balance']:
@@ -140,6 +140,7 @@ class Wallet(models.Model):
                 changed=True
             if changed==True:
                 asset.save()
+        self.refresh_balances(send_msg=False)
 
     def refresh_token_balance(self,token_id):
         asset=self.assets.get(id=token_id)
@@ -173,16 +174,22 @@ class Wallet(models.Model):
                         if asset.price>=asset.curr_price:
                             qnty_slippage=int(price_for_qnty*(1-(asset.slippage)/100))
                             self.get_gas_price()
-                            gas_price = (int(self.fast_gas)+(asset.gas_plus) )*10**9
+                            gas_price = (int(self.fast_gas))+(asset.gas_plus) *10**9
                             our_tx=self.swap_exact_token_to_token(None,[self.follower.weth_addr,asset.asset.addr],int(asset.qnty),qnty_slippage,gas_price=gas_price,fee_support=False)
                             # print(our_tx.hex())
                             if our_tx is None:
                                 asset.status='failed'
+                                msg=f'limit order failed: token {asset.asset.name}, side {asset.type}'
+                                logger.info(msg)
+                                self.send_msg_to_subscriber_tlg(msg)
                             else:
                                 asset.tx_hash=our_tx
                                 asset.status='pending'
                                 asset.active=False
-                                print(f'buy: {price_per_token}')
+                                msg = f'limit order triggered: token {asset.asset.name}, side {asset.type}'
+                                logger.info(msg)
+                                self.send_msg_to_subscriber_tlg(msg)
+
                     else:
                         price_for_qnty = self.follower.get_out_qnty_by_path(int(asset.qnty),
                                                                             [asset.asset.addr, self.follower.weth_addr, ])
@@ -191,18 +198,23 @@ class Wallet(models.Model):
                         if asset.price<=asset.curr_price:
                             qnty_slippage = int(price_for_qnty * (1 - (asset.slippage) / 100))
                             self.get_gas_price()
-                            gas_price = (int(self.fast_gas) + (asset.gas_plus)) * 10 ** 9
+                            gas_price = (int(self.fast_gas)) + (asset.gas_plus) * 10 ** 9
                             our_tx = self.swap_exact_token_to_token(None,[ asset.asset.addr,self.follower.weth_addr,],int(asset.qnty),
                                                                               qnty_slippage, gas_price=gas_price,
                                                                               fee_support=False)
                             # print(our_tx.hex())
                             if our_tx is None:
                                 asset.status='failed'
+                                msg = f'limit order failed: token {asset.asset.name}, side {asset.type}'
+                                logger.info(msg)
+                                self.send_msg_to_subscriber_tlg(msg)
                             else:
                                 asset.tx_hash = our_tx
                                 asset.status = 'pending'
                                 asset.active = False
-                                print(f'sell: {price_per_token}')
+                                msg = f'limit order triggered: token {asset.asset.name}, side {asset.type}'
+                                logger.info(msg)
+                                self.send_msg_to_subscriber_tlg(msg)
                     asset.save()
                     print(price_per_token)
         except Exception as ex:
@@ -279,6 +291,9 @@ class Wallet(models.Model):
                     limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
                     limit_asset.status='executed'
                     limit_asset.save()
+                    msg=f'limit order executed: token {limit_asset.asset.name}, side {limit_asset.type}, transaction {tx_hash}'
+                    logger.info(msg)
+                    self.send_msg_to_subscriber_tlg(msg)
                     self.approve_if_not(limit_asset.asset)
                     self.refresh_token_balance(token_id=limit_asset.asset.id)
                 # follow on confirmed
@@ -372,8 +387,8 @@ class Wallet(models.Model):
                     wallet.send_msg_to_subscriber_tlg(msg)
                     wallet.refresh_balances()
                 # подтверждение аппрува
-                elif DonorAsset.objects.filter(approve_tx_hash=tx_hash).exists():
-                    asset = DonorAsset.objects.get(approve_tx_hash=tx_hash)
+                elif Asset.objects.filter(approve_tx_hash=tx_hash).exists():
+                    asset = Asset.objects.get(approve_tx_hash=tx_hash)
                     wallet = asset.asset.wallet
                     msg = f'token {asset.asset.addr} approved: {tx_url}{tx_hash}'
                     logger.info(msg)
@@ -382,6 +397,8 @@ class Wallet(models.Model):
                 else:
                     msg = f'some tx confirmed: {tx_url}{tx_hash}\n addr: {from_addr}'
                     logger.info(msg)
+                if from_addr==self.addr:
+                    self.refresh_balances(send_msg=False)
                     # telegram_bot_sendtext(msg)
 
 
@@ -393,6 +410,9 @@ class Wallet(models.Model):
                 if LimitAsset.objects.filter(tx_hash=tx_hash):
                     limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
                     limit_asset.status='failed'
+                    msg = f'limit order failed: token {limit_asset.asset.name}, side {limit_asset.type}, transaction {tx_hash}'
+                    logger.info(msg)
+                    self.send_msg_to_subscriber_tlg(msg)
                     limit_asset.save()
                 # если мы меняем один на другой, то у двух ассетов будет эта транзакция, у одного на покупку, у другого на продажу
                 # на фэйлед удаляем новый, а в старом убираем хэш удаления
@@ -454,8 +474,8 @@ class Wallet(models.Model):
                     logger.info(msg)
                     asset.asset.wallet.send_msg_to_subscriber_tlg(msg)
                 # провал аппрува
-                elif DonorAsset.objects.filter(approve_tx_hash=tx_hash).exists():
-                    asset = DonorAsset.objects.get(approve_tx_hash=tx_hash)
+                elif Asset.objects.filter(approve_tx_hash=tx_hash).exists():
+                    asset = Asset.objects.get(approve_tx_hash=tx_hash)
                     asset.approve_failed = True
                     msg = f'token {asset.asset.addr} approve *failed*: {tx_url}{tx_hash}\n we will try to sell it, *so approve it manually*'
                     logger.info(msg)
@@ -767,9 +787,15 @@ class Wallet(models.Model):
         appr_tx = None
         try:
             # всегда передаем в аргумент фолловера, ему нужно присвоить правильные ключи, чтобы он торговал с этого акка
-            allowance=self.follower.get_allowance(asset.addr)
+            if asset==-1:
+                allowance = self.follower.get_allowance(self.follower.weth_addr)
+            else:
+                allowance=self.follower.get_allowance(asset.addr)
             if allowance < int(asset.balance) or (allowance==0):
-                appr_tx = self.follower.approve(asset.addr, gas_price=gas_price)
+                if asset == -1:
+                    appr_tx = self.follower.approve(self.follower.weth_addr, gas_price=gas_price)
+                else:
+                    appr_tx = self.follower.approve(asset.addr, gas_price=gas_price)
                 asset.approve_tx_hash = appr_tx
                 asset.save()
                 msg = f'approve tx sent: tx_url{appr_tx}'

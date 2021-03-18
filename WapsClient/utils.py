@@ -1,7 +1,9 @@
 import requests
 import logging
-from .uniswap import Uniswap
 from logging.handlers import RotatingFileHandler
+from WapsClient.uniswap import Uniswap
+from WapsClient.logger import logger
+
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 import json
@@ -32,13 +34,16 @@ def get_signer(msg, signature):
 
 
 def telegram_bot_sendtext(bot_message, bot_chatID=-1001217489815):
-    bot_token = telegram_id
-    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + str(
-        int(bot_chatID)) + '&parse_mode=Markdown&text=' + bot_message
-
-    response = requests.get(send_text)
-    return response.json()
-
+    try:
+        if bot_chatID is None or telegram_id is None or telegram_id=='':
+            return None
+        bot_token = telegram_id
+        send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + str(
+            int(bot_chatID)) + '&parse_mode=Markdown&text=' + bot_message
+        response = requests.get(send_text)
+        return response.json()
+    except Exception as ex:
+        logger.exception(ex,exc_info=True)
 
 def get_balances_eth_weth_waps(addr, key, mainnet, follower, w3=None):
     if follower is None:
@@ -52,17 +57,7 @@ def get_balances_eth_weth_waps(addr, key, mainnet, follower, w3=None):
 
 
 
-logger = logging.getLogger('FollowSwaps')
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-fh = RotatingFileHandler('log', mode='a', encoding='utf-8', maxBytes=1024*1024* 50, backupCount=5)
-fh.setLevel(logging.DEBUG)
-fh.setFormatter(formatter)
-logger.addHandler(ch)
-logger.addHandler(fh)
+
 
 allowed_methods = [
     'swapExactETHForTokens', 'swapExactETHForTokensSupportingFeeOnTransferTokens', 'swapETHForExactTokens',

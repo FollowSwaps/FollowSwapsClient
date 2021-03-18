@@ -5,8 +5,9 @@ import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import CallMissedOutgoingIcon from "@material-ui/icons/CallMissedOutgoing";
 import IconButton from "@material-ui/core/IconButton";
-import SaveIcon from "@material-ui/icons/Save";
+import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
 import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
 
 export class Tokens extends React.Component {
 
@@ -26,7 +27,7 @@ export class Tokens extends React.Component {
                                 >
 
                                     <Icon name='dropdown' style={{color: "#995933"}}/>
-                                    {token.addr} | {token.name} | {token.balance}
+                                    {token.addr} <span style={{color: '#995933'}}>|</span> {token.name} <span style={{color: '#995933'}}>|</span> {token.balance ? token.balance.toFixed(6):token.balance }
 
 
                                     {/*{this.props.donors.find(x => x.id === token.donor)['name']}*/}
@@ -34,18 +35,33 @@ export class Tokens extends React.Component {
                                 <Accordion.Content active={this.props.activeIndexAccordion === token.id}>
                                     {/*<Form inverted>*/}
                                     <Form.Group inline>
+                                        <div style={{display: "flex", flexDirection: "row"}}>
                                         <TextField
                                             size="small"
+                                            variant="standard"
                                             color="default"
                                             value={token.name}
                                             onChange={this.props.token_name_change}
                                             name={'name'}
                                             label={'token name'}
                                             error={token.errs.name}
-                                            variant="outlined"
                                             fullWidth
-                                            style={{marginBottom: 10}}
+                                            style={{width: 250,marginBottom: 10}}
                                         />
+                                        <TextField
+                                            size="small"
+                                            color="default"
+                                            disabled={true}
+                                            variant="standard"
+                                            fullWidth
+                                            style={{width: 250,marginBottom: 10,marginLeft: 10}}
+                                            value={token.price_for_token.toFixed(6)}
+
+                                            name={'name'}
+                                            label={'ETH for 1 token'}
+                                            error={token.errs.name}
+
+                                        /></div>
                                         {/*<Form.Input*/}
                                         {/*    size={"mini"}*/}
                                         {/*    value={token.name}*/}
@@ -66,7 +82,7 @@ export class Tokens extends React.Component {
                                                 Delete token
                                             </Button>
                                         </div>
-                                        <span style={{fontSize: 14}}>eth per 1 token price: {token.price_for_token.toFixed(6)}</span>
+
                                     </Form.Group>
                                     {/*</Form>*/}
                                     <Table style={{backgroundColor: "transparent"}} size="small">
@@ -116,13 +132,14 @@ export class Tokens extends React.Component {
                                                         {/*/>*/}
                                                     </TableCell>
                                                     <TableCell>
+                                                        <div style={{display: "flex", flexDirection: "row", margin:0}}>
                                                         <TextField
                                                             isinput={true}
                                                             size="small"
                                                             color="default"
                                                             type="number"
-                                                            label={'token name'}
-                                                            variant="outlined"
+
+                                                            variant="standard"
                                                             fullWidth
                                                             id={donor_token.id}
                                                             inputProps={{id: donor_token.id}}
@@ -131,6 +148,10 @@ export class Tokens extends React.Component {
                                                             name={'qnty'}
                                                             error={donor_token.errs.qnty}
                                                         />
+                                                        <IconButton size={'small'} color="secondary" aria-label="delete" onClick={() => this.props.handleSetMax(token.id, donor_token.id, "donor_assets")}>
+                                                                <CallMissedOutgoingIcon fontSize="small"/>
+                                                            </IconButton>
+                                                        </div>
                                                     </TableCell>
 
 
@@ -138,17 +159,15 @@ export class Tokens extends React.Component {
                                                         <div style={{
                                                             display: "flex",
                                                         }}>
-                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.updateAsset(donor_token)}>
-                                                                <SaveIcon fontSize="small"/>
+                                                            <IconButton style={{color:'#23a575'}} size={'small'} aria-label="delete" variant="outlined" onClick={() => this.props.updateAsset(donor_token)}>
+                                                                <SaveOutlinedIcon fontSize="small"/>
                                                             </IconButton>
 
-                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.deleteAsset(donor_token.id)}>
+                                                            <IconButton style={{color:'#b23434'}} size={'small'} aria-label="delete" onClick={() => this.props.deleteAsset(donor_token.id)}>
                                                                 <DeleteIcon fontSize="small"/>
                                                             </IconButton>
 
-                                                            <IconButton size={'small'} aria-label="delete" onClick={() => this.props.handleSetMax(token.id, donor_token.id, "donor_assets")}>
-                                                                <CallMissedOutgoingIcon fontSize="small"/>
-                                                            </IconButton>
+
                                                         </div>
                                                     </TableCell>
 
@@ -194,13 +213,14 @@ export class Tokens extends React.Component {
                                                     {/*/>*/}
                                                 </TableCell>
                                                 <TableCell>
+                                                    <div style={{display: "flex", flexDirection: "row", margin:0}}>
                                                     <TextField
                                                         isinput={true}
                                                         size="small"
                                                         color="default"
                                                         type="number"
-                                                        label={'token name'}
-                                                        variant="outlined"
+
+                                                        variant="standard"
                                                         fullWidth
                                                         id={this.props.new_token.id}
                                                         value={this.props.new_token.qnty}
@@ -208,14 +228,18 @@ export class Tokens extends React.Component {
                                                         name={'qnty'}
                                                         error={this.props.new_token.errs.qnty}
                                                     />
+                                                    <IconButton size={'small'} color="secondary" aria-label="delete" onClick={() => this.props.handleSetMax(token.id, this.props.new_token.id, "donor_assets")}>
+                                                                <CallMissedOutgoingIcon fontSize="small"/>
+                                                            </IconButton>
+                                                    </div>
                                                 </TableCell>
 
 
                                                 <TableCell>
-                                                    <Button onClick={() => this.props.updateAsset(this.props.new_token)}
-                                                            color="secondary" variant="outlined" size="small">
-                                                        Create
-                                                    </Button>
+                                                    <IconButton  aria-label="delete" onClick={() => this.props.updateAsset(this.props.new_token)} style={{color:'#23a575'}}  size="small">
+                                                                    <AddIcon fontSize="small"/>
+                                                                  </IconButton>
+
                                                 </TableCell>
 
                                             </TableRow>

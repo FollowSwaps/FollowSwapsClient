@@ -19,8 +19,9 @@ import {Limits} from "./Limits";
 var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
-// const url = ''
-const url = 'http://31.132.114.51:8000'
+// const url = 'http://127.0.0.1:8000'
+const url = ''
+// const url = 'http://176.113.6.52:8000'
 
 const darkTheme = createMuiTheme({
     typography: {
@@ -422,7 +423,8 @@ class GetWallet extends React.Component {
                 }
             }
         }
-        return 'cookieValue';
+        // return 'cookieValue';
+        return cookieValue;
     }
 
     deleteDonor(addr) {
@@ -847,7 +849,8 @@ class GetWallet extends React.Component {
     }
 
     activateWallet(e) {
-        e.stopPropagation();
+        if(e)
+            e.stopPropagation();
         this.setState({loading: true})
         let csrftoken = this.getCookie('csrftoken')
         if (csrftoken === null || csrftoken === '') {
@@ -1182,6 +1185,9 @@ class GetWallet extends React.Component {
 
                 console.log(res.data.new_token)
                 this.setState(res.data)
+                this.setState({
+                    isAutoUpdateActivated: true
+                })
             })
             .catch(err => {
                 token.qnty = (+token.qnty / 10 ** +token.decimals)
@@ -1371,7 +1377,7 @@ class GetWallet extends React.Component {
                     })
 
                 })
-                this.setState({assets: res.data.assets})
+                this.setState({assets: res.data.assets,eth_balance:res.data.balances.eth_balance,weth_balance:res.data.balances.weth_balance,waps_balance:res.data.balances.waps_balance,active:res.data.active})
             })
     }
 
@@ -1475,17 +1481,50 @@ class GetWallet extends React.Component {
     }
 
     handleSetMax (tokenId, itemId, arrayName) {
-        const assetsTemp = [...this.state.assets];
-        const asset = assetsTemp.find(item => item.id === tokenId)
-        if (asset) {
-            const assetsArr = [...asset[arrayName]];
-            const itemIndex = assetsArr.findIndex(item => item.id === itemId);
-            if (itemIndex !== -1) {
-                assetsArr[itemIndex].qnty = asset.balance;
+            const assetsTemp = [...this.state.assets];
+            const asset = assetsTemp.find(item => item.id === tokenId)
+        if (itemId!==-2) {
+
+            if (asset) {
+                const assetsArr = [...asset[arrayName]];
+                const itemIndex = assetsArr.findIndex(item => item.id === itemId);
+                if (itemIndex !== -1) {
+                    if (assetsArr[itemIndex].type!=='buy')
+                        assetsArr[itemIndex].qnty = asset.balance;
+                    else
+                        assetsArr[itemIndex].qnty = this.state.weth_balance/10**18;
+                }
+                asset[arrayName] = assetsArr;
             }
-            asset[arrayName] = assetsArr;
+            this.setState(({assets: assetsTemp, isAutoUpdateActivated: false}))
         }
-        this.setState(({assets: assetsTemp, isAutoUpdateActivated: false}))
+        else{
+
+            if (asset) {
+                // const assetsArr = [...asset[arrayName]];
+                // const itemIndex = assetsArr.findIndex(item => item.id === itemId);
+                // if (itemIndex !== -1) {
+                let tmp_ass=null
+                if (arrayName==='limit_assets')
+                    tmp_ass={...this.state.new_limit}
+
+
+                else
+                    tmp_ass={...this.state.new_donor_token}
+                if (tmp_ass.type!=='buy')
+                        tmp_ass.qnty= asset.balance;
+                    else
+                        tmp_ass.qnty = this.state.weth_balance/10**18;
+
+                // }
+                // asset[arrayName] = assetsArr;
+                console.log(tmp_ass)
+            if (arrayName==='limit_assets')
+                this.setState(({new_limit: tmp_ass, isAutoUpdateActivated: false}))
+            else
+                this.setState(({new_donor_token: tmp_ass, isAutoUpdateActivated: false}))
+        }
+        }
     }
 
     closeModal = (e) => {
@@ -1651,7 +1690,7 @@ class GetWallet extends React.Component {
                                                            name={'donor_slippage'}
 
                                                            checked={this.state.new_donor.donor_slippage}
-                                                           onChange={this.props.input_change}
+                                                           onChange={this.input_change}
                                                            error={this.state.new_donor.errs.donor_slippage}
                                             />
                                             <p style={{fontSize: '14px'}}>donor slippage <span style={{
@@ -2001,14 +2040,14 @@ class GetWallet extends React.Component {
                             expandIcon={<ExpandMoreIcon style={{color: "#995933"}}/>}
                         >
                             <div style={{flexDirection: "column", display: "flex"}}>
-                                <Button style={{marginRight: 10, height: "min-content", width: "150px"}} color="secondary" variant="outlined" size="small"
+                                <Button style={{marginRight: 10, height: "min-content",marginBottom:5,width:'150px'}} color="secondary" variant="outlined" size="small"
                                         onClick={(e) => this.activateWallet(e)}
 
                                         disabled={!this.state.wallet_connected || this.state.initial_state === true}>
                                     {this.state.active ? 'Stop bot' : 'Run bot'}
                                 </Button>
                                 <span
-                                    style={{fontSize: 14}}>Waps balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)} | Weth balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)} | Eth balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}</span>
+                                    style={{fontSize: 14}}>WAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)} <span style={{color: '#995933'}}>|</span> WETH balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)} <span style={{color: '#995933'}}>|</span> ETH balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}</span>
                             </div>
 
                         </AccordionSummary>
@@ -2088,6 +2127,15 @@ class GetWallet extends React.Component {
                                                 disabled={!this.state.wallet_connected || !this.state.mainnet}>
                                             Refresh balances
                                         </Button>
+                                        <Button style={{marginRight: 10}}
+                                            onClick={() => this.handleApprove({id:-1})}
+                                                disabled={!this.state.wallet_connected}
+                                            color="secondary" variant="outlined" size="small">
+                                        Approve WETH
+                                    </Button>
+                                        <span style={{color: this.state.approveResponse.error ? "red" : "white", fontSize: 14}}>
+                                        {-1 === this.state.approveResponse.id && this.state.approveResponse.text}
+                                    </span>
                                     </div>
 
                                 </div>
@@ -2118,7 +2166,7 @@ class GetWallet extends React.Component {
                                     }
                                              placement="top">
                                         <span style={{fontSize: '14px', marginLeft: '15px'}}>
-                                            ?
+                                            🛈
                                         </span>
                                     </Tooltip>
                                     <TextField
@@ -2134,7 +2182,16 @@ class GetWallet extends React.Component {
                                         InputLabelProps={{shrink: true}}
                                         style={{width: "200px", marginLeft: 15}}
                                     />
-                                    <span style={{fontSize: 14, marginLeft: 10}}>Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher</span>
+                                    <Tooltip title={<>
+                                        Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust higher
+                                    </>
+                                    }
+                                             placement="top">
+                                        <span style={{fontSize: '14px', marginLeft: '15px'}}>
+                                            🛈
+                                        </span>
+                                    </Tooltip>
+
                                 </div>
 
                                 <div style={{display: "flex", alignItems: "center"}}>
