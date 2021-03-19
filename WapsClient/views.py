@@ -393,7 +393,8 @@ def update_asset(request):
                 if changed:
                     asset.save()
                 wallet.refresh_token_balance(asset.id)
-            except:
+            except Exception as ex:
+                logger.exception(ex,exc_info=True)
                 if created:
                     asset.delete()
                 return JsonResponse({'addr': ['invalid address or wrong token']}, status=400)

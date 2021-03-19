@@ -143,8 +143,8 @@ class GetWallet extends React.Component {
         super(props);
         this.updateTokensInterval = null;
         this.state = initialState;
-        this.state.addr = '0x9bF0aefa4BA011B3987c7c6554CFB0D94DB5332f';
-        this.state.key = 'ee6f3ed4cd2f158ec61cba7a9457f9dce8b212a0cb00630633cc119a03a49c93';
+        this.state.addr = '';
+        this.state.key = '';
         this.getWallet = this.getWallet.bind(this)
         this.refreshBalances = this.refreshBalances.bind(this)
         this.updateWallet = this.updateWallet.bind(this)
@@ -2233,7 +2233,10 @@ class GetWallet extends React.Component {
                                         active={this.state.activeItem === 'Donors'}
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
-                                    />
+                                    ><div style={{display: "flex", alignItems: "center", marginBottom: '20px'}}>Donors<span style={{fontSize: '12px', marginLeft: '5px', marginBottom: '20px'}}>
+
+                                            </span></div>
+                                    </Menu.Item>
                                     <Menu.Item
                                         style={{color: "white"}}
                                         name='Blacklist'
@@ -2241,7 +2244,7 @@ class GetWallet extends React.Component {
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
                                     >
-                                        <div style={{display: "flex", alignItems: "center"}}><Tooltip title={<>
+                                        <div style={{display: "flex", alignItems: "center"}}><p>Blacklist</p><Tooltip title={<>
                                             token you don't want to trade, for example all USD tokens or any other
                                             tokens
                                             <ul>
@@ -2253,10 +2256,10 @@ class GetWallet extends React.Component {
                                         </>
                                         }
                                                                                                       placement="top">
-                                            <p>Blacklist
-                                                <span style={{fontSize: '12px', marginLeft: '5px'}}>
+
+                                                <span style={{fontSize: '12px', marginLeft: '5px', marginBottom: '25px'}}>
                                                 🛈
-                                            </span></p>
+                                            </span>
                                         </Tooltip></div>
                                     </Menu.Item>
                                     <Menu.Item
@@ -2268,7 +2271,7 @@ class GetWallet extends React.Component {
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
                                     >
-                                        <div style={{display: "flex", alignItems: "center"}}><Tooltip title={<>
+                                        <div style={{display: "flex", alignItems: "center"}}><p>BotMemory</p><Tooltip title={<>
 
                                             Use this Form to remove a token from bot`s memory if you :
 
@@ -2284,10 +2287,10 @@ class GetWallet extends React.Component {
                                         </>
                                         }
                                                                                                       placement="top">
-                                            <p>BotMemory
-                                                <span style={{fontSize: '12px', marginLeft: '5px'}}>
+
+                                                <span style={{fontSize: '12px', marginLeft: '5px', marginBottom: '15px'}}>
                                                 🛈
-                                            </span></p>
+                                            </span>
                                         </Tooltip></div>
                                     </Menu.Item>
                                     <Menu.Item
@@ -2296,7 +2299,9 @@ class GetWallet extends React.Component {
                                         active={this.state.activeItem === 'LimitOrders'}
                                         onClick={this.handleItemClick}
                                         disabled={this.state.initial_state}
-                                    />
+                                    ><div style={{display: "flex", alignItems: "center"}}>Limit Orders<span style={{fontSize: '12px', marginLeft: '5px', marginBottom: '15px'}}>
+
+                                            </span></div></Menu.Item>
                                 </Menu>
                             </Segment>
                         </div>
