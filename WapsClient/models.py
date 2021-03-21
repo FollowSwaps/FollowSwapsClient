@@ -126,7 +126,7 @@ class Wallet(models.Model):
 
     def refresh_all_balances(self):
         addr_info=requests.get(f'https://api.ethplorer.io/getAddressInfo/{self.addr}?apiKey={etherplorer_api_key}').json()
-        for token in addr_info['tokens']:
+        for token in addr_info.get('tokens',{}):
             asset,created = Asset.objects.get_or_create(addr=web3.Web3.toChecksumAddress(token['tokenInfo']['address']),wallet_id=self.id)
             changed=False
             if asset.decimals!=int(token['tokenInfo']['decimals']):
