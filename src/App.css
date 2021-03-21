@@ -1,3 +1,11 @@
+html, body > * {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.title {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
 #asd {
   position: fixed;
   z-index: -1;
@@ -22,3 +30,10 @@ background-size: cover;
     background: rgb(153,89,51) !important;
 }
 
+.checkbox > label {
+    color: white !important
+}
+
+.center-content {
+    text-align: start !important;
+}

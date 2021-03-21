@@ -45,11 +45,9 @@ const GUI = ({
             className={outerClasses}
         >
 
-            <div className="container cont"  style={{flex:1}}>
+            <div className="container-fluid cont"  style={{flex:1, paddingLeft: 150, paddingRight: 150}}>
 
-                    <div className={innerClasses}>
-
-
+                    <div className={innerClasses} style={{paddingTop: 0}}>
                         <div className="hero-content">
                             <section id={'about'}>
                                 {interface_child}
