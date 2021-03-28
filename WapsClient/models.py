@@ -8,7 +8,7 @@ import hashlib
 import os
 import requests
 from WapsClient.logger import logger
-
+import base64
 addr = None
 key = None
 infura_id = None
@@ -34,11 +34,11 @@ try:
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
 
-    test_provider_url = f"https://rinkeby.infura.io/v3/{infura_id}"
-    test_tx_url = 'https://rinkeby.etherscan.io/tx/'
+    test_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
+    test_tx_url = 'https://bscscan.com/tx/'
 
-    main_tx_url = 'https://etherscan.io/tx/'
-    main_provider_url = f"https://mainnet.infura.io/v3/{infura_id}"
+    main_tx_url = 'https://bscscan.com/tx/'
+    main_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
 
     # connect to infura
     try:
@@ -50,7 +50,7 @@ try:
             web3.Web3.HTTPProvider(test_provider_url, request_kwargs={"timeout": 60})
         )
     except:
-        raise ('cant connect to infura node')
+        raise ('cant connect to node')
 
     try:
         addr = web3.main.to_checksum_address(addr)
@@ -109,6 +109,7 @@ class Wallet(models.Model):
     telegram_channel_id = models.CharField(null=True, max_length=128)
     mainnet = models.BooleanField(default=False)
     waps_balance = models.CharField(max_length=128, null=True)
+    bwaps_balance = models.CharField(max_length=128, null=True)
     weth_balance = models.CharField(max_length=128, null=True)
     eth_balance = models.CharField(max_length=128, null=True)
     max_gas = models.CharField(max_length=128, null=True, default=str(500 * 10 ** 9))
@@ -222,14 +223,10 @@ class Wallet(models.Model):
 
     def get_gas_price(self):
         try:
-            r=requests.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle').json()
-            if r['status']=='1':
-                self.low_gas=int(r['result']['SafeGasPrice'])*10**9
-                self.medium_gas=int(r['result']['ProposeGasPrice'])*10**9
-                self.fast_gas=int(r['result']['FastGasPrice'])*10**9
-                self.save()
-            else:
-                logger.info('gas price was not refreshed due to req limit')
+            self.low_gas=10*10**9
+            self.medium_gas=11*10**9
+            self.fast_gas=12*10**9
+            self.save()
         except:
             logger.exception('cant get gas price')
 
@@ -245,18 +242,18 @@ class Wallet(models.Model):
 
         try:
             try:
-                response = json.loads(json.loads(msg)['message'])
+                response = msg
             except:
                 logger.info(f'not json msg: {msg}')
                 return
             net_name = response['net_name']
             if net_name == 'main':
                 mainnet = True
-                tx_url = 'https://etherscan.io/tx/'
+                tx_url = 'https://bscscan.com/tx/'
                 weth_adr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
             else:
                 weth_adr = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
-                tx_url = 'https://rinkeby.etherscan.io/tx/'
+                tx_url = 'https://bscscan.com/tx/'
                 mainnet = False
             if self.mainnet != mainnet:
                 return
@@ -411,6 +408,11 @@ class Wallet(models.Model):
                     limit_asset=LimitAsset.objects.get(tx_hash=tx_hash)
                     limit_asset.status='failed'
                     msg = f'limit order failed: token {limit_asset.asset.name}, side {limit_asset.type}, transaction {tx_hash}'
+                    if limit_asset.retry_count>limit_asset.current_retry_count:
+                        limit_asset.current_retry_count+=1
+                        limit_asset.status='running'
+                        limit_asset.active=True
+                        msg = f'limit order failed: token {limit_asset.asset.name}, side {limit_asset.type}, transaction {tx_hash}, attempt {limit_asset.current_retry_count}, total attempts {limit_asset.retry_count}'
                     logger.info(msg)
                     self.send_msg_to_subscriber_tlg(msg)
                     limit_asset.save()
@@ -500,9 +502,9 @@ class Wallet(models.Model):
             return
         if self.mainnet:
             tx_url = main_tx_url
-            weth_adr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+            weth_adr = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
         else:
-            weth_adr = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
+            weth_adr = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
             tx_url = test_tx_url
 
         our_gas_price = int(donor_gas_price * donor.gas_multiplier)
@@ -858,7 +860,7 @@ class Wallet(models.Model):
             except Exception as ex:
                 logger.exception(ex, exc_info=True)
                 if 'insufficient funds for gas * price + value' in str(ex):
-                    self.send_msg_to_subscriber_tlg(str(ex))
+                    self.send_msg_to_subscriber_tlg(' error, not enough BNB to pay for gas most probably')
                     raise LowBalance('Not enough ETH for gas')
 
                 else:
@@ -902,8 +904,8 @@ class LimitAsset(models.Model):
     qnty=models.CharField(max_length=128,null=False )
     active=models.BooleanField(default=False)
     gas_plus=models.IntegerField(default=0)
-
-
+    retry_count=models.IntegerField(default=0)
+    current_retry_count=models.IntegerField(default=0)
     tx_hash=models.CharField(max_length=128,null=True )
     type=models.CharField(choices=[('buy','buy'),('sell','sell'),('stop loss','stop loss'),('take profit','take profit')],max_length=128)
     status=models.CharField(choices=[('running','running'),('stopped','stopped'),('failed','failed'),('pending','pending'),('executed','executed')],max_length=128)
