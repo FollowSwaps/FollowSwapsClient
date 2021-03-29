@@ -2098,7 +2098,7 @@ class GetWallet extends React.Component {
                         <div className="body-wrapper">
                             <div className="body-header">
                                 <span className="header-text">
-                                    bWAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)}
+                                    WAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;
                                     WBNB balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;

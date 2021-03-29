@@ -623,7 +623,7 @@ class Wallet(models.Model):
                 asset.save()
 
             if out_token in [i.addr for i in self.skip_tokens.all()]:
-                msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for weth directly'
+                msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for wBNB directly'
                 logger.info(msg)
                 self.send_msg_to_subscriber_tlg(msg)
 
@@ -827,7 +827,7 @@ class Wallet(models.Model):
 
             if self.follower.weth_addr == path[0]:
                 if int(self.weth_balance) < in_token_amount:
-                    raise FollowSwapsErr('Not enough weth to follow')
+                    raise FollowSwapsErr('Not enough wBNB to follow')
 
             if gas is None:
                 gas = 320000
@@ -861,7 +861,7 @@ class Wallet(models.Model):
                 logger.exception(ex, exc_info=True)
                 if 'insufficient funds for gas * price + value' in str(ex):
                     self.send_msg_to_subscriber_tlg(' error, not enough BNB to pay for gas most probably')
-                    raise LowBalance('Not enough ETH for gas')
+                    raise LowBalance('Not enough BNB for gas')
 
                 else:
                     raise ex

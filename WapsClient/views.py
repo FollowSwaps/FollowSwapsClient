@@ -26,7 +26,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 
-# if Wallet.objects.get(addr=addr,key=key).active==False:
+if Wallet.objects.filter(addr=addr,key=key).exists():
+    w=Wallet.objects.get(addr=addr,key=key)
+    w.active=False
+    w.save()
 new_process = None
 
 
@@ -319,6 +322,11 @@ def update_limit(request):
                     data['token']['qnty'] = asset.wallet.weth_balance
 
             new_skip_token = LimitAssetSerializer(data=data['token'])
+            if data['token']['type']!='buy':
+                allowance = wallet.follower.get_allowance(asset.addr)
+                if allowance<int(data['token']['qnty']):
+                    return JsonResponse({'approve': ['approve token first']},
+                                        status=400)
 
             if new_skip_token.is_valid(raise_exception=True):
                 new_skip_token.save()
@@ -714,7 +722,7 @@ def start_stop(request):
 
     if w.active == False:
         if w.weth_balance == 0 or w.weth_balance is None:
-            return JsonResponse({'non_field_errors': ['You don\'t have weth on your wallet. The bot trade weth only.']},
+            return JsonResponse({'non_field_errors': ['You don\'t have wBNB on your wallet. The bot trade weth only.']},
                                 status=400)
 
         # if w.active == False:
@@ -724,13 +732,16 @@ def start_stop(request):
         #             status=400)
 
         if w.follower.get_allowance(w.follower.weth_addr) < 10 ** 20:
-            return JsonResponse({'non_field_errors': ['Please approve weth on uniswap. The bot trade weth only.']},
+            return JsonResponse({'non_field_errors': ['Please approve wBNB on uniswap. The bot trade wBNB only.']},
                                 status=400)
 
     global new_process
     if w.active == False:
         w.active = True
         w.save()
+        for limit in LimitAsset.objects.filter(active=True):
+            limit.status='running'
+            limit.save()
         if new_process is not None:
             try:
                 new_process.terminate()
@@ -741,6 +752,9 @@ def start_stop(request):
         new_process.start()
 
     else:
+        for limit in LimitAsset.objects.filter(active=True):
+            limit.status='stopped'
+            limit.save()
         w.active = False
         w.save()
         if new_process is not None:

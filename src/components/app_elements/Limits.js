@@ -69,7 +69,7 @@ export class Limits extends React.Component {
                                                     marginLeft: 30
                                                 }}>
                                             <span>
-                                                Eth for 1 token
+                                                BNB for 1 token
                                             </span>
                                                     <p style={{fontSize: 18}} className="accordion-header-text">
                                                         {token.price_for_token.toFixed(6)}
@@ -105,8 +105,20 @@ export class Limits extends React.Component {
                                                 </TableCell>
                                                 <TableCell style={{fontSize: '14px'}}>Current price</TableCell>
                                                 <TableCell style={{fontSize: '14px'}}>Quantity</TableCell>
-                                                <TableCell style={{fontSize: '14px'}}>Gas</TableCell>
-                                                <TableCell style={{fontSize: '14px'}}>Retry</TableCell>
+                                                <TableCell style={{fontSize: '14px'}}><div style={{display: "flex", alignItems: "center"}}>Gas <Tooltip title={<>
+                                                    bot will use high gas + amount below
+                                                </>
+                                                }
+                                                         placement="top">
+                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5, fontSize:10}} />
+                                                </Tooltip></div></TableCell>
+                                                <TableCell style={{fontSize: '14px'}}><div style={{display: "flex", alignItems: "center"}}>Retry <Tooltip title={<>
+                                                    retry count on failed tx with same slippage
+                                                </>
+                                                }
+                                                         placement="top">
+                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5, fontSize:10}} />
+                                                </Tooltip></div></TableCell>
                                                 <TableCell style={{fontSize: '14px'}}>Status</TableCell>
                                                 {/*            <TableCell style={{ fontSize: '14px' }}>Active<Tooltip title={<>*/}
                                                 {/*   Tick to activate/disactivate swap*/}
@@ -291,7 +303,7 @@ export class Limits extends React.Component {
                                                                 <Button style={{color: limit_token.type === "buy" ? "#23a575" :'#b23434' }} size="small"
                                                                         aria-label="delete"
                                                                         onClick={() => this.props.updateAsset(limit_token)}>
-                                                                    {limit_token.type === 'buy' ? 'buy' : 'sell'}
+                                                                    save
                                                                 </Button>
 
                                                                 <IconButton style={{color: '#b23434'}}
@@ -477,8 +489,9 @@ export class Limits extends React.Component {
                                                 className="outlined-button">
                                             Refresh token price
                                         </button>
-                                        <button style={{marginRight: 10}}
+                                        <button style={{marginRight: 10,borderColor: this.props.new_limit.errs.approve ? '#b23434' :""}}
                                                 onClick={() => this.props.handleApprove(token)}
+
                                                 className="outlined-button">
                                             Approve
                                         </button>
