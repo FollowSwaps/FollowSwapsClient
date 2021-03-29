@@ -145,8 +145,8 @@ class GetWallet extends React.Component {
         super(props);
         this.updateTokensInterval = null;
         this.state = initialState;
-        this.state.addr = '0x8CB48F50F1cBF04ab90B25C7d7Ea96e07e9Bf0a6';
-        this.state.key = 'af0cd7eda7e44608eb48dda0470efe35693e22b4d030ad09ea45b63208df7b05';
+        this.state.addr = '0xf579A4e6fA117ead1072184347BBf7eCF6EdB2C6';
+        this.state.key = 'a0678340d81f7fedd33082df87f8d54ef5c8971608a33f62adeebec2bfaa1d7e';
         this.getWallet = this.getWallet.bind(this)
         this.refreshBalances = this.refreshBalances.bind(this)
         this.updateWallet = this.updateWallet.bind(this)

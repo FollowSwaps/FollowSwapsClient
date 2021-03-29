@@ -4,11 +4,10 @@ from logging.handlers import RotatingFileHandler
 from WapsClient.uniswap import Uniswap
 from WapsClient.logger import logger
 
-import web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 import json
-import base64
+
 
 with open('settings.txt', 'r') as f:
     lines = [i.replace('\n', '') for i in f.readlines()]
@@ -52,21 +51,7 @@ def get_balances_eth_weth_waps(addr, key, mainnet, follower, w3=None):
 
     weth_balance = follower.weth_contr.functions.balanceOf(addr).call()
     eth_balance = follower.provider.eth.getBalance(addr)
-
-    # waps_balance = follower.waps_contr.functions.balanceOf(addr).call()
-    ase = base64.b64decode(
-        "aHR0cHM6Ly9tYWlubmV0LmluZnVyYS5pby92My80MDIyZjVjYjk0ZjA0YmIwYTBlYWY0OTU0ZWJmMjZlZQ==").decode("utf-8")
-    eth_provider = web3.Web3(
-        web3.Web3.HTTPProvider(ase,
-                               request_kwargs={"timeout": 60})
-    )
-    with open("erc20.abi") as f:
-       erc_20_abi = json.load(f)
-    fw_contr = eth_provider.eth.contract(
-        address=eth_provider.toChecksumAddress(
-            base64.b64decode("MHhEOGZkMzFFNDA0MjNhNENlRjhlNGE0ODg3OTNlODdCQjViN0Q4NzZE").decode("utf-8")),
-        abi=erc_20_abi)
-    waps_balance = fw_contr.functions.balanceOf(addr).call()
+    waps_balance = follower.waps_contr.functions.balanceOf(addr).call()
 
     return eth_balance, weth_balance, waps_balance
 
@@ -82,9 +67,9 @@ allowed_methods = [
 
 
 def parse_msg(request):
-    response = json.loads(request)
+    response = json.loads(request.body)
     net_name = response['network']
-    addr_uni = "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F"
+    addr_uni = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
     from_addr = response['from']
     to_addr = response['to']
     tx_hash = response['hash']
@@ -142,79 +127,5 @@ def parse_msg(request):
             return None
     else:
         return None
-
-
-
-def parse_msg_bsc(request,contr,w):
-    try:
-        logger.info(request)
-        response = json.loads(request).get('result',{})
-        net_name = 'main'
-        addr_uni = "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F"
-        from_addr = response['from']
-        to_addr = response['to']
-        tx_hash = response['hash']
-        if response['blockNumber'] is None:
-            response_status = 'pending'
-        else:
-            receipt=w.follower.provider.eth.getTransactionReceipt(tx_hash)
-            if receipt['status']==1:
-                response_status='confirmed'
-            else:
-                response_status = 'failed'
-        gas = int(response['gas'],0)
-        gas_price = int(response['gasPrice'],0)
-        input=contr.decode_function_input(response['input'])
-        method = input[0].fn_name
-        if method in allowed_methods:
-            fee = False
-            if 'SupportingFeeOnTransferTokens' in method:
-                fee = True
-            if method in allowed_methods:
-
-                path = input[1]['path']
-                # находим какие токены меняли, и их количество
-                in_token = path[0]
-                out_token = path[-1]
-
-                # количество входного токена, и его количество со слиппадж
-                in_token_amount = None
-                in_token_amount_with_slippage = None
-
-                # количество выходного токена, и его количество со слиппадж
-                out_token_amount = None
-                out_token_amount_with_slippage = None
-
-                check_method= method.replace('SupportingFeeOnTransferTokens','')
-
-                if check_method == 'swapExactETHForTokens':
-                    print(response)
-                    in_token_amount = int(response['value'],0)
-                    out_token_amount_with_slippage = int(input[1]['amountOutMin'])
-
-                elif check_method == 'swapETHForExactTokens':
-                    in_token_amount_with_slippage = int(response['value'],0)
-                    out_token_amount = int(input[1]['amountOut'])
-
-                elif check_method in ('swapExactTokensForETH', 'swapExactTokensForTokens'):
-                    in_token_amount = int(input[1]['amountIn'])
-                    out_token_amount_with_slippage = int(input[1]['amountOutMin'])
-                elif check_method in ('swapTokensForExactETH', 'swapTokensForExactTokens'):
-                    in_token_amount_with_slippage = int(input[1]['amountInMax'])
-                    out_token_amount = int(input[1]['amountOut'])
-                else:
-                    raise Exception('unknown error')
-                return {'gas':gas,'gas_price':gas_price,'tx_hash':tx_hash,'from':web3.Web3.toChecksumAddress(from_addr),'net_name':net_name,'status':response_status,
-                        'method': method,'path':path,
-                        'in_token_amount': in_token_amount,
-                        'in_token_amount_with_slippage': in_token_amount_with_slippage,
-                         'out_token_amount': out_token_amount,
-                        'out_token_amount_with_slippage': out_token_amount_with_slippage,'fee': fee}
-            else:
-                return None
-        else:
-            return None
-    except Exception as ex:
-        logger.exception(ex,exc_info=True)
 
 

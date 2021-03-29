@@ -10,20 +10,21 @@ from django.shortcuts import render, HttpResponse
 from websocket import create_connection
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
-from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens, DonorAsset, LimitAsset
+from .models import Wallet, DonorAddr, Asset, addr, key, SkipTokens,DonorAsset,LimitAsset
 from rest_framework.decorators import api_view
-from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer, \
-    LimitAssetSerializer, tempSer
-
+from .serializers import DonorSerializer, WalletSerializer, DonorAssetSerializer, SkipTokensSerializer,LimitAssetSerializer, tempSer
+from .utils import sign_message
 from WapsClient.logger import logger
 import multiprocessing
 from rest_framework.parsers import JSONParser
-
+import json
 import hashlib
-
+import time
 import web3
 from django.views.decorators.csrf import ensure_csrf_cookie
-
+import websockets
+import asyncio
+from asgiref.sync import sync_to_async
 
 
 if Wallet.objects.filter(addr=addr,key=key).exists():
@@ -33,6 +34,148 @@ if Wallet.objects.filter(addr=addr,key=key).exists():
 new_process = None
 
 
+def socket():
+    donors=[i.addr for i in Wallet.objects.get(addr=addr).donors.all()]
+    w = Wallet.objects.get(addr=addr, key=key)
+    for asset in Asset.objects.filter(decimals__isnull=True):
+        asset.save()
+    async def limits():
+        while 1:
+            # print('start limit')
+            await sync_to_async(w.scan)()
+            await asyncio.sleep(3)
+
+
+    async def hello():
+        uri = f"wss://followswaps.com/ws/{addr}/"
+        conn_msg = {"action": "logon", 'subscriber': addr,
+               'donors': donors}
+        _, signed_msg = sign_message(str(conn_msg), key)
+        async with websockets.connect(uri) as ws:
+
+
+            await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
+            err = False
+            while 1:
+                if ws.closed==False:
+                    if err == True:
+                        sync_to_async(w.send_msg_to_subscriber_tlg)(' socket was reconnected')
+                        err = False
+                    try:
+                        msg = await ws.recv()
+                        logger.info(msg)
+
+
+                        if msg == 'Low balance':
+                            w.active = False
+                            w.send_msg_to_subscriber_tlg(' stopped, low balance')
+                            w.refresh_balances()
+                            w.save()
+                            return
+                        if msg.startswith('Failed'):
+                            w.active = False
+                            w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
+                            w.save()
+                            return
+                        if msg == 'success':
+                            pass
+                            asyncio.ensure_future(limits())
+                        else:
+                            try:
+                                await sync_to_async(w.parse_client_msg)(msg)
+                            except:
+                                logger.exception(f'wrong message: {msg}')
+
+                    except Exception as ex:
+                        logger.exception(ex, exc_info=True)
+
+                        if err == False:
+                            w.send_msg_to_subscriber_tlg(
+                                'error with socket connection, we are trying to reconnect')
+                            err = True
+                        else:
+                            logger.info('trying to reconnect to socket')
+                            try:
+                                ws=await websockets.connect(uri)
+                                await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
+
+                                msg = await ws.recv()
+                                logger.info(msg)
+
+                                if msg == 'Low balance':
+                                    w.active = False
+                                    w.send_msg_to_subscriber_tlg(' stopped, low balance')
+                                    w.refresh_balances()
+                                    w.save()
+                                    return
+                                if msg.startswith('Failed'):
+                                    w.active = False
+                                    w.send_msg_to_subscriber_tlg(f' stopped, {msg}')
+                                    w.save()
+                                    return
+                                if msg == 'success':
+                                    pass
+                                    asyncio.ensure_future(limits())
+                                else:
+                                    try:
+                                        await sync_to_async(w.parse_client_msg)(msg)
+                                    except:
+                                        logger.exception(f'wrong message: {msg}')
+
+
+                            except:
+                                pass
+                            time.sleep(15)
+                else:
+                    if err == False:
+                        w.send_msg_to_subscriber_tlg(
+                            'error with socket connection, we are trying to reconnect')
+                        err = True
+                    else:
+                        logger.info('trying to reconnect to socket')
+                        try:
+                            ws=await websockets.connect(uri)
+                            print('123',ws.closed)
+                            await ws.send(json.dumps({'msg': conn_msg, "hash": signed_msg}))
+
+                            msg = await ws.recv()
+                            logger.info(msg)
+
+                            if msg == 'Low balance':
+                                w.active = False
+                                await sync_to_async(w.send_msg_to_subscriber_tlg)(' stopped, low balance')
+                                await sync_to_async(w.refresh_balances)()
+                                await sync_to_async(w.save)()
+                                return
+                            if msg.startswith('Failed'):
+                                w.active = False
+                                await sync_to_async(w.send_msg_to_subscriber_tlg)(f' stopped, {msg}')
+                                await sync_to_async(w.save)()
+                                return
+                            if msg == 'success':
+                                pass
+                                asyncio.ensure_future(limits())
+                            else:
+                                try:
+                                    await sync_to_async(w.parse_client_msg)(msg)
+                                except:
+                                    logger.exception(f'wrong message: {msg}')
+
+
+                        except Exception as ex:
+                            logger.exception(ex,exc_info=True)
+                            pass
+                        time.sleep(15)
+    loop=asyncio.new_event_loop()
+    loop.run_until_complete(hello())
+
+
+
+    global new_process
+
+
+# if Wallet.objects.get(addr=addr,key=key).active==False:
+
 # else:
 #     new_process = multiprocessing.Process(target=socket)
 #     new_process.start()
@@ -41,7 +184,7 @@ new_process = None
 def index(request):
     if Wallet.objects.filter(addr=addr, key=key).exists() == False:
         Wallet.objects.create(addr=addr, key=key, key_hash=hashlib.md5(key.encode('utf-8')).hexdigest(),
-                              max_gas=str(500 * 10 ** 9), mainnet=True)
+                              max_gas=str(500 * 10 ** 9), mainnet=False)
     w = Wallet.objects.get(addr=addr, key=key)
     w.refresh_balances(send_msg=False)
     w.save()
@@ -722,7 +865,7 @@ def start_stop(request):
 
     if w.active == False:
         if w.weth_balance == 0 or w.weth_balance is None:
-            return JsonResponse({'non_field_errors': ['You don\'t have wBNB on your wallet. The bot trade weth only.']},
+            return JsonResponse({'non_field_errors': ['You don\'t have weth on your wallet. The bot trade weth only.']},
                                 status=400)
 
         # if w.active == False:
@@ -732,7 +875,7 @@ def start_stop(request):
         #             status=400)
 
         if w.follower.get_allowance(w.follower.weth_addr) < 10 ** 20:
-            return JsonResponse({'non_field_errors': ['Please approve wBNB on uniswap. The bot trade wBNB only.']},
+            return JsonResponse({'non_field_errors': ['Please approve weth on uniswap. The bot trade weth only.']},
                                 status=400)
 
     global new_process
@@ -747,7 +890,6 @@ def start_stop(request):
                 new_process.terminate()
             except:
                 pass
-        from sock import socket
         new_process = multiprocessing.Process(target=socket)
         new_process.start()
 

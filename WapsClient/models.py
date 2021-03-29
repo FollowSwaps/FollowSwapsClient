@@ -34,11 +34,11 @@ try:
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
 
-    test_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
-    test_tx_url = 'https://bscscan.com/tx/'
+    test_provider_url = f"https://rinkeby.infura.io/v3/{infura_id}"
+    test_tx_url = 'https://rinkeby.etherscan.io/tx/'
 
-    main_tx_url = 'https://bscscan.com/tx/'
-    main_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
+    main_tx_url = 'https://etherscan.io/tx/'
+    main_provider_url = f"https://mainnet.infura.io/v3/{infura_id}"
 
     # connect to infura
     try:
@@ -50,7 +50,7 @@ try:
             web3.Web3.HTTPProvider(test_provider_url, request_kwargs={"timeout": 60})
         )
     except:
-        raise ('cant connect to node')
+        raise ('cant connect to infura node')
 
     try:
         addr = web3.main.to_checksum_address(addr)
@@ -109,7 +109,6 @@ class Wallet(models.Model):
     telegram_channel_id = models.CharField(null=True, max_length=128)
     mainnet = models.BooleanField(default=False)
     waps_balance = models.CharField(max_length=128, null=True)
-    bwaps_balance = models.CharField(max_length=128, null=True)
     weth_balance = models.CharField(max_length=128, null=True)
     eth_balance = models.CharField(max_length=128, null=True)
     max_gas = models.CharField(max_length=128, null=True, default=str(500 * 10 ** 9))
@@ -223,10 +222,14 @@ class Wallet(models.Model):
 
     def get_gas_price(self):
         try:
-            self.low_gas=10*10**9
-            self.medium_gas=11*10**9
-            self.fast_gas=12*10**9
-            self.save()
+            r=requests.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle').json()
+            if r['status']=='1':
+                self.low_gas=int(r['result']['SafeGasPrice'])*10**9
+                self.medium_gas=int(r['result']['ProposeGasPrice'])*10**9
+                self.fast_gas=int(r['result']['FastGasPrice'])*10**9
+                self.save()
+            else:
+                logger.info('gas price was not refreshed due to req limit')
         except:
             logger.exception('cant get gas price')
 
@@ -242,18 +245,18 @@ class Wallet(models.Model):
 
         try:
             try:
-                response = msg
+                response = json.loads(json.loads(msg)['message'])
             except:
                 logger.info(f'not json msg: {msg}')
                 return
             net_name = response['net_name']
             if net_name == 'main':
                 mainnet = True
-                tx_url = 'https://bscscan.com/tx/'
+                tx_url = 'https://etherscan.io/tx/'
                 weth_adr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
             else:
                 weth_adr = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
-                tx_url = 'https://bscscan.com/tx/'
+                tx_url = 'https://rinkeby.etherscan.io/tx/'
                 mainnet = False
             if self.mainnet != mainnet:
                 return
@@ -502,9 +505,9 @@ class Wallet(models.Model):
             return
         if self.mainnet:
             tx_url = main_tx_url
-            weth_adr = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
+            weth_adr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
         else:
-            weth_adr = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
+            weth_adr = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
             tx_url = test_tx_url
 
         our_gas_price = int(donor_gas_price * donor.gas_multiplier)
@@ -623,7 +626,7 @@ class Wallet(models.Model):
                 asset.save()
 
             if out_token in [i.addr for i in self.skip_tokens.all()]:
-                msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for wBNB directly'
+                msg = f'donor is trying to sell token{in_token} for {out_token}, its in skip list, we wil sell it for weth directly'
                 logger.info(msg)
                 self.send_msg_to_subscriber_tlg(msg)
 
@@ -827,7 +830,7 @@ class Wallet(models.Model):
 
             if self.follower.weth_addr == path[0]:
                 if int(self.weth_balance) < in_token_amount:
-                    raise FollowSwapsErr('Not enough wBNB to follow')
+                    raise FollowSwapsErr('Not enough weth to follow')
 
             if gas is None:
                 gas = 320000
@@ -860,8 +863,8 @@ class Wallet(models.Model):
             except Exception as ex:
                 logger.exception(ex, exc_info=True)
                 if 'insufficient funds for gas * price + value' in str(ex):
-                    self.send_msg_to_subscriber_tlg(' error, not enough BNB to pay for gas most probably')
-                    raise LowBalance('Not enough BNB for gas')
+                    self.send_msg_to_subscriber_tlg(str(ex))
+                    raise LowBalance('Not enough ETH for gas')
 
                 else:
                     raise ex
