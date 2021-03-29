@@ -1184,7 +1184,7 @@ class GetWallet extends React.Component {
                     })
                 })
 
-                res.data.max_gas = (res.data.max_gas / 10 ** 9).toFixed()
+                res.data.max_gas = (res.data.max_gas / 10 ** 9)
 
                 console.log(res.data.new_token)
                 this.setState(res.data)
@@ -1193,6 +1193,7 @@ class GetWallet extends React.Component {
                 })
             })
             .catch(err => {
+                console.log(err)
                 token.qnty = (+token.qnty / 10 ** +token.decimals)
                 if (token.id !== -2) {
                     let skip_tokens = this.state.assets
@@ -1640,15 +1641,15 @@ class GetWallet extends React.Component {
                                                     variant="outlined"
                                                     fullWidth
                                                     style={{marginBottom: 10, width: "50%"}}
-                                                    type={'number'} label='Fixed trade value (WBNB)'
+                                                    type={'number'} label='Fixed trade value (WETH)'
                                                     name={'fixed_value_trade'}
-                                                    placeholder='Fixed trade value (WBNB)'
+                                                    placeholder='Fixed trade value (WETH)'
                                                     value={this.state.new_donor.fixed_value_trade}
                                                     onChange={this.input_change}
                                                     error={this.state.new_donor.errs.fixed_value_trade}
                                                 />
                                                 <Tooltip title={<>
-                                                    Fixed trade value (WBNB) how much
+                                                    Fixed trade value (WETH) how much
                                                     you
                                                     willing
                                                     to
@@ -1831,7 +1832,7 @@ class GetWallet extends React.Component {
                                                 </Tooltip>
                                             </div>
 
-                                            <button className="outlined-button" style={{marginTop: 20}}
+                                            <button className="outlined-button" style={{marginTop: 20}} type='button'
                                                     onClick={() => this.updateDonor(this.state.new_donor)}>Create
                                                 donor
                                             </button>
@@ -2100,11 +2101,11 @@ class GetWallet extends React.Component {
                                 <span className="header-text">
                                     WAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;
-                                    WBNB balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)}
+                                    WETH balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;
-                                    BNB balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}
+                                    ETH balance: {(this.state.eth_balance / 10 ** 18).toFixed(5)}
                                 </span>
-                                <RenewIcon className="header-icon" onClick={() => this.refreshBalances()}/>
+                                <RenewIcon className="header-icon" onClick={() => this.updateWallet()}/>
 
                                 <button className="start-bot-button"
                                         style={{color: this.state.active ? '#b23434' :"#23a575",

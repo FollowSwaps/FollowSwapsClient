@@ -79,9 +79,9 @@ export class Donors extends React.Component {
                                                     size="small"
                                                     type='number'
                                                     color="default"
-                                                    label='Fixed trade value (WBNB)'
+                                                    label='Fixed trade value (WETH)'
                                                     name={'fixed_value_trade'}
-                                                    placeholder='Fixed trade value (WBNB)'
+                                                    placeholder='Fixed trade value (WETH)'
                                                     value={donor.fixed_value_trade}
                                                     onChange={this.props.input_change}
                                                     error={donor.errs.fixed_value_trade}
@@ -89,7 +89,7 @@ export class Donors extends React.Component {
                                                     style={{marginBottom: 10, width: "50%"}}
                                                 />
                                                 <Tooltip title={<>
-                                                    Fixed trade value (WBNB) how much
+                                                    Fixed trade value (WETH) how much
                                                     you
                                                     willing
                                                     to
@@ -269,12 +269,12 @@ export class Donors extends React.Component {
                                             </div>
 
                                             <div style={{display: "flex"}}>
-                                                <button className="outlined-button"
+                                                <button className="outlined-button" type='button'
                                                         style={{marginRight: 20}} onClick={() => this.props.updateDonor(donor)}
                                                 >
                                                     Update
                                                 </button>
-                                                <button className="outlined-button"
+                                                <button className="outlined-button" type='button'
                                                         onClick={() => this.props.deleteDonor(donor.addr)}>
                                                     Delete
                                                 </button>

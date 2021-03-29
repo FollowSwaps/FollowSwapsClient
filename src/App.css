@@ -217,7 +217,13 @@ html, body > * {
     width: min-content;
     margin-bottom: 20px !important;
 }
+.contained-button:active, .outlined-button:active {
+    border: 2px solid #0e0e0e;
+}
 
+.ui.segment {
+    margin: 0 !important;
+}
 .space-after-header {
     height: 30px;
 }

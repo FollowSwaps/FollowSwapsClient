@@ -69,7 +69,7 @@ export class Tokens extends React.Component {
                                                 marginLeft: 30
                                             }}>
                                             <span>
-                                                BNB for 1 token
+                                                ETH for 1 token
                                             </span>
                                                 <p style={{fontSize: 18}} className="accordion-header-text">
                                                     {token.price_for_token.toFixed(6)}

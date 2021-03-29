@@ -69,7 +69,7 @@ export class Limits extends React.Component {
                                                     marginLeft: 30
                                                 }}>
                                             <span>
-                                                BNB for 1 token
+                                                ETH for 1 token
                                             </span>
                                                     <p style={{fontSize: 18}} className="accordion-header-text">
                                                         {token.price_for_token.toFixed(6)}
@@ -244,7 +244,7 @@ export class Limits extends React.Component {
                                                                     id={limit_token.id}
                                                                     value={limit_token.qnty}
                                                                     label={<span
-                                                                        style={{fontSize: '12px'}}>{limit_token.type === 'buy' ? 'wbnb amount' : token.name.substr(0, 5) + ' amount'}</span>}
+                                                                        style={{fontSize: '12px'}}>{limit_token.type === 'buy' ? 'weth amount' : token.name.substr(0, 5) + ' amount'}</span>}
                                                                     onChange={this.props.input_skip_token}
                                                                     name={'qnty'}
                                                                     error={limit_token.errs.qnty}
@@ -406,7 +406,7 @@ export class Limits extends React.Component {
                                                             inputProps={{style: {fontSize: '14px'}}}
                                                             fullWidth
                                                             label={<span
-                                                                style={{fontSize: '12px'}}>{this.props.new_limit.type === 'buy' ? 'wbnb amount' : token.name.substr(0, 5) + ' amount'}</span>}
+                                                                style={{fontSize: '12px'}}>{this.props.new_limit.type === 'buy' ? 'weth amount' : token.name.substr(0, 5) + ' amount'}</span>}
                                                             type={'number'}
                                                             id={this.props.new_limit.id}
                                                             value={this.props.new_limit.qnty}
