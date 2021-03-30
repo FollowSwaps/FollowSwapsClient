@@ -22,8 +22,8 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = 'http://127.0.0.1:8000'
-// const url = ''
-const url = 'http://176.113.6.52:8000'
+const url = ''
+// const url = 'http://176.113.6.52:8000'
 
 
 const darkTheme = createMuiTheme({
@@ -145,8 +145,8 @@ class GetWallet extends React.Component {
         super(props);
         this.updateTokensInterval = null;
         this.state = initialState;
-        this.state.addr = '0xf579A4e6fA117ead1072184347BBf7eCF6EdB2C6';
-        this.state.key = 'a0678340d81f7fedd33082df87f8d54ef5c8971608a33f62adeebec2bfaa1d7e';
+        this.state.addr = '';
+        this.state.key = '';
         this.getWallet = this.getWallet.bind(this)
         this.refreshBalances = this.refreshBalances.bind(this)
         this.updateWallet = this.updateWallet.bind(this)
@@ -426,8 +426,8 @@ class GetWallet extends React.Component {
                 }
             }
         }
-        return 'cookieValue';
-        // return cookieValue;
+        // return 'cookieValue';
+        return cookieValue;
     }
 
     deleteDonor(addr) {
@@ -718,12 +718,14 @@ class GetWallet extends React.Component {
         } else if (name === 'key') {
             let fresh_state = initialState
             fresh_state.addr = this.state.addr
+            fresh_state.myWalletOpen = this.state.myWalletOpen
             fresh_state.key = value
             fresh_state.modal = this.state.modal
             this.setState(fresh_state)
         } else if (name === 'addr') {
             let fresh_state = initialState
             fresh_state.modal = this.state.modal
+            fresh_state.myWalletOpen = this.state.myWalletOpen
             fresh_state.addr = value
             fresh_state.key = this.state.key
             this.setState(fresh_state)
@@ -1632,8 +1634,39 @@ class GetWallet extends React.Component {
                                                          placement="top">
                                                     <InfoIcon style={{marginRight: 20, marginLeft: 5}}/>
                                                 </Tooltip>
-                                            </div>
 
+                                            </div>
+                                            <div style={{
+                                                marginBottom: 10,
+                                                marginTop: 15,
+                                                display: "flex",
+                                                alignItems: "center"
+                                            }}>
+                                                <Form.Checkbox label='Trade on confirmed tx'
+                                                               name={'trade_on_confirmed'}
+
+                                                               checked={this.state.new_donor.trade_on_confirmed}
+                                                               onChange={this.input_change}
+                                                               error={this.state.new_donor.errs.trade_on_confirmed}
+                                                />
+                                                <Tooltip title={<>
+                                                    Trade on confirmed TX. This is
+                                                    normal
+                                                    following
+                                                    and
+                                                    you
+                                                    should
+                                                    tick,
+                                                    unless you need <span style={{
+                                                    color: 'rgb(153,89,51)',
+                                                }}><b>front run</b></span> option
+                                                </>
+                                                }
+                                                         placement="top">
+                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5}}/>
+                                                </Tooltip>
+
+                                            </div>
                                             <div style={{display: "flex", marginTop: 25}}>
                                                 <TextField
                                                     size="small"
@@ -1661,7 +1694,8 @@ class GetWallet extends React.Component {
                                                 </>
                                                 }
                                                          placement="top">
-                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5, marginBottom: 5}}/>
+                                                    <InfoIcon
+                                                        style={{marginRight: 20, marginLeft: 5, marginBottom: 5}}/>
                                                 </Tooltip>
                                                 <TextField
                                                     size="small"
@@ -1689,7 +1723,8 @@ class GetWallet extends React.Component {
                                                 </>
                                                 }
                                                          placement="top">
-                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5, marginBottom: 5}}/>
+                                                    <InfoIcon
+                                                        style={{marginRight: 20, marginLeft: 5, marginBottom: 5}}/>
                                                 </Tooltip>
                                             </div>
 
@@ -2055,7 +2090,48 @@ class GetWallet extends React.Component {
                 </Segment>
             </div>
         else if (this.state.activeItem === "Home")
-            return (<div>Text</div>)
+            return (<div>
+                <h5>Some tips:</h5>
+                <ul>
+                    <li>Always keep CMD windows open or folded.</li>
+                    <li>If your laptop/pc was on standby/off/lost internet connection - check if bot working</li>
+                </ul>
+
+                <h5>Tab "Donor"</h5>
+                <ul>
+                    <li>Add a new donor to copy-trade or front-run.</li>
+                    <li>You need to have 10 WAPS for copy trading and 50 for frontrunning.</li>
+                    <li>We suggest using donor slippage.</li>
+                </ul>
+                <h5>Tab "Blacklist"</h5>
+                <ul>
+                    <li>Add to blacklist tokens you don't want to copy-trade or front-run.</li>
+                    <li>For example all USD tokens or any tokens you don't want to buy.</li>
+                    <li>You need to know a token contract address.</li>
+                </ul>
+                <h5>Tab "BotMemory"</h5>
+                <ul>
+                    <li>All your tokens should be there.</li>
+                    <li>If you bought a token and don't want your donor to sell it ( you wish to sell it manually later)
+                    remove it from bots memory</li>
+                </ul>
+                <h5>Tab "LimitOrders"</h5>
+                <ul>
+                    <li>You can place any amount of limit orders.</li>
+                    <li>ETH for 1 token - is a price for only 1 token in ETH ( if you have more tokens, the price might be
+                    different)</li>
+                    <li>You need to approve a token before selling it.</li>
+                    <li>Don't forget to press Run bot </li>
+                    <li>If the current price field is blank - the bot is not working</li>
+                    <li>If you want to market buy or sell, place a limit order but put a much smaller price to sell and a
+                    much higher price to buy. Order will be executed by the current market price on uniswap</li>
+                </ul>
+
+                <h6>Any issues, contact us <a href="https://t.me/brentox"><span style={{
+                                                    color: 'rgb(153,89,51)',
+                                                }}><b>@brentox</b></span></a></h6>
+
+            </div>)
     }
 
     render() {
@@ -2069,28 +2145,33 @@ class GetWallet extends React.Component {
                                                                    src={require("../../icons/image 1.svg")}/></a>
 
                             <div className="menu-container">
-                                <div className={`menu-element ${this.state.activeItem === "Home" ? "menu-element-active" : ""}`}
-                                     onClick={() => this.handleItemClick("Home")}
+                                <div
+                                    className={`menu-element ${this.state.activeItem === "Home" ? "menu-element-active" : ""}`}
+                                    onClick={() => this.handleItemClick("Home")}
                                 >
                                     <span>Home</span>
                                 </div>
-                                <div className={`menu-element ${this.state.activeItem === "Donors" ? "menu-element-active" : ""}`}
-                                     onClick={() => this.handleItemClick("Donors")}
+                                <div
+                                    className={`menu-element ${this.state.activeItem === "Donors" ? "menu-element-active" : ""}`}
+                                    onClick={() => this.handleItemClick("Donors")}
                                 >
                                     <span>Donors</span>
                                 </div>
-                                <div className={`menu-element ${this.state.activeItem === "Blacklist" ? "menu-element-active" : ""}`}
-                                     onClick={() => this.handleItemClick("Blacklist")}
+                                <div
+                                    className={`menu-element ${this.state.activeItem === "Blacklist" ? "menu-element-active" : ""}`}
+                                    onClick={() => this.handleItemClick("Blacklist")}
                                 >
                                     <span>Blacklist</span>
                                 </div>
-                                <div className={`menu-element ${this.state.activeItem === "BotMemory" ? "menu-element-active" : ""}`}
-                                     onClick={() => this.handleItemClick("BotMemory")}
+                                <div
+                                    className={`menu-element ${this.state.activeItem === "BotMemory" ? "menu-element-active" : ""}`}
+                                    onClick={() => this.handleItemClick("BotMemory")}
                                 >
                                     <span>BotMemory</span>
                                 </div>
-                                <div className={`menu-element ${this.state.activeItem === "LimitOrders" ? "menu-element-active" : ""}`}
-                                     onClick={() => this.handleItemClick("LimitOrders")}
+                                <div
+                                    className={`menu-element ${this.state.activeItem === "LimitOrders" ? "menu-element-active" : ""}`}
+                                    onClick={() => this.handleItemClick("LimitOrders")}
                                 >
                                     <span>LimitOrders</span>
                                 </div>
@@ -2108,8 +2189,10 @@ class GetWallet extends React.Component {
                                 <RenewIcon className="header-icon" onClick={() => this.updateWallet()}/>
 
                                 <button className="start-bot-button"
-                                        style={{color: this.state.active ? '#b23434' :"#23a575",
-                                        borderColor: this.state.active ? '#b23434' :"#23a575" }}
+                                        style={{
+                                            color: this.state.active ? '#b23434' : "#23a575",
+                                            borderColor: this.state.active ? '#b23434' : "#23a575"
+                                        }}
                                         onClick={(e) => this.activateWallet(e)}
 
                                         disabled={!this.state.wallet_connected || this.state.initial_state === true}>
@@ -2117,10 +2200,14 @@ class GetWallet extends React.Component {
                                 </button>
 
                                 <WalletIcon className="wallet-icon"/>
-                                <span className="header-text" style={{cursor: "pointer"}} onClick={() => this.handleOpenMyWallet()}>
+                                <span className="header-text" style={{cursor: "pointer"}}
+                                      onClick={() => this.handleOpenMyWallet()}>
                                     &nbsp;My wallet
                                 </span>
-                                <VectorIcon style={{marginLeft: 10, transform: this.state.myWalletOpen ? "rotate(180deg)" : ""}}/>
+                                <VectorIcon style={{
+                                    marginLeft: 10,
+                                    transform: this.state.myWalletOpen ? "rotate(180deg)" : ""
+                                }}/>
                             </div>
                             {this.state.myWalletOpen ?
                                 <>
@@ -2164,7 +2251,8 @@ class GetWallet extends React.Component {
                                     />
 
                                     <div style={{display: "flex", marginTop: 50}}>
-                                        <button style={{marginRight: 10}} className="contained-button" onClick={() => this.getWallet()}
+                                        <button style={{marginRight: 10}} className="contained-button"
+                                                onClick={() => this.getWallet()}
                                                 disabled={this.state.wallet_connected}>
                                             {this.state.wallet_connected ? 'Wallet connected' : 'Connect wallet'}
                                         </button>
@@ -2176,7 +2264,10 @@ class GetWallet extends React.Component {
                                         </button>
                                     </div>
 
-                                    <span style={{color: this.state.approveResponse.error ? "red" : "white", fontSize: 14}}>
+                                    <span style={{
+                                        color: this.state.approveResponse.error ? "red" : "white",
+                                        fontSize: 14
+                                    }}>
                                         {-1 === this.state.approveResponse.id && this.state.approveResponse.text}
                                     </span>
                                     <div style={{display: "flex", marginTop: 50}}>
@@ -2198,7 +2289,8 @@ class GetWallet extends React.Component {
                                             1. Create new private channel on telegram (any name) <br/>
                                             2. Add your bot as admin <br/>
                                             3. Get your telegram id <br/>
-                                            4. Easiest way to get telegram ID is to forward a message to the @userinfobot
+                                            4. Easiest way to get telegram ID is to forward a message to the
+                                            @userinfobot
                                             bot from your
                                             new
                                             channel
@@ -2222,7 +2314,8 @@ class GetWallet extends React.Component {
                                             style={{width: "50%"}}
                                         />
                                         <Tooltip title={<>
-                                            Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can always adjust
+                                            Put your Max gas (GWEI) ,bot will not follow if gas is higher. you can
+                                            always adjust
                                             higher
                                         </>
                                         }

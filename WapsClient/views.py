@@ -184,7 +184,7 @@ def socket():
 def index(request):
     if Wallet.objects.filter(addr=addr, key=key).exists() == False:
         Wallet.objects.create(addr=addr, key=key, key_hash=hashlib.md5(key.encode('utf-8')).hexdigest(),
-                              max_gas=str(500 * 10 ** 9), mainnet=False)
+                              max_gas=str(500 * 10 ** 9), mainnet=True)
     w = Wallet.objects.get(addr=addr, key=key)
     w.refresh_balances(send_msg=False)
     w.save()

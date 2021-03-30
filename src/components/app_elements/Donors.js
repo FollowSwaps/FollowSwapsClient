@@ -68,12 +68,50 @@ export class Donors extends React.Component {
                                                 style={{marginBottom: 10, marginTop: 15}}
 
                                             />
-                                            <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
+
+                                            <div style={{display: "flex", alignItems: "center"}}>
+                                                <Form.Checkbox label='Fixed trade' name={'fixed_trade'}
                                                            className="checkbox-custom"
                                                            checked={donor.fixed_trade}
                                                            onChange={this.props.input_change}
 
                                             />
+                                                <Tooltip title={<>
+                                                    If checked bot will trade on fixed
+                                                    value
+                                                </>
+                                                }
+                                                         placement="top">
+                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5}}/>
+                                                </Tooltip>
+
+                                            </div>
+                                             <div style={{marginBottom: 10, marginTop: 15,display: "flex", alignItems: "center"}} >
+<Form.Checkbox label='Trade on confirmed tx'
+                                                           name={'trade_on_confirmed'}
+
+                                                           checked={donor.trade_on_confirmed}
+                                                           onChange={this.props.input_change}
+                                                           error={donor.errs.trade_on_confirmed}
+                                            />
+                                            <Tooltip title={<>
+                                                    Trade on confirmed TX. This is
+                                                normal
+                                                following
+                                                and
+                                                you
+                                                should
+                                                tick,
+                                                unless you need <span style={{
+                                                    color: 'rgb(153,89,51)',
+                                                }}><b>front run</b></span> option
+                                                </>
+                                                }
+                                                         placement="top">
+                                                    <InfoIcon style={{marginRight: 20, marginLeft: 5}}/>
+                                                </Tooltip>
+
+                                                </div>
                                             <div style={{display: "flex", marginTop: 25}}>
                                                 <TextField
                                                     size="small"
@@ -270,7 +308,8 @@ export class Donors extends React.Component {
 
                                             <div style={{display: "flex"}}>
                                                 <button className="outlined-button" type='button'
-                                                        style={{marginRight: 20}} onClick={() => this.props.updateDonor(donor)}
+                                                        style={{marginRight: 20}}
+                                                        onClick={() => this.props.updateDonor(donor)}
                                                 >
                                                     Update
                                                 </button>
@@ -279,7 +318,6 @@ export class Donors extends React.Component {
                                                     Delete
                                                 </button>
                                             </div>
-
 
 
                                             {/*<Form.Button size="mini"*/}
