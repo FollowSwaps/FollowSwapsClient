@@ -269,12 +269,12 @@ export class Donors extends React.Component {
                                             </div>
 
                                             <div style={{display: "flex"}}>
-                                                <button className="outlined-button"
+                                                <button className="outlined-button" type='button'
                                                         style={{marginRight: 20}} onClick={() => this.props.updateDonor(donor)}
                                                 >
                                                     Update
                                                 </button>
-                                                <button className="outlined-button"
+                                                <button className="outlined-button" type='button'
                                                         onClick={() => this.props.deleteDonor(donor.addr)}>
                                                     Delete
                                                 </button>

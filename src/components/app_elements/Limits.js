@@ -78,12 +78,12 @@ export class Limits extends React.Component {
                                             </div>
                                         </div>
                                         <div style={{display: "flex",}}>
-                                            <button className="outlined-button" style={{marginRight: 10}}
+                                            <button className="outlined-button" style={{marginRight: 10}} type='button'
                                                     onClick={() => this.props.update(token)}
                                             >
                                                 Save
                                             </button>
-                                            <button className="outlined-button"
+                                            <button className="outlined-button" type='button'
                                                     onClick={() => this.props.delete(token.id)}
                                             >
                                                 Delete

@@ -1831,7 +1831,7 @@ class GetWallet extends React.Component {
                                                 </Tooltip>
                                             </div>
 
-                                            <button className="outlined-button" style={{marginTop: 20}}
+                                            <button className="outlined-button" style={{marginTop: 20}} type='button'
                                                     onClick={() => this.updateDonor(this.state.new_donor)}>Create
                                                 donor
                                             </button>
@@ -2171,7 +2171,7 @@ class GetWallet extends React.Component {
                                                 onClick={() => this.handleApprove({id: -1})}
                                                 disabled={!this.state.wallet_connected}
                                                 className="outlined-button">
-                                            Approve WETH
+                                            Approve WBNB
                                         </button>
                                     </div>
 

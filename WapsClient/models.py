@@ -791,6 +791,15 @@ class Wallet(models.Model):
             # всегда передаем в аргумент фолловера, ему нужно присвоить правильные ключи, чтобы он торговал с этого акка
             if asset==-1:
                 allowance = self.follower.get_allowance(self.follower.weth_addr)
+                if allowance < int(10**20) or (allowance == 0):
+                    if asset == -1:
+                        appr_tx = self.follower.approve(self.follower.weth_addr, gas_price=gas_price)
+                    msg = f'approve tx sent: tx_url{appr_tx}'
+                    logger.info(msg)
+                    telegram_bot_sendtext(msg)
+                    return appr_tx
+                else:
+                    return None
             else:
                 allowance=self.follower.get_allowance(asset.addr)
             if allowance < int(asset.balance) or (allowance==0):
