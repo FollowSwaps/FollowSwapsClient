@@ -22,8 +22,8 @@ var md5 = require('md5');
 var BigInt = require("big-integer");
 const {ethers} = require("ethers");
 // const url = 'http://127.0.0.1:8000'
-// const url = ''
-const url = 'http://176.113.6.52:8000'
+const url = ''
+// const url = 'http://176.113.6.52:8000'
 
 
 const darkTheme = createMuiTheme({
@@ -145,8 +145,8 @@ class GetWallet extends React.Component {
         super(props);
         this.updateTokensInterval = null;
         this.state = initialState;
-        this.state.addr = '0x8CB48F50F1cBF04ab90B25C7d7Ea96e07e9Bf0a6';
-        this.state.key = 'af0cd7eda7e44608eb48dda0470efe35693e22b4d030ad09ea45b63208df7b05';
+        this.state.addr = '';
+        this.state.key = '';
         this.getWallet = this.getWallet.bind(this)
         this.refreshBalances = this.refreshBalances.bind(this)
         this.updateWallet = this.updateWallet.bind(this)
@@ -426,8 +426,8 @@ class GetWallet extends React.Component {
                 }
             }
         }
-        return 'cookieValue';
-        // return cookieValue;
+        // return 'cookieValue';
+        return cookieValue;
     }
 
     deleteDonor(addr) {
@@ -718,12 +718,14 @@ class GetWallet extends React.Component {
         } else if (name === 'key') {
             let fresh_state = initialState
             fresh_state.addr = this.state.addr
+            fresh_state.myWalletOpen = this.state.myWalletOpen
             fresh_state.key = value
             fresh_state.modal = this.state.modal
             this.setState(fresh_state)
         } else if (name === 'addr') {
             let fresh_state = initialState
             fresh_state.modal = this.state.modal
+            fresh_state.myWalletOpen = this.state.myWalletOpen
             fresh_state.addr = value
             fresh_state.key = this.state.key
             this.setState(fresh_state)
@@ -2054,7 +2056,48 @@ class GetWallet extends React.Component {
                 </Segment>
             </div>
         else if (this.state.activeItem === "Home")
-            return (<div>Text</div>)
+            return (<div>
+                <h5>Some tips:</h5>
+                <ul>
+                    <li>Always keep CMD windows open or folded.</li>
+                    <li>If your laptop/pc was on standby/off/lost internet connection - check if bot working</li>
+                </ul>
+
+                <h5>Tab "Donor"</h5>
+                <ul>
+                    <li>Add a new donor to copy-trade or front-run.</li>
+                    <li>You need to have 10 WAPS for copy trading and 50 for frontrunning.</li>
+                    <li>We suggest using donor slippage.</li>
+                </ul>
+                <h5>Tab "Blacklist"</h5>
+                <ul>
+                    <li>Add to blacklist tokens you don't want to copy-trade or front-run.</li>
+                    <li>For example all USD tokens or any tokens you don't want to buy.</li>
+                    <li>You need to know a token contract address.</li>
+                </ul>
+                <h5>Tab "BotMemory"</h5>
+                <ul>
+                    <li>All your tokens should be there.</li>
+                    <li>If you bought a token and don't want your donor to sell it ( you wish to sell it manually later)
+                    remove it from bots memory</li>
+                </ul>
+                <h5>Tab "LimitOrders"</h5>
+                <ul>
+                    <li>You can place any amount of limit orders.</li>
+                    <li>ETH for 1 token - is a price for only 1 token in ETH ( if you have more tokens, the price might be
+                    different)</li>
+                    <li>You need to approve a token before selling it.</li>
+                    <li>Don't forget to press Run bot </li>
+                    <li>If the current price field is blank - the bot is not working</li>
+                    <li>If you want to market buy or sell, place a limit order but put a much smaller price to sell and a
+                    much higher price to buy. Order will be executed by the current market price on uniswap</li>
+                </ul>
+
+                <h6>Any issues, contact us <a href="https://t.me/brentox"><span style={{
+                                                    color: 'rgb(153,89,51)',
+                                                }}><b>@brentox</b></span></a></h6>
+
+            </div>)
     }
 
     render() {

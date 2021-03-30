@@ -26,10 +26,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 
-if Wallet.objects.filter(addr=addr,key=key).exists():
-    w=Wallet.objects.get(addr=addr,key=key)
-    w.active=False
-    w.save()
+# if Wallet.objects.filter(addr=addr,key=key).exists():
+#     w=Wallet.objects.get(addr=addr,key=key)
+#     w.active=False
+#     w.save()
 new_process = None
 
 
