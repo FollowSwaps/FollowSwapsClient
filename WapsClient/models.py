@@ -28,8 +28,8 @@ try:
                     addr=line[len('ADDR='):]
                 if line.startswith('KEY='):
                     key=line[len('KEY='):]
-                if line.startswith('INFURA_ID='):
-                    infura_id=line[len('INFURA_ID='):]
+                if line.startswith('HTTP_NODE='):
+                    infura_id=line[len('HTTP_NODE='):]
                 if line.startswith('ETHERPLORER_API='):
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
