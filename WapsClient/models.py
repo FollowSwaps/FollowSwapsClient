@@ -34,11 +34,11 @@ try:
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
 
-    test_provider_url = f"https://rinkeby.infura.io/v3/{infura_id}"
+    test_provider_url = infura_id
     test_tx_url = 'https://rinkeby.etherscan.io/tx/'
 
     main_tx_url = 'https://etherscan.io/tx/'
-    main_provider_url = f"https://mainnet.infura.io/v3/{infura_id}"
+    main_provider_url = infura_id
 
     # connect to infura
     try:
