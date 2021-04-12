@@ -71,7 +71,7 @@ class Uniswap():
         self.weth_contr = provider.eth.contract(self.weth_addr, abi=self.erc_20_abi)
 
 
-        self.waps_addr='0x47aE4001cC539D577A440CFa890E62c08579f3Fb'
+        self.waps_addr='0x0c79b8f01d6f0dd7ca8c98477ebf0998e1dbaf91'
         self.waps_contr=self.get_erc_contract_by_addr(self.waps_addr)
 
         # адрес роутера юнисвопа

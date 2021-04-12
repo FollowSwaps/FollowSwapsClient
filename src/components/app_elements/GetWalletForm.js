@@ -1387,7 +1387,14 @@ class GetWallet extends React.Component {
                     eth_balance: res.data.balances.eth_balance,
                     weth_balance: res.data.balances.weth_balance,
                     waps_balance: res.data.balances.waps_balance,
-                    active: res.data.active
+                    active: res.data.active,
+                    errs: {}
+                })
+            }
+            )
+        .catch(err => {
+                this.setState({
+                    errs: {non_field_errors:'Server error, restart app please'}
                 })
             })
     }
@@ -1781,7 +1788,7 @@ class GetWallet extends React.Component {
                                                     fullWidth
                                                     style={{marginBottom: 10, width: "50%"}}
                                                     type={'number'}
-                                                    label='Minimum value to follow (eth)'
+                                                    label='Minimum value to follow (BNB)'
                                                     name={'follow_min'}
                                                     value={this.state.new_donor.follow_min}
                                                     onChange={this.input_change}
@@ -1810,7 +1817,7 @@ class GetWallet extends React.Component {
                                                     fullWidth
                                                     style={{marginBottom: 10, width: "50%"}}
                                                     type={'number'}
-                                                    label='Maximum value to follow (eth)'
+                                                    label='Maximum value to follow (BNB)'
                                                     name={'follow_max'}
                                                     value={this.state.new_donor.follow_max}
                                                     onChange={this.input_change}
@@ -2066,7 +2073,7 @@ class GetWallet extends React.Component {
                 <h5>Tab "Donor"</h5>
                 <ul>
                     <li>Add a new donor to copy-trade or front-run.</li>
-                    <li>You need to have 10 WAPS for copy trading and 50 for frontrunning.</li>
+                    <li>You need to have 20 bWAPS.</li>
                     <li>We suggest using donor slippage.</li>
                 </ul>
                 <h5>Tab "Blacklist"</h5>
@@ -2084,7 +2091,7 @@ class GetWallet extends React.Component {
                 <h5>Tab "LimitOrders"</h5>
                 <ul>
                     <li>You can place any amount of limit orders.</li>
-                    <li>ETH for 1 token - is a price for only 1 token in ETH ( if you have more tokens, the price might be
+                    <li>BNB for 1 token - is a price for only 1 token in BNB ( if you have more tokens, the price might be
                     different)</li>
                     <li>You need to approve a token before selling it.</li>
                     <li>Don't forget to press Run bot </li>
@@ -2141,7 +2148,7 @@ class GetWallet extends React.Component {
                         <div className="body-wrapper">
                             <div className="body-header">
                                 <span className="header-text">
-                                    WAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)}
+                                    bWAPS balance: {(this.state.waps_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;
                                     WBNB balance: {(this.state.weth_balance / 10 ** 18).toFixed(5)}
                                     &nbsp; &nbsp;

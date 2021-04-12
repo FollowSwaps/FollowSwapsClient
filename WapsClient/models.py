@@ -532,18 +532,16 @@ class Wallet(models.Model):
                         my_in_token_amount = None
 
                     # узнаем, сколько токенов за 1 эфир
-                    buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
+                    # buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
 
                     if in_token_amount is not None:
                         # если за конкретное кол-во эфиров, то вот сумма сделки донора в эфирах
                         donor_eth_value = in_token_amount
                         if my_in_token_amount is None:
                             my_in_token_amount = int(donor_eth_value * donor.percent_value_trade)
-                        my_out_token_amount = int(
-                            buyed_asset_out_for_one_ether * self.follower.convert_wei_to_eth(my_in_token_amount))
+                        my_out_token_amount = int(self.follower.get_out_qnty_by_path(my_in_token_amount, donor_path))
                         if donor.donor_slippage:
-                            slippage = (self.follower.convert_wei_to_eth(
-                                donor_eth_value) * buyed_asset_out_for_one_ether) / out_token_amount_with_slippage - 1
+                            slippage = self.follower.get_out_qnty_by_path(donor_eth_value, donor_path) / out_token_amount_with_slippage - 1
                         else:
                             slippage = donor.slippage
 
@@ -555,21 +553,16 @@ class Wallet(models.Model):
 
                         # мы точно знаем, сколлько токенов он купил,
                         # делим это количество на цена в эфирах за 1 токен
-                        donor_eth_value = self.follower.convert_eth_to_wei(
-                            out_token_amount / buyed_asset_out_for_one_ether)
+                        donor_eth_value = self.follower.get_in_qnty_by_path(out_token_amount, donor_path)
 
                         if my_in_token_amount is None:
                             my_in_token_amount = int(donor_eth_value * donor.percent_value_trade)
                         # так как цену мы уже запросили за 1 эфир, приведем к тому,
                         # сколько нам нужно, чтобы еще раз не просить
                         if donor.fixed_trade:
-                            my_out_token_amount = int(
-                                buyed_asset_out_for_one_ether * self.follower.convert_wei_to_eth(
-                                    int(donor.fixed_value_trade)))
+                            my_out_token_amount = int(self.follower.get_out_qnty_by_path(donor.fixed_value_trade, donor_path))
                         else:
-                            my_out_token_amount = int(
-                                buyed_asset_out_for_one_ether * self.follower.convert_wei_to_eth(
-                                    int(donor.percent_value_trade * donor_eth_value)))
+                            my_out_token_amount = int(self.follower.get_out_qnty_by_path(my_in_token_amount, donor_path))
                         if donor.donor_slippage:
                             slippage = in_token_amount_with_slippage / donor_eth_value - 1
                         else:
@@ -634,28 +627,25 @@ class Wallet(models.Model):
             if DonorAsset.objects.filter(asset__addr=in_token, asset__wallet=self, our_confirmed=True, donor=donor).exists():
                 my_in_token_amount = int(DonorAsset.objects.get(asset__addr=in_token, asset__wallet=self, donor=donor).qnty)
 
-                buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
+                # buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
 
-                my_out_token_amount = int(buyed_asset_out_for_one_ether * self.follower.convert_wei_to_eth(
-                    my_in_token_amount))
+                my_out_token_amount = self.follower.get_out_qnty_by_path(my_in_token_amount,donor_path)
 
                 if in_token_amount is not None:
                     # если за конкретное кол-во эфиров, то вот сумма сделки донора в эфирах
                     donor_eth_value = in_token_amount
                     if donor.donor_slippage:
-                        slippage = (self.follower.convert_wei_to_eth(
-                            donor_eth_value) * buyed_asset_out_for_one_ether) / out_token_amount_with_slippage - 1
+                        slippage = self.follower.get_out_qnty_by_path(in_token_amount,donor_path) / out_token_amount_with_slippage - 1
                     else:
                         slippage = donor.slippage
                 else:
                     # мы точно знаем, сколлько токенов он купил,
                     # делим это количество на цена в эфирах за 1 токен
-                    donor_eth_value = self.follower.convert_eth_to_wei(
-                        out_token_amount / buyed_asset_out_for_one_ether)
+                    # donor_eth_value = self.follower.get_in_qnty_by_path()
                     # так как цену мы уже запросили за 1 эфир, приведем к тому,
                     # сколько нам нужно, чтобы еще раз не просить
                     if donor.donor_slippage:
-                        slippage = in_token_amount_with_slippage / donor_eth_value - 1
+                        slippage = in_token_amount_with_slippage / self.follower.get_in_qnty_by_path(out_token_amount,donor_path) - 1
                     else:
                         slippage = donor.slippage
                 my_min_out_token_amount = self.follower.get_min_out_tokens(my_out_token_amount, slippage)
@@ -707,28 +697,25 @@ class Wallet(models.Model):
                     my_in_token_amount = int(
                         DonorAsset.objects.get(asset__addr=in_token, asset__wallet=self, donor=donor).qnty)
 
-                    buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
+                    # buyed_asset_out_for_one_ether = self.follower.get_out_qnty_by_path(10 ** 18, donor_path)
 
-                    my_out_token_amount = int(buyed_asset_out_for_one_ether * self.follower.convert_wei_to_eth(
-                        my_in_token_amount))
+                    my_out_token_amount = self.follower.get_out_qnty_by_path(my_in_token_amount,donor_path)
 
                     if in_token_amount is not None:
                         # если за конкретное кол-во эфиров, то вот сумма сделки донора в эфирах
                         donor_eth_value = in_token_amount
                         if donor.donor_slippage:
-                            slippage = (self.follower.convert_wei_to_eth(
-                                donor_eth_value) * buyed_asset_out_for_one_ether) / out_token_amount_with_slippage - 1
+                            slippage = self.follower.get_out_qnty_by_path(in_token_amount,donor_path) / out_token_amount_with_slippage - 1
                         else:
                             slippage = donor.slippage
                     else:
                         # мы точно знаем, сколлько токенов он купил,
                         # делим это количество на цена в эфирах за 1 токен
-                        donor_eth_value = self.follower.convert_eth_to_wei(
-                            out_token_amount / buyed_asset_out_for_one_ether)
+                        # donor_eth_value = self.follower.get_out_qnty_by_path()
                         # так как цену мы уже запросили за 1 эфир, приведем к тому,
                         # сколько нам нужно, чтобы еще раз не просить
                         if donor.donor_slippage:
-                            slippage = in_token_amount_with_slippage / donor_eth_value - 1
+                            slippage = in_token_amount_with_slippage / self.follower.get_in_qnty_by_path(out_token_amount,donor_path) - 1
                         else:
                             slippage = donor.slippage
                     my_min_out_token_amount = self.follower.get_min_out_tokens(my_out_token_amount, slippage)
@@ -745,7 +732,7 @@ class Wallet(models.Model):
                         asset.donor_confirmed = donor.trade_on_confirmed
                         asset.save()
                         # создаем новый asset, который покупаем, либо берем существующий
-                        new_asset, created = self.assets.get_or_create(addr=out_token).donor_assets.get_or_create( donor=donor)
+                        new_asset, created = self.assets.get_or_create(addr=out_token)[0].donor_assets.get_or_create( donor=donor)
                         new_asset.buyed_for_addr = in_token
                         new_asset.buyed_for_qnty = my_in_token_amount
                         new_asset.donor_tx_hash = tx_hash

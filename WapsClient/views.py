@@ -680,7 +680,9 @@ def refresh_tokens(request):
     #     token_addr = web3.main.to_checksum_address(data['token_addr'])
     # except:
     #     return JsonResponse({'addr': ['invalid address']}, status=400)
-
+    
+    
+    
     key_hash = data['key_hash']
     if Wallet.objects.filter(addr=addr).exists() == False:
         return JsonResponse({'non_field_errors': ['invalid address for wallet, update wallet information']}, status=400)
@@ -688,9 +690,15 @@ def refresh_tokens(request):
         return JsonResponse({'non_field_errors': ['invalid key for wallet, update wallet information']}, status=400)
 
     else:
+
+        
         assets = Asset.objects.all()
         ser = tempSer(assets, many=True)
         w = Wallet.objects.get(key_hash=key_hash)
+        global new_process
+        if new_process is None:
+            w.active=False
+            w.save()
         balances = {'eth_balance': int(w.eth_balance), 'weth_balance': int(w.weth_balance),
                     'waps_balance': int(w.waps_balance), }
         return JsonResponse({'assets': ser.data, 'balances': balances, 'active': w.active}, status=200)
