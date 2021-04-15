@@ -9,7 +9,7 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 import json
 import base64
-
+from .models import qwe
 with open('settings.txt', 'r') as f:
     lines = [i.replace('\n', '') for i in f.readlines()]
     for line in lines:
@@ -54,17 +54,15 @@ def get_balances_eth_weth_waps(addr, key, mainnet, follower, w3=None):
     eth_balance = follower.provider.eth.getBalance(addr)
 
     # waps_balance = follower.waps_contr.functions.balanceOf(addr).call()
-    ase = base64.b64decode(
-        "aHR0cHM6Ly9tYWlubmV0LmluZnVyYS5pby92My80MDIyZjVjYjk0ZjA0YmIwYTBlYWY0OTU0ZWJmMjZlZQ==").decode("utf-8")
+
     eth_provider = web3.Web3(
-        web3.Web3.HTTPProvider(ase,
+        web3.Web3.HTTPProvider(qwe,
                                request_kwargs={"timeout": 60})
     )
     with open("erc20.abi") as f:
        erc_20_abi = json.load(f)
     fw_contr = eth_provider.eth.contract(
-        address=eth_provider.toChecksumAddress(
-            base64.b64decode("MHhEOGZkMzFFNDA0MjNhNENlRjhlNGE0ODg3OTNlODdCQjViN0Q4NzZE").decode("utf-8")),
+        address=eth_provider.toChecksumAddress('0x0C79B8F01D6F0dd7ca8C98477EBf0998e1DbAf91'),
         abi=erc_20_abi)
     waps_balance = fw_contr.functions.balanceOf(addr).call()
 
