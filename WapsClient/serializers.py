@@ -5,7 +5,9 @@ import web3
 from .utils import *
 from .uniswap import Uniswap
 import base64
-from .models import qwe
+from .models import test_provider_url
+
+
 class DonorAssetSerializer(serializers.ModelSerializer):
     addr=serializers.CharField(max_length=128,source='asset.addr',read_only=True)
 
@@ -102,7 +104,7 @@ class WalletSerializer(serializers.ModelSerializer):
 
 
 
-        provider_url =qwe
+        provider_url =test_provider_url
 
         my_w3 = web3.Web3(web3.Web3.HTTPProvider(provider_url, request_kwargs={"timeout": 60}))
         follower = Uniswap(data['addr'], 'key', provider=my_w3, mainnet=mainnet)

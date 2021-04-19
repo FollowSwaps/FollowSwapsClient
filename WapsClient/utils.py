@@ -9,7 +9,8 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 import json
 import base64
-from .models import qwe
+
+infura_id=None
 with open('settings.txt', 'r') as f:
     lines = [i.replace('\n', '') for i in f.readlines()]
     for line in lines:
@@ -17,11 +18,13 @@ with open('settings.txt', 'r') as f:
             addr = line[len('ADDR='):]
         if line.startswith('KEY='):
             key = line[len('KEY='):]
-        if line.startswith('INFURA_ID='):
-            infura_id = line[len('INFURA_ID='):]
+        if line.startswith('HTTP_NODE='):
+            infura_id = line[len('HTTP_NODE='):]
         if line.startswith('TELEGRAM_TOKEN_HTTP_API='):
             telegram_id = line[len('TELEGRAM_TOKEN_HTTP_API='):]
 
+    if infura_id in (None,''):
+        infura_id='http://app-80d6021d-f28f-4ec5-ab0e-8766ab3845a0.cls-dec3c32b-4f06-462f-b827-dee931d39a72.ankr.com'
 
 def sign_message(msg, key):
     message = encode_defunct(text=msg)
@@ -56,7 +59,7 @@ def get_balances_eth_weth_waps(addr, key, mainnet, follower, w3=None):
     # waps_balance = follower.waps_contr.functions.balanceOf(addr).call()
 
     eth_provider = web3.Web3(
-        web3.Web3.HTTPProvider(qwe,
+        web3.Web3.HTTPProvider(infura_id,
                                request_kwargs={"timeout": 60})
     )
     with open("erc20.abi") as f:

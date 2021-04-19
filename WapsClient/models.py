@@ -1,4 +1,3 @@
-from socket_py import qwe,ase
 import web3
 from django.db import models
 from .uniswap import Uniswap
@@ -29,17 +28,20 @@ try:
                     addr=line[len('ADDR='):]
                 if line.startswith('KEY='):
                     key=line[len('KEY='):]
-                if line.startswith('INFURA_ID='):
-                    infura_id=line[len('INFURA_ID='):]
+                if line.startswith('HTTP_NODE='):
+                    infura_id=line[len('HTTP_NODE='):]
                 if line.startswith('ETHERPLORER_API='):
                     etherplorer_api_key=line[len('ETHERPLORER_API='):]
 
+    if infura_id in (None,''):
+        infura_id='http://app-80d6021d-f28f-4ec5-ab0e-8766ab3845a0.cls-dec3c32b-4f06-462f-b827-dee931d39a72.ankr.com'
 
 
+    test_provider_url = infura_id
     test_tx_url = 'https://bscscan.com/tx/'
 
     main_tx_url = 'https://bscscan.com/tx/'
-    main_provider_url = qwe
+    main_provider_url = infura_id
 
     # connect to infura
     try:
@@ -48,10 +50,10 @@ try:
         )
 
         w3_test = web3.Web3(
-            web3.Web3.HTTPProvider(qwe, request_kwargs={"timeout": 60})
+            web3.Web3.HTTPProvider(test_provider_url, request_kwargs={"timeout": 60})
         )
     except:
-        raise ('cant connect to node')
+        raise ('cant connect to infura node')
 
     try:
         addr = web3.main.to_checksum_address(addr)
@@ -232,6 +234,8 @@ class Wallet(models.Model):
             logger.exception('cant get gas price')
 
     def parse_client_msg(self, msg):
+        # print(msg)
+        # return
         '''
         {'tx_hash':tx_hash,'from':from_addr,'net_name':net_name,'status':response_status,
                             'method': method,'path':path,
@@ -243,7 +247,7 @@ class Wallet(models.Model):
 
         try:
             try:
-                response = msg
+                response = json.loads(json.loads(msg)['message'])
             except:
                 logger.info(f'not json msg: {msg}')
                 return

@@ -72,7 +72,7 @@ export class Tokens extends React.Component {
                                                 BNB for 1 token
                                             </span>
                                                 <p style={{fontSize: 18}} className="accordion-header-text">
-                                                    {token.price_for_token.toFixed(6)}
+                                                    {token.price_for_token ? token.price_for_token.toFixed(6) : token.price_for_token}
                                                 </p>
                                             </div>
                                         </div>
