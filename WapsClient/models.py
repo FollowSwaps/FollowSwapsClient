@@ -273,7 +273,10 @@ class Wallet(models.Model):
             out_token_amount_with_slippage = response['out_token_amount_with_slippage']
             fee_support = response['fee']
             out_token = path[-1]
-
+            to_addr=response['to_addr']
+            if to_addr!='0x10ED43C718714eb63d5aA57B78B54704E256024E':
+                logger.info('msg not to pancake router')
+                return
             if response_status == 'pending':
                 # follow on pending
                 if DonorAddr.objects.filter(addr=from_addr, trade_on_confirmed=False).exists():

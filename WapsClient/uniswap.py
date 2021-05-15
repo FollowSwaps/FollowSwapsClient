@@ -90,7 +90,7 @@ class Uniswap():
         типа сколько мы получим токенов, если обменяем какое то количество по пути
         SwapExactTokensForTokens'''
         try:
-            return self.uni_contract.functions.getAmountsOut(amount,
+            return self.uni_contract.functions.getAmountsOut(int(amount),
                                                          path).call()[-1]
         except Exception as ex:
             print(ex)
@@ -100,7 +100,7 @@ class Uniswap():
         типа сколько нам нужно токенов а, чтобы получить конкретное количество токенов б по пути path
         SwapTokensForExactTokens'''
 
-        return self.uni_contract.functions.getAmountsIn(amount,
+        return self.uni_contract.functions.getAmountsIn(int(amount),
                                                         path).call()[0]
 
     def get_min_out_tokens(self, price,slippage):
@@ -117,11 +117,11 @@ class Uniswap():
 
         # создаем транзакцию через функцию контракта роутера
         if fee_support==False:
-            tx = self.uni_contract.functions.swapExactTokensForTokens(in_token_amount, min_out_token_amount, path,
+            tx = self.uni_contract.functions.swapExactTokensForTokens(int(in_token_amount), int(min_out_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         else:
-            tx=self.uni_contract.functions.swapExactTokensForTokensSupportingFeeOnTransferTokens(in_token_amount, min_out_token_amount, path,
+            tx=self.uni_contract.functions.swapExactTokensForTokensSupportingFeeOnTransferTokens(int(in_token_amount), int(min_out_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         return tx
@@ -131,7 +131,7 @@ class Uniswap():
 
 
         # создаем транзакцию через функцию контракта роутера
-        tx = self.uni_contract.functions.swapTokensForExactTokens(out_token_amount, max_in_token_amount, path,
+        tx = self.uni_contract.functions.swapTokensForExactTokens(int(out_token_amount), int(max_in_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         return tx
