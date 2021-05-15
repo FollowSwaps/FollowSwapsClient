@@ -75,7 +75,7 @@ class Uniswap():
 
         # адрес роутера юнисвопа
         self.uni_adr_v3 = self.provider.toChecksumAddress('0xe592427a0aece92de3edee1f18e0157c05861564')
-        self.uni_adr_v2 = self.provider.toChecksumAddress('0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F')
+        self.uni_adr_v2 = self.provider.toChecksumAddress('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D')
 
         # abi роутера юнисвопа
         abi_v3 = [{"inputs":[{"internalType":"address","name":"_factory","type":"address"},{"internalType":"address","name":"_WETH9","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"WETH9","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"bytes","name":"path","type":"bytes"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMinimum","type":"uint256"}],"internalType":"struct ISwapRouter.ExactInputParams","name":"params","type":"tuple"}],"name":"exactInput","outputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint24","name":"fee","type":"uint24"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMinimum","type":"uint256"},{"internalType":"uint160","name":"sqrtPriceLimitX96","type":"uint160"}],"internalType":"struct ISwapRouter.ExactInputSingleParams","name":"params","type":"tuple"}],"name":"exactInputSingle","outputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[{"components":[{"internalType":"bytes","name":"path","type":"bytes"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"uint256","name":"amountInMaximum","type":"uint256"}],"internalType":"struct ISwapRouter.ExactOutputParams","name":"params","type":"tuple"}],"name":"exactOutput","outputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint24","name":"fee","type":"uint24"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"uint256","name":"amountInMaximum","type":"uint256"},{"internalType":"uint160","name":"sqrtPriceLimitX96","type":"uint160"}],"internalType":"struct ISwapRouter.ExactOutputSingleParams","name":"params","type":"tuple"}],"name":"exactOutputSingle","outputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"factory","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes[]","name":"data","type":"bytes[]"}],"name":"multicall","outputs":[{"internalType":"bytes[]","name":"results","type":"bytes[]"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"refundETH","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"selfPermit","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"},{"internalType":"uint256","name":"expiry","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"selfPermitAllowed","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"},{"internalType":"uint256","name":"expiry","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"selfPermitAllowedIfNecessary","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"selfPermitIfNecessary","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amountMinimum","type":"uint256"},{"internalType":"address","name":"recipient","type":"address"}],"name":"sweepToken","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amountMinimum","type":"uint256"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"feeBips","type":"uint256"},{"internalType":"address","name":"feeRecipient","type":"address"}],"name":"sweepTokenWithFee","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"int256","name":"amount0Delta","type":"int256"},{"internalType":"int256","name":"amount1Delta","type":"int256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"uniswapV3SwapCallback","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMinimum","type":"uint256"},{"internalType":"address","name":"recipient","type":"address"}],"name":"unwrapWETH9","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMinimum","type":"uint256"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"feeBips","type":"uint256"},{"internalType":"address","name":"feeRecipient","type":"address"}],"name":"unwrapWETH9WithFee","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}]
@@ -92,7 +92,7 @@ class Uniswap():
         типа сколько мы получим токенов, если обменяем какое то количество по пути
         SwapExactTokensForTokens'''
         try:
-            return self.uni_contract_v2.functions.getAmountsOut(amount,
+            return self.uni_contract_v2.functions.getAmountsOut(int(amount),
                                                          path).call()[-1]
         except Exception as ex:
             print(ex)
@@ -102,7 +102,7 @@ class Uniswap():
         типа сколько нам нужно токенов а, чтобы получить конкретное количество токенов б по пути path
         SwapTokensForExactTokens'''
 
-        return self.uni_contract_v2.functions.getAmountsIn(amount,
+        return self.uni_contract_v2.functions.getAmountsIn(int(amount),
                                                         path).call()[0]
 
     def get_min_out_tokens(self, price,slippage):
@@ -119,11 +119,11 @@ class Uniswap():
 
         # создаем транзакцию через функцию контракта роутера
         if fee_support==False:
-            tx = self.uni_contract_v2.functions.swapExactTokensForTokens(in_token_amount, min_out_token_amount, path,
+            tx = self.uni_contract_v2.functions.swapExactTokensForTokens(int(in_token_amount), int(min_out_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         else:
-            tx=self.uni_contract_v2.functions.swapExactTokensForTokensSupportingFeeOnTransferTokens(in_token_amount, min_out_token_amount, path,
+            tx=self.uni_contract_v2.functions.swapExactTokensForTokensSupportingFeeOnTransferTokens(int(in_token_amount), int(min_out_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         return tx
@@ -133,7 +133,7 @@ class Uniswap():
 
 
         # создаем транзакцию через функцию контракта роутера
-        tx = self.uni_contract_v2.functions.swapTokensForExactTokens(out_token_amount, max_in_token_amount, path,
+        tx = self.uni_contract_v2.functions.swapTokensForExactTokens(int(out_token_amount), int(max_in_token_amount), path,
                                                                   self.addr,
                                                                   deadline, )
         return tx
@@ -144,7 +144,7 @@ class Uniswap():
 
         # создаем транзакцию через функцию контракта роутера
 
-        tx = self.uni_contract_v3.functions.exactInputSingle((path[0],path[1],fee,self.addr,deadline,in_token_amount, min_out_token_amount,0))
+        tx = self.uni_contract_v3.functions.exactInputSingle((path[0],path[1],int(fee),self.addr,deadline,int(in_token_amount), int(min_out_token_amount),0))
 
         return tx
 

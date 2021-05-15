@@ -566,7 +566,7 @@ class Wallet(models.Model):
                         # так как цену мы уже запросили за 1 эфир, приведем к тому,
                         # сколько нам нужно, чтобы еще раз не просить
                         if donor.fixed_trade:
-                            my_out_token_amount = int(self.follower.get_out_qnty_by_path(donor.fixed_value_trade, donor_path))
+                            my_out_token_amount = int(self.follower.get_out_qnty_by_path(int(donor.fixed_value_trade), donor_path))
                         else:
                             my_out_token_amount = int(self.follower.get_out_qnty_by_path(my_in_token_amount, donor_path))
                         if donor.donor_slippage:
