@@ -252,12 +252,10 @@ class Wallet(models.Model):
                 logger.info(f'not json msg: {msg}')
                 return
             net_name = response['net_name']
-            if net_name == 'main':
-                mainnet = True
+            if net_name == 'bsc-main':
                 tx_url = 'https://bscscan.com/tx/'
-                weth_adr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+                mainnet = True
             else:
-                weth_adr = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
                 tx_url = 'https://bscscan.com/tx/'
                 mainnet = False
             if self.mainnet != mainnet:

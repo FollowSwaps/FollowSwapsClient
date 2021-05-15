@@ -48,9 +48,9 @@ def socket():
 
 
         async def hello():
-            uri = f"ws://18.189.213.250/ws/{addr}/"
+            uri = f"ws://127.0.0.1:8001/ws/{addr}/"
             conn_msg = {"action": "logon", 'subscriber': addr,
-                   'donors': donors}
+                   'donors': donors,'net_name':'bsc-main'}
             _, signed_msg = sign_message(str(conn_msg), key)
             async with websockets.connect(uri) as ws:
 
