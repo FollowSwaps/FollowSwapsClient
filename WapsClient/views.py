@@ -48,7 +48,7 @@ def socket():
 
 
         async def hello():
-            uri = f"ws://127.0.0.1:8001/ws/{addr}/"
+            uri =  f"wss://followswaps.com/ws/{addr}/"
             conn_msg = {"action": "logon", 'subscriber': addr,
                    'donors': donors,'net_name':'bsc-main'}
             _, signed_msg = sign_message(str(conn_msg), key)
