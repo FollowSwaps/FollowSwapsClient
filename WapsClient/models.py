@@ -235,7 +235,7 @@ class Wallet(models.Model):
 
     def parse_client_msg(self, msg):
         '''
-        {'tx_hash':tx_hash,'from':from_addr,'net_name':net_name,'status':response_status,
+        {'tx_hash':tx_hash,'from':from_addr,'net_name':net_name,'status':response_status,'to_addr':to_addr,
                             'method': method,'path':path,
                             'in_token_amount': in_token_amount,
                             'in_token_amount_with_slippage': in_token_amount_with_slippage,
@@ -273,7 +273,10 @@ class Wallet(models.Model):
             out_token_amount_with_slippage = response['out_token_amount_with_slippage']
             fee_support = response['fee']
             out_token = path[-1]
-
+            to_addr=response['to_addr']
+            if to_addr!='0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D':
+                logger.info('msg not to uniswap router')
+                return
             if response_status == 'pending':
                 # follow on pending
                 if DonorAddr.objects.filter(addr=from_addr, trade_on_confirmed=False).exists():

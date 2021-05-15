@@ -48,9 +48,9 @@ def socket():
 
 
         async def hello():
-            uri = f"wss://followswaps.com/ws/{addr}/"
+            uri = f"ws://127.0.0.1:8001/ws/{addr}/"
             conn_msg = {"action": "logon", 'subscriber': addr,
-                   'donors': donors}
+                   'donors': donors,'net_name':'main'}
             _, signed_msg = sign_message(str(conn_msg), key)
             async with websockets.connect(uri) as ws:
 
@@ -868,10 +868,10 @@ def start_stop(request):
             'Seems like it\'s you first start, update all fields for your wallet and add donors first']}, status=400)
     w.refresh_balances(send_msg=False)
 
-    if w.active == False:
-        if w.weth_balance == 0 or w.weth_balance is None:
-            return JsonResponse({'non_field_errors': ['You don\'t have weth on your wallet. The bot trade weth only.']},
-                                status=400)
+    # if w.active == False:
+        # if w.weth_balance == 0 or w.weth_balance is None:
+        #     return JsonResponse({'non_field_errors': ['You don\'t have weth on your wallet. The bot trade weth only.']},
+        #                         status=400)
 
         # if w.active == False:
         #     if int(w.waps_balance/10**18) < 10 or w.waps_balance is None:
@@ -879,9 +879,9 @@ def start_stop(request):
         #             {'non_field_errors': ['Insufficient WAPS balance']},
         #             status=400)
 
-        if w.follower.get_allowance(w.follower.weth_addr) < 10 ** 20:
-            return JsonResponse({'non_field_errors': ['Please approve weth on uniswap. The bot trade weth only.']},
-                                status=400)
+        # if w.follower.get_allowance(w.follower.weth_addr) < 10 ** 20:
+        #     return JsonResponse({'non_field_errors': ['Please approve weth on uniswap. The bot trade weth only.']},
+        #                         status=400)
 
     global new_process
     if w.active == False:
